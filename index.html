@@ -222,13 +222,66 @@
                 <a href="https://discord.com/oauth2/authorize?client_id=ID_BOT_2_CUA_BAN&scope=identify%20guilds&response_type=code&redirect_uri=https%3A%2F%2Fweddiscordbot.vercel.app%2Fapi%2Fauth%2Fcallback">
                     <button class="btn-main" style="width: 100%;">Quản lý ngay</button>
                 </a>
-                <button class="btn-sub">Cấu hình bảo mật</button>
+                <button class="btn-sub">Cài đặt lệnh</button>
                 <button class="btn-sub">Xem thống kê</button>
             </div>
         </div>
 
        
     </div>
+<div id="setup-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="background: #1e1f22; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #5865F2; text-align: center; color: white;">
+        <h2 id="setup-title" style="color: #5865F2; margin-top: 0;">Setup Bot</h2>
+        <div style="text-align: left; margin-top: 20px;">
+            <label style="color: #b9bbbe; font-size: 14px;">Prefix (Dấu lệnh)</label>
+            <input type="text" id="prefix-input" placeholder="Ví dụ: !" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0f0f13; color: white; box-sizing: border-box;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button onclick="saveSettings()" style="flex: 1; background: #5865F2; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Lưu lại</button>
+            <button onclick="closeSetup()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">Hủy</button>
+        </div>
+    </div>
+</div>
+   <script>
+    // 1. Hàm mở bảng cài đặt và đổi tên bot theo ngữ cảnh
+    function openSetup(botName) {
+        // Xử lý xóa các ký tự thừa nếu có để tên bot gọn sạch
+        const cleanName = botName.replace('online', '').trim(); 
+        document.getElementById('setup-title').innerText = "Cấu hình " + cleanName;
+        document.getElementById('setup-overlay').style.display = 'flex';
+    }
 
+    // 2. Hàm đóng bảng
+    function closeSetup() {
+        document.getElementById('setup-overlay').style.display = 'none';
+    }
+
+    // 3. Hàm lưu cấu hình
+    function saveSettings() {
+        const val = document.getElementById('prefix-input').value;
+        alert("Hệ thống: Đã cập nhật Prefix thành [" + (val || "!") + "] cho Bot!");
+        closeSetup();
+    }
+
+    // 4. KẾT NỐI CẢ 2 NÚT: Tự động tìm tất cả nút "Cài đặt lệnh" trên trang
+    document.querySelectorAll('.btn-sub').forEach(button => {
+        if (button.innerText.includes('Cài đặt')) {
+            button.onclick = function() {
+                // Tìm thẻ '.bot-name' nằm trong cùng một ô '.card' với nút vừa bấm
+                const card = this.closest('.card');
+                const name = card.querySelector('.bot-name').innerText;
+                openSetup(name);
+            };
+        }
+    });
+
+    // 5. Tính năng phụ: Bấm ra vùng tối bên ngoài để đóng bảng cho nhanh
+    window.onclick = function(event) {
+        const overlay = document.getElementById('setup-overlay');
+        if (event.target == overlay) {
+            closeSetup();
+        }
+    }
+</script>
 </body>
 </html>
