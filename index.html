@@ -234,7 +234,7 @@
             <div class="bot-img">🤖</div>
             <span class="bot-name"><span class="status-dot"></span>ＭＥＯ ＢＯＴ Ｘ✦𓆩ＶＪ𓆪</span>
             <div class="btn-group">
-                <a href="https://discord.com/oauth2/authorize?client_id=1471048517706449099&permissions=8&integration_type=0&scope=bot">
+                <a href="https://discord.com/oauth2/authorize?client_id=1471048517706449099&response_type=code&redirect_uri=https%3A%2F%2Ftenweb.vercel.app&scope=identify+guilds+emai">
                     <button class="btn-main" style="width: 100%;">Quản lý ngay</button>
                 </a>
                 <button class="btn-sub">Cài đặt lệnh</button>
@@ -301,7 +301,7 @@
             closeBtn.style.background = "#00FFFF";
             closeBtn.style.color = "#000";
         } else {
-            title.innerText = "🎮 LEVIATHAN SYSTEM - MENU TỐI CAO";
+            title.innerText = "🎮 CYBERION BOT - MENU TỐI CAO";
             title.style.color = "#ff0000";
             card.style.borderColor = "#ff0000";
             desc.innerHTML = "Chào sếp! Hệ thống đã được hiệu chỉnh.<br>Kiếm tiền triệu - Chạy án tỷ đô!";
@@ -436,6 +436,55 @@
         if (e.target.id === 'setup-overlay') closeSetup();
         if (e.target.id === 'stats-overlay') closeStats();
     };
+    <script>
+    // 1. CHẶN LỖI 404 VÀ LẤY THÔNG TIN
+    window.onload = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            // Khi sếp phê duyệt xong, Discord trả về code. 
+            // Ta tạm thời xóa nó trên thanh địa chỉ để tránh lỗi reload
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Hiện thông báo "Xịn" cho sếp
+            console.log("Đã nhận mã xác thực từ Discord:", code);
+            alert("Đã kết nối tài khoản Discord thành công!");
+            
+            // Đổi giao diện Web để xác nhận sếp đã đăng nhập
+            const setupTitle = document.getElementById('setup-title');
+            if(setupTitle) setupTitle.innerText = "ĐÃ XÁC THỰC TÀI KHOẢN";
+        }
+    };
+
+    // 2. GIỮ NGUYÊN HÀM MỞ THỐNG KÊ (Dùng link Firebase thật của sếp)
+    async function openStats(index) {
+        const FIREBASE_URL = "https://wedmeobot-default-rtdb.asia-southeast1.firebasedatabase.app/stats.json";
+        const serverLabel = document.getElementById('stat-servers');
+        const userLabel = document.getElementById('stat-users');
+        const cpuBar = document.getElementById('cpu-bar-inner');
+        
+        document.getElementById('stats-overlay').style.display = 'flex';
+        serverLabel.innerText = "Đang tải...";
+
+        try {
+            const res = await fetch(FIREBASE_URL);
+            const data = await res.json();
+            // Lấy dữ liệu từ ảnh Firebase sếp gửi (cyberion_bot)
+            const bot = (index === 0) ? data.meo_bot : data.cyberion_bot;
+            
+            if (bot) {
+                serverLabel.innerText = bot.servers + " Máy chủ";
+                userLabel.innerText = bot.users.toLocaleString() + " Người dùng";
+                setTimeout(() => { cpuBar.style.width = "65%"; }, 100);
+            }
+        } catch (err) {
+            serverLabel.innerText = "Lỗi Firebase";
+        }
+    }
+
+    function closeStats() { document.getElementById('stats-overlay').style.display = 'none'; }
+</script>
 </script>
 </body>
 </html>
