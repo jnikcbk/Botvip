@@ -3,209 +3,239 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng ký</title>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
+<title>Đăng ký - KaizenMC</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#020617,#0f172a);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.box{
-background:#111827;
-padding:40px;
-border-radius:14px;
-width:350px;
-text-align:center;
-box-shadow:0 0 30px rgba(0,0,0,0.6);
-}
-
-h1{
-margin-bottom:20px;
-}
-
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border:none;
-border-radius:8px;
-background:#1f2937;
-color:white;
-outline:none;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.gmail{
-background:#ea4335;
-}
-
-.verify{
-background:#22c55e;
-}
-
-.msg{
-margin-top:10px;
-color:#22c55e;
-}
-
-a{
-display:block;
-margin-top:15px;
-color:#60a5fa;
-text-decoration:none;
-}
-
+  body {
+    margin:0;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    overflow:hidden;
+  }
+  .box {
+    background:rgba(17,24,39,0.92);
+    padding:50px 40px;
+    border-radius:20px;
+    width:380px;
+    max-width:90%;
+    text-align:center;
+    box-shadow:0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(37,99,235,0.3);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(37,99,235,0.4);
+    animation:fadeIn 0.8s ease;
+  }
+  @keyframes fadeIn { from {opacity:0; transform:translateY(30px);} to {opacity:1; transform:translateY(0);} }
+  h1 {
+    margin-bottom:30px;
+    font-size:28px;
+    color:#60a5fa;
+    text-shadow:0 0 10px rgba(96,165,250,0.5);
+  }
+  .input-group {
+    position:relative;
+    margin-bottom:20px;
+  }
+  input {
+    width:100%;
+    padding:14px 14px 14px 45px;
+    border:none;
+    border-radius:10px;
+    background:#1f2937;
+    color:white;
+    font-size:15px;
+    transition:all 0.3s;
+  }
+  input:focus {
+    background:#374151;
+    box-shadow:0 0 0 3px #2563eb, 0 0 15px rgba(37,99,235,0.5);
+    outline:none;
+  }
+  .icon {
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:18px;
+    opacity:0.7;
+    pointer-events:none;
+  }
+  .eye {
+    right:15px;
+    left:auto;
+    cursor:pointer;
+    opacity:0.8;
+  }
+  button {
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border:none;
+    border-radius:10px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:all 0.4s;
+  }
+  button.main {
+    background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa);
+    background-size:200%;
+  }
+  button.main:hover {
+    background-position:right;
+    transform:translateY(-3px);
+    box-shadow:0 10px 30px rgba(59,130,246,0.6);
+  }
+  button.gmail {
+    background:#ea4335;
+  }
+  button.verify {
+    background:#22c55e;
+  }
+  .msg {
+    margin-top:15px;
+    font-size:14px;
+    min-height:20px;
+  }
+  .success { color:#22c55e; }
+  .error { color:#f87171; }
+  a {
+    display:block;
+    margin-top:20px;
+    color:#60a5fa;
+    text-decoration:none;
+  }
+  a:hover { color:#93c5fd; text-decoration:underline; }
 </style>
 </head>
-
 <body>
 
 <div class="box">
+  <h1>📝 Đăng ký KaizenMC</h1>
 
-<h1>📝 Đăng ký KaizenMC</h1>
+  <div class="input-group">
+    <span class="icon">👤</span>
+    <input id="user" placeholder="Tên tài khoản" autocomplete="username">
+  </div>
 
-<input id="user" placeholder="Tên tài khoản">
-<input id="pass" type="password" placeholder="Mật khẩu">
+  <div class="input-group">
+    <span class="icon">🔒</span>
+    <input id="pass" type="password" placeholder="Mật khẩu" autocomplete="new-password">
+    <span class="eye icon" onclick="togglePass()">👁️</span>
+  </div>
 
-<button onclick="register()">Đăng ký tài khoản</button>
+  <hr style="margin:25px 0; opacity:0.2; border-color:#4b5563;">
 
-<hr style="margin:20px 0;opacity:0.2;">
+  <div class="input-group">
+    <span class="icon">📧</span>
+    <input id="gmail" placeholder="Nhập Gmail (example@gmail.com)" autocomplete="email">
+  </div>
 
-<input id="gmail" placeholder="Nhập Gmail">
+  <button class="gmail" onclick="sendCode()">Gửi mã xác minh</button>
 
-<button class="gmail" onclick="sendCode()">Gửi mã xác minh</button>
+  <div class="input-group" id="codeGroup" style="display:none;">
+    <span class="icon">🔑</span>
+    <input id="code" placeholder="Nhập mã OTP" autocomplete="one-time-code">
+  </div>
 
-<input id="code" placeholder="Nhập mã OTP" style="display:none">
-<button class="verify" onclick="verify()" style="display:none">Xác minh Gmail</button>
+  <button class="verify" id="verifyBtn" style="display:none;" onclick="verify()">Xác minh Gmail</button>
 
-<p id="msg" class="msg"></p>
+  <button class="main" onclick="register()">Đăng ký tài khoản</button>
 
-<a href="dang-nhap.html">Đã có tài khoản? Đăng nhập</a>
+  <p id="msg" class="msg"></p>
 
+  <a href="dang-nhap.html">Đã có tài khoản? Đăng nhập ngay</a>
 </div>
 
 <script>
+emailjs.init({ publicKey: "kcbIQHJFwC1v2brL3" }); // ← THAY BẰNG PUBLIC KEY THẬT TỪ EMAILJS DASHBOARD
 
-(function(){
-emailjs.init("kcbIQHJFwC1v2brL3")
-})();
+let otp = "";
+let verified = false;
 
-let otp=""
-let verified=false
-
-function register(){
-
-let user=document.getElementById("user").value
-let pass=document.getElementById("pass").value
-let gmail=document.getElementById("gmail").value
-
-if(user=="" || pass=="" || gmail==""){
-msg("⚠️ Nhập đầy đủ thông tin")
-return
+function togglePass() {
+  const pass = document.getElementById("pass");
+  const eye = document.querySelector(".eye");
+  if (pass.type === "password") {
+    pass.type = "text";
+    eye.innerText = "🙈";
+  } else {
+    pass.type = "password";
+    eye.innerText = "👁️";
+  }
 }
 
-if(!verified){
-msg("⚠️ Bạn phải xác minh Gmail trước")
-return
+function msg(text, type = "success") {
+  const el = document.getElementById("msg");
+  el.innerText = text;
+  el.className = "msg " + (type === "error" ? "error" : "success");
 }
 
-localStorage.setItem("tk",user)
-localStorage.setItem("mk",pass)
-localStorage.setItem("gmail",gmail)
+function sendCode() {
+  const gmail = document.getElementById("gmail").value.trim();
+  if (!gmail || !gmail.includes("@gmail.com")) {
+    msg("⚠️ Vui lòng nhập Gmail hợp lệ (@gmail.com)", "error");
+    return;
+  }
 
-msg("✅ Đăng ký thành công")
+  otp = Math.floor(100000 + Math.random() * 900000).toString();
+  msg("Đang gửi mã OTP...");
 
-}
-  
-function register(){
-
-let user = document.getElementById("user").value
-let pass = document.getElementById("pass").value
-
-if(user.toLowerCase() === "admindz"){
-document.getElementById("msg").innerText = "❌ Tên này bị cấm"
-return
-}
-
-localStorage.setItem("tk",user)
-localStorage.setItem("mk",pass)
-
-document.getElementById("msg").innerText = "✅ Đăng ký thành công"
-
-}
-  
-function sendCode(){
-
-let gmail=document.getElementById("gmail").value
-
-if(gmail==""){
-msg("⚠️ Nhập Gmail")
-return
+  emailjs.send("service_uhcqzpe", "template_etl5hyj", {
+    email: gmail,
+    code: otp
+  }).then(() => {
+    msg("📧 Đã gửi mã OTP đến Gmail của bạn!");
+    document.getElementById("codeGroup").style.display = "block";
+    document.getElementById("verifyBtn").style.display = "block";
+  }).catch(err => {
+    console.error(err);
+    msg("❌ Lỗi gửi OTP! Kiểm tra console hoặc Public Key.", "error");
+  });
 }
 
-otp=Math.floor(100000+Math.random()*900000)
-
-emailjs.send("service_uhcqzpe","template_etl5hyj",{
-email:gmail,
-code:otp
-}).then(function(){
-
-msg("📧 Đã gửi mã OTP đến Gmail")
-
-document.getElementById("code").style.display="block"
-document.querySelector(".verify").style.display="block"
-
-})
-
+function verify() {
+  const code = document.getElementById("code").value.trim();
+  if (code === otp) {
+    verified = true;
+    msg("✅ Gmail đã xác minh thành công!");
+  } else {
+    msg("❌ Mã OTP sai!", "error");
+  }
 }
 
-function verify(){
+function register() {
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value;
+  const gmail = document.getElementById("gmail").value.trim();
 
-let code=document.getElementById("code").value
+  if (!user || !pass || !gmail) {
+    msg("⚠️ Nhập đầy đủ thông tin!", "error");
+    return;
+  }
 
-if(code==otp){
+  if (user.toLowerCase().includes("admin") || user.toLowerCase() === "admindz") {
+    msg("❌ Tên tài khoản này bị cấm (chứa 'admin')!", "error");
+    return;
+  }
 
-verified=true
+  if (!verified) {
+    msg("⚠️ Bạn phải xác minh Gmail trước khi đăng ký!", "error");
+    return;
+  }
 
-msg("✅ Gmail xác minh thành công")
+  localStorage.setItem("tk", user);
+  localStorage.setItem("mk", pass);
+  localStorage.setItem("gmail", gmail);
 
-}else{
-
-msg("❌ Sai mã OTP")
-
+  msg("🎉 Đăng ký thành công! Chuyển hướng đến đăng nhập...");
+  setTimeout(() => { window.location.href = "dang-nhap.html"; }, 1500);
 }
-
-}
-
-function msg(t){
-document.getElementById("msg").innerText=t
-}
-
 </script>
+
 </body>
 </html>
