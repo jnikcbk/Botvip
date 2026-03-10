@@ -270,6 +270,32 @@ function buy(name, price) {
   localStorage.setItem(xuKey, xu);
   updateBalance();
 
+  // Gửi log Discord
+  async function sendPurchaseLog() {
+    console.log("Đang gửi log mua hàng cho:", username, "item:", name, "price:", price);
+    try {
+      const response = await fetch("/api/send-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          type: "purchase", 
+          username: username, 
+          item: name, 
+          price: price 
+        })
+      });
+      const data = await response.json();
+      console.log("Kết quả gửi log mua:", data);
+      if (!response.ok) {
+        console.error("Gửi log mua thất bại:", response.status, data);
+      }
+    } catch (err) {
+      console.error("Lỗi gọi API log mua:", err);
+    }
+  }
+
+  sendPurchaseLog();
+
   msgEl.className = "msg success";
   msgEl.innerText = `✅ Đã mua thành công: ${name}! (-${price.toLocaleString('vi-VN')} xu)`;
 }
@@ -298,7 +324,6 @@ async function sendPurchaseLog() {
   }
 }
 
-sendPurchaseLog();
 </script>
 </body>
 </html>
