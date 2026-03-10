@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:white;
+}
+
+header{
+text-align:center;
+padding:20px;
+font-size:26px;
+font-weight:bold;
+background:#020617;
+border-bottom:2px solid #2563eb;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:40px 20px;
+}
+
+.item{
+background:#111827;
+padding:15px;
+border-radius:10px;
+margin-bottom:10px;
+box-shadow:0 5px 20px rgba(0,0,0,0.6);
+}
+
+.btn{
+padding:6px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-top:5px;
+margin-right:5px;
+}
+
+.approve{
+background:#22c55e;
+color:white;
+}
+
+.delete{
+background:#ef4444;
+color:white;
+}
+
+.reset{
+background:#f59e0b;
+color:white;
+padding:10px 15px;
+}
+
+.status{
+font-weight:bold;
+}
+
+.back{
+display:inline-block;
+margin-top:20px;
+padding:10px 20px;
+background:#2563eb;
+border-radius:8px;
+text-decoration:none;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+⚙️ Admin Panel KaizenMC
+</header>
+
+<div class="container">
+
+<h2>📜 Danh sách thẻ nạp</h2>
+
+<button class="reset" onclick="reset()">Reset lịch sử</button>
+
+<div id="list"></div>
+
+<a class="back" href="index.html">⬅ Quay lại</a>
+
+</div>
+
+<script>
+
+if(localStorage.getItem("role")!=="admin"){
+document.body.innerHTML="<h1 style='text-align:center;margin-top:100px;'>❌ Không có quyền</h1>"
+}
+
+let data=JSON.parse(localStorage.getItem("napHistory"))||[]
+
+let box=document.getElementById("list")
+
+function load(){
+
+box.innerHTML=""
+
+data.forEach((d,i)=>{
+
+let status=d.status||"Chờ duyệt"
+
+box.innerHTML+=`
+<div class="item">
+👤 User: ${d.user}<br>
+📱 Thẻ: ${d.type}<br>
+💰 Mệnh giá: ${d.menhgia}đ<br>
+🔑 Mã: ${d.code}<br>
+🧾 Seri: ${d.seri}<br>
+⏱ ${d.time}<br>
+
+📌 Trạng thái: <span class="status">${status}</span>
+<br><br>
+
+<button class="btn approve" onclick="duyet(${i})">Duyệt</button>
+<button class="btn delete" onclick="xoa(${i})">Xóa</button>
+</div>
+`
+
+})
+
+}
+
+function duyet(i){
+
+if(data[i].status==="Đã duyệt") return
+
+data[i].status="Đã duyệt"
+
+let xu=parseInt(localStorage.getItem("xu"))||0
+
+let nhan=data[i].menhgia*10
+
+xu+=nhan
+
+localStorage.setItem("xu",xu)
+
+localStorage.setItem("napHistory",JSON.stringify(data))
+
+load()
+
+}
+
+function xoa(i){
+
+data.splice(i,1)
+
+localStorage.setItem("napHistory",JSON.stringify(data))
+
+load()
+
+}
+
+function reset(){
+
+localStorage.removeItem("napHistory")
+
+data=[]
+
+load()
+
+}
+
+load()
+
+</script>
+
+</body>
+</html>
