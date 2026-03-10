@@ -2,21 +2,104 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+color:white;
+}
+
+.box{
+background:#111827;
+padding:40px;
+border-radius:14px;
+width:330px;
+text-align:center;
+box-shadow:0 0 30px rgba(0,0,0,0.6);
+}
+
+h1{
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+background:#1f2937;
+color:white;
+outline:none;
+}
+
+input:focus{
+background:#374151;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+cursor:pointer;
+transition:0.25s;
+}
+
+button:hover{
+background:#1d4ed8;
+transform:scale(1.03);
+}
+
+.msg{
+margin-top:12px;
+color:#f87171;
+}
+
+a{
+display:block;
+margin-top:15px;
+color:#60a5fa;
+text-decoration:none;
+}
+
+a:hover{
+text-decoration:underline;
+}
+
+</style>
 </head>
 
 <body>
 
-<h1>Đăng nhập</h1>
+<div class="box">
 
-<input id="user" placeholder="Tên tài khoản"><br><br>
-<input id="pass" type="password" placeholder="Mật khẩu"><br><br>
+<h1>🔐 Đăng nhập</h1>
+
+<input id="user" placeholder="Tên tài khoản">
+
+<input id="pass" type="password" placeholder="Mật khẩu">
 
 <button onclick="login()">Đăng nhập</button>
 
-<p id="msg"></p>
+<p id="msg" class="msg"></p>
 
-<a href="dang-ky.html">Đăng ký</a>
+<a href="dang-ky.html">Chưa có tài khoản? Đăng ký</a>
+
+</div>
 
 <script>
 
@@ -36,7 +119,7 @@ window.location.href="index.html"
 
 }else{
 
-document.getElementById("msg").innerText="Sai tài khoản hoặc mật khẩu"
+document.getElementById("msg").innerText="❌ Sai tài khoản hoặc mật khẩu"
 
 }
 
