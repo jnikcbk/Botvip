@@ -141,7 +141,24 @@ localStorage.setItem("gmail",gmail)
 msg("✅ Đăng ký thành công")
 
 }
+  
+function register(){
 
+let user = document.getElementById("user").value
+let pass = document.getElementById("pass").value
+
+if(user.toLowerCase() === "admindz"){
+document.getElementById("msg").innerText = "❌ Tên này bị cấm"
+return
+}
+
+localStorage.setItem("tk",user)
+localStorage.setItem("mk",pass)
+
+document.getElementById("msg").innerText = "✅ Đăng ký thành công"
+
+}
+  
 function sendCode(){
 
 let gmail=document.getElementById("gmail").value
