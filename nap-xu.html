@@ -99,7 +99,7 @@ color:white;
 
 <select id="type">
 <option>Viettel</option>
-<option>Vina</option>
+<option>Vinaphone</option>
 <option>Zing</option>
 </select>
 
@@ -155,11 +155,6 @@ document.getElementById("msg").innerText="❌ Nhập đầy đủ thông tin"
 return
 }
 
-let xu=parseInt(localStorage.getItem("xu"))||0
-let nhanXu=menhgia*10
-xu+=nhanXu
-localStorage.setItem("xu",xu)
-
 let time=new Date().toLocaleString()
 
 let log={
@@ -168,7 +163,8 @@ type:type,
 menhgia:menhgia,
 seri:seri,
 code:code,
-time:time
+time:time,
+status:"Chờ duyệt"
 }
 
 let history=JSON.parse(localStorage.getItem("napHistory"))||[]
@@ -176,7 +172,7 @@ history.push(log)
 
 localStorage.setItem("napHistory",JSON.stringify(history))
 
-document.getElementById("msg").innerText="✅ Nạp thành công "+nhanXu+" xu"
+document.getElementById("msg").innerText="✅ Đã gửi thẻ, chờ admin duyệt"
 
 loadHistory()
 
@@ -189,11 +185,14 @@ let box=document.getElementById("history")
 
 box.innerHTML=""
 
-history.reverse().forEach(h=>{
+history.slice().reverse().forEach(h=>{
+
+let status=h.status||"Chờ duyệt"
 
 box.innerHTML+=`
 <div class="item">
 👤 ${h.user} | ${h.type} | ${h.menhgia}đ <br>
+📌 Trạng thái: ${status} <br>
 ⏱ ${h.time}
 </div>
 `
@@ -205,6 +204,5 @@ box.innerHTML+=`
 loadHistory()
 
 </script>
-
 </body>
 </html>
