@@ -100,9 +100,8 @@ text-decoration:none;
 
 <button class="gmail" onclick="sendCode()">Gửi mã xác minh</button>
 
-<input id="code" placeholder="Nhập mã OTP">
-
-<button class="verify" onclick="verify()">Xác minh Gmail</button>
+<input id="code" placeholder="Nhập mã OTP" style="display:none">
+<button class="verify" onclick="verify()" style="display:none">Xác minh Gmail</button>
 
 <p id="msg" class="msg"></p>
 
@@ -117,21 +116,29 @@ emailjs.init("kcbIQHJFwC1v2brL3")
 })();
 
 let otp=""
+let verified=false
 
 function register(){
 
 let user=document.getElementById("user").value
 let pass=document.getElementById("pass").value
+let gmail=document.getElementById("gmail").value
 
-if(user=="" || pass==""){
+if(user=="" || pass=="" || gmail==""){
 msg("⚠️ Nhập đầy đủ thông tin")
+return
+}
+
+if(!verified){
+msg("⚠️ Bạn phải xác minh Gmail trước")
 return
 }
 
 localStorage.setItem("tk",user)
 localStorage.setItem("mk",pass)
+localStorage.setItem("gmail",gmail)
 
-msg("✅ Đăng ký tài khoản thành công")
+msg("✅ Đăng ký thành công")
 
 }
 
@@ -151,7 +158,10 @@ email:gmail,
 code:otp
 }).then(function(){
 
-msg("📧 Đã gửi mã xác minh")
+msg("📧 Đã gửi mã OTP đến Gmail")
+
+document.getElementById("code").style.display="block"
+document.querySelector(".verify").style.display="block"
 
 })
 
@@ -163,13 +173,13 @@ let code=document.getElementById("code").value
 
 if(code==otp){
 
-localStorage.setItem("gmail_verified","true")
+verified=true
 
 msg("✅ Gmail xác minh thành công")
 
 }else{
 
-msg("❌ Sai mã xác minh")
+msg("❌ Sai mã OTP")
 
 }
 
@@ -180,6 +190,5 @@ document.getElementById("msg").innerText=t
 }
 
 </script>
-
 </body>
 </html>
