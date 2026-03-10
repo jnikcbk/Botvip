@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nạp Xu</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:white;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:40px 20px;
+}
+
+.box{
+background:#111827;
+padding:25px;
+border-radius:12px;
+margin-bottom:30px;
+box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+
+select,input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:none;
+border-radius:8px;
+background:#1f2937;
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+.msg{
+margin-top:12px;
+color:#22c55e;
+}
+
+.history{
+margin-top:20px;
+}
+
+.item{
+background:#020617;
+padding:10px;
+border-radius:6px;
+margin-bottom:8px;
+font-size:14px;
+}
+
+.back{
+display:inline-block;
+margin-top:20px;
+padding:10px 20px;
+background:#2563eb;
+border-radius:8px;
+text-decoration:none;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="box">
+
+<h1>💳 Nạp Xu</h1>
+
+<select id="type">
+<option>Viettel</option>
+<option>Vina</option>
+<option>Zing</option>
+</select>
+
+<select id="menhgia">
+<option value="10000">10.000</option>
+<option value="20000">20.000</option>
+<option value="50000">50.000</option>
+<option value="100000">100.000</option>
+<option value="200000">200.000</option>
+<option value="500000">500.000</option>
+</select>
+
+<input id="seri" placeholder="Số seri">
+<input id="code" placeholder="Mã thẻ">
+
+<button onclick="nap()">Nạp thẻ</button>
+
+<p id="msg" class="msg"></p>
+
+</div>
+
+
+<div class="box">
+
+<h2>📜 Lịch sử nạp</h2>
+
+<div id="history" class="history"></div>
+
+</div>
+
+<a class="back" href="index.html">⬅ Quay lại</a>
+
+</div>
+
+<script>
+
+function nap(){
+
+if(localStorage.getItem("login")!=="true"){
+document.getElementById("msg").innerText="⚠️ Bạn cần đăng nhập"
+return
+}
+
+let user = localStorage.getItem("tk")
+
+let type=document.getElementById("type").value
+let menhgia=parseInt(document.getElementById("menhgia").value)
+let seri=document.getElementById("seri").value
+let code=document.getElementById("code").value
+
+if(seri==""||code==""){
+document.getElementById("msg").innerText="❌ Nhập đầy đủ thông tin"
+return
+}
+
+let xu=parseInt(localStorage.getItem("xu"))||0
+let nhanXu=menhgia*10
+xu+=nhanXu
+localStorage.setItem("xu",xu)
+
+let time=new Date().toLocaleString()
+
+let log={
+user:user,
+type:type,
+menhgia:menhgia,
+seri:seri,
+code:code,
+time:time
+}
+
+let history=JSON.parse(localStorage.getItem("napHistory"))||[]
+history.push(log)
+
+localStorage.setItem("napHistory",JSON.stringify(history))
+
+document.getElementById("msg").innerText="✅ Nạp thành công "+nhanXu+" xu"
+
+loadHistory()
+
+}
+
+function loadHistory(){
+
+let history=JSON.parse(localStorage.getItem("napHistory"))||[]
+let box=document.getElementById("history")
+
+box.innerHTML=""
+
+history.reverse().forEach(h=>{
+
+box.innerHTML+=`
+<div class="item">
+👤 ${h.user} | ${h.type} | ${h.menhgia}đ <br>
+⏱ ${h.time}
+</div>
+`
+
+})
+
+}
+
+loadHistory()
+
+</script>
+
+</body>
+</html>
