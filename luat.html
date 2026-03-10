@@ -9,8 +9,8 @@
 
 body{
 margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#020617,#0f172a);
+font-family:Arial, Helvetica, sans-serif;
+background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
 color:white;
 }
 
@@ -32,9 +32,15 @@ padding:40px 20px;
 .rule-box{
 background:#111827;
 padding:25px;
-border-radius:12px;
+border-radius:14px;
 margin-bottom:20px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
+box-shadow:0 10px 30px rgba(0,0,0,0.6);
+border:1px solid rgba(255,255,255,0.05);
+transition:0.25s;
+}
+
+.rule-box:hover{
+transform:translateY(-3px);
 }
 
 .rule-box h2{
@@ -46,9 +52,36 @@ margin-bottom:10px;
 line-height:1.8;
 }
 
-.back{
+.btn{
 display:inline-block;
 margin-top:20px;
+padding:12px 22px;
+background:linear-gradient(90deg,#2563eb,#3b82f6);
+color:white;
+text-decoration:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+border:none;
+}
+
+.btn:hover{
+box-shadow:0 6px 20px rgba(37,99,235,0.6);
+}
+
+.ip-box{
+margin-top:15px;
+background:#0f172a;
+padding:15px;
+border-radius:10px;
+display:none;
+font-size:16px;
+border:1px solid #2563eb;
+}
+
+.back{
+display:inline-block;
+margin-top:25px;
 padding:10px 20px;
 background:#2563eb;
 color:white;
@@ -74,25 +107,25 @@ background:#1d4ed8;
 <div class="rule-box">
 <h2>1. Quy định chung</h2>
 <ul>
-<li>Tôn trọng tất cả người chơi trong server.</li>
-<li>Không sử dụng ngôn từ xúc phạm, phân biệt hay quấy rối.</li>
-<li>Tuân theo hướng dẫn của Admin và Staff.</li>
+<li>Tôn trọng tất cả người chơi.</li>
+<li>Không xúc phạm, gây war chat.</li>
+<li>Tuân theo hướng dẫn của Staff.</li>
 </ul>
 </div>
 
 <div class="rule-box">
 <h2>2. Hack / Cheat</h2>
 <ul>
-<li>Cấm sử dụng hack client.</li>
+<li>Cấm hack client.</li>
 <li>Cấm Xray, fly hack, speed hack.</li>
-<li>Phát hiện sẽ bị ban vĩnh viễn.</li>
+<li>Phát hiện sẽ ban vĩnh viễn.</li>
 </ul>
 </div>
 
 <div class="rule-box">
 <h2>3. Spam / Quảng cáo</h2>
 <ul>
-<li>Không spam chat nhiều lần.</li>
+<li>Không spam chat.</li>
 <li>Cấm quảng cáo server khác.</li>
 <li>Không gửi link độc hại.</li>
 </ul>
@@ -103,7 +136,7 @@ background:#1d4ed8;
 <ul>
 <li>Không grief nhà người khác.</li>
 <li>Không phá map public.</li>
-<li>Không đặt bẫy gây hại người chơi.</li>
+<li>Không đặt bẫy gây hại.</li>
 </ul>
 </div>
 
@@ -118,9 +151,35 @@ background:#1d4ed8;
 </ul>
 </div>
 
+<!-- khu vực lấy IP -->
+<div class="rule-box">
+<h2>🌐 Tham gia Server</h2>
+
+<button class="btn" id="getip" onclick="showIP()">Lấy IP Server</button>
+
+<div class="ip-box" id="ipbox">
+IP Server: <b>180.93.103.140--/--26666</b>
+</div>
+
+</div>
+
 <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
 
 </div>
+
+<script>
+
+let login = localStorage.getItem("login")
+
+if(login !== "true"){
+document.getElementById("getip").style.display="none"
+}
+
+function showIP(){
+document.getElementById("ipbox").style.display="block"
+}
+
+</script>
 
 </body>
 </html>
