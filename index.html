@@ -12,29 +12,71 @@
     --neon-pink: #ff00ff;
   }
   body {
-    margin:0;
-    font-family:'Roboto', sans-serif;
-    background:linear-gradient(-45deg, #0a0015, #1a0033, #000033, #0a0015);
-    background-size:400% 400%;
-    animation:gradient 18s ease infinite;
-    color:white;
-    min-height:100vh;
-    overflow-x:hidden;
-  }
-  @keyframes gradient {
-    0% {background-position:0% 50%;}
-    50% {background-position:100% 50%;}
-    100% {background-position:0% 50%;}
-  }
-  body::before {
-    content:'';
-    position:fixed;
-    inset:0;
-    background:radial-gradient(circle at 30% 20%, rgba(0,255,255,0.08) 0%, transparent 60%),
-               radial-gradient(circle at 70% 80%, rgba(157,0,255,0.08) 0%, transparent 60%);
-    pointer-events:none;
-    z-index:-1;
-  }
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background: #0a0015; /* Màu nền tối galaxy */
+}
+
+/* Layer galaxy nền vũ trụ (animated stars + nebula) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(157,0,255,0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(0,255,255,0.12) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(255,0,255,0.08) 0%, transparent 60%);
+  z-index: -2;
+  animation: nebulaMove 120s linear infinite;
+}
+
+/* Sao rơi + nhấp nháy neon galaxy */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    /* Sao nhỏ nhấp nháy */
+    repeating-linear-gradient(transparent 0%, transparent 2%, rgba(255,255,255,0.03) 2.1%, transparent 2.2%),
+    repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(255,255,255,0.02) 2.1%, transparent 2.2%);
+  background-size: 300px 300px, 400px 400px;
+  opacity: 0.6;
+  animation: starsTwinkle 8s infinite alternate, starsMove 200s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Animation nebula chậm di chuyển */
+@keyframes nebulaMove {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(8%, 5%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Sao nhấp nháy + di chuyển chậm */
+@keyframes starsTwinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes starsMove {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 300px 300px, 400px 400px; }
+}
+
+/* Overlay neon glow nhẹ (tăng cảm giác cyberpunk) */
+body::after::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0,255,255,0.05) 30%, rgba(157,0,255,0.05) 70%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+}
   header {
     text-align:center;
     padding:50px 20px 30px;
@@ -71,6 +113,20 @@
     background:linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
     transform:scale(1.08);
     box-shadow:0 0 25px rgba(0,255,255,0.6);
+  }
+  .admin-btn {
+    display:none;
+    background:linear-gradient(45deg, #ef4444, #b91c1c);
+    padding:10px 22px;
+    border-radius:50px;
+    color:white;
+    font-weight:bold;
+    text-decoration:none;
+    transition:0.4s;
+  }
+  .admin-btn:hover {
+    transform:scale(1.08);
+    box-shadow:0 0 25px rgba(239,68,68,0.6);
   }
   .container {
     padding:60px 20px;
@@ -195,7 +251,11 @@
   <a href="shop.html">Shop</a>
   <a href="nap-xu.html">Nạp xu</a>
   <a href="luat.html">Luật SV</a>
-  <a href="lichsudamua.html">Lịch sử mua</a>  
+  <a href="lichsudamua.html">Lịch sử mua</a>
+  <!-- Nút Admin Panel - Chỉ admin thấy -->
+  <a href="admin.html" class="admin-btn" id="adminLink">Admin Panel</a>
+  <!-- Nút Tất cả member - Chỉ admin thấy -->
+  <a href="tatcammber.html" class="admin-btn" id="memberListLink">Tất cả member</a>
 </nav>
 
 <div class="container">
@@ -230,7 +290,7 @@
   IP Server: <b>180.93.103.140:26666</b><br>
   <img src="owner.png" alt="Owner Avatar">
   <br><br>
-  Discord: <a href="#" style="color:#60a5fa;">https://discord.gg/8aHEPvZK</a> | Facebook: <a href="#" style="color:#60a5fa;">mai có</a>
+  Discord: <a href="https://discord.gg/8aHEPvZK" style="color:#60a5fa;">https://discord.gg/8aHEPvZK</a> | Facebook: <a href="#" style="color:#60a5fa;">mai có</a>
 </footer>
 
 <script>
@@ -239,15 +299,32 @@ function updateUserInfo() {
   const user = localStorage.getItem("tk");
   const userBox = document.getElementById("userBox");
   const logoutBtn = document.getElementById("logoutBtn");
+  const adminLink = document.getElementById("adminLink");
+  const memberListLink = document.getElementById("memberListLink");
 
   if (login === "true" && user) {
     const xuKey = `xu_${user}`;
     const xu = parseInt(localStorage.getItem(xuKey)) || 0;
     userBox.innerHTML = `👤 <b>${user}</b> | 💰 <span style="color:#fbbf24;">${xu.toLocaleString('vi-VN')} xu</span>`;
     logoutBtn.style.display = "inline-block";
+
+    // Kiểm tra quyền admin để hiện 2 nút
+    const role = localStorage.getItem("role");
+    const isAdmin = role === "admin" || 
+                    ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"].includes(user.toLowerCase());
+
+    if (isAdmin) {
+      adminLink.style.display = "inline-block";
+      memberListLink.style.display = "inline-block";
+    } else {
+      adminLink.style.display = "none";
+      memberListLink.style.display = "none";
+    }
   } else {
     userBox.innerHTML = "⚠️ Bạn chưa đăng nhập";
     logoutBtn.style.display = "none";
+    document.getElementById("adminLink").style.display = "none";
+    document.getElementById("memberListLink").style.display = "none";
   }
 }
 
@@ -255,6 +332,7 @@ function logout() {
   if (confirm("Bạn chắc chắn muốn đăng xuất?")) {
     localStorage.removeItem("login");
     localStorage.removeItem("role");
+    localStorage.removeItem("username");
     location.reload();
   }
 }
