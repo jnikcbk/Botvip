@@ -191,8 +191,15 @@ function logout(){
 localStorage.removeItem("login")
 location.reload()
 }
+  
+let user=localStorage.getItem("tk")
+let xu=parseInt(localStorage.getItem("xu_"+user))||0
 
+document.getElementById("userBox").innerHTML=
+"👤 "+user+" | 💰 "+xu+" xu"
+  
 </script>
+
 
 </body>
 </html>
