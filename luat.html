@@ -3,182 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luật Server</title>
-
+<title>Luật Server - KaizenMC</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 <style>
-
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
-color:white;
-}
-
-header{
-background:#020617;
-padding:18px;
-text-align:center;
-font-size:24px;
-font-weight:bold;
-border-bottom:2px solid #2563eb;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:40px 20px;
-}
-
-.rule-box{
-background:#111827;
-padding:25px;
-border-radius:14px;
-margin-bottom:20px;
-box-shadow:0 10px 30px rgba(0,0,0,0.6);
-border:1px solid rgba(255,255,255,0.05);
-transition:0.25s;
-}
-
-.rule-box:hover{
-transform:translateY(-3px);
-}
-
-.rule-box h2{
-color:#60a5fa;
-margin-bottom:10px;
-}
-
-.rule-box ul{
-line-height:1.8;
-}
-
-.btn{
-display:inline-block;
-margin-top:20px;
-padding:12px 22px;
-background:linear-gradient(90deg,#2563eb,#3b82f6);
-color:white;
-text-decoration:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-border:none;
-}
-
-.btn:hover{
-box-shadow:0 6px 20px rgba(37,99,235,0.6);
-}
-
-.ip-box{
-margin-top:15px;
-background:#0f172a;
-padding:15px;
-border-radius:10px;
-display:none;
-font-size:16px;
-border:1px solid #2563eb;
-}
-
-.back{
-display:inline-block;
-margin-top:25px;
-padding:10px 20px;
-background:#2563eb;
-color:white;
-text-decoration:none;
-border-radius:8px;
-}
-
-.back:hover{
-background:#1d4ed8;
-}
-
+  :root {
+    --neon-blue: #00ffff;
+    --neon-purple: #9d00ff;
+    --neon-pink: #ff00ff;
+    --dark: #0a0015;
+  }
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(-45deg, #0a0015, #1a0033, #000033, #0a0015);
+    background-size: 400% 400%;
+    animation: gradient 18s ease infinite;
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(0,255,255,0.08) 0%, transparent 60%),
+                radial-gradient(circle at 70% 80%, rgba(157,0,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  header {
+    background: rgba(10,0,21,0.9);
+    padding: 40px 20px 25px;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)) 1;
+    box-shadow: 0 10px 40px rgba(0,255,255,0.15);
+  }
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    margin: 0;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 25px rgba(157,0,255,0.7);
+  }
+  .container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 50px 20px;
+  }
+  .rule-box {
+    background: rgba(20,10,40,0.65);
+    backdrop-filter: blur(12px);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,255,255,0.1);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .rule-box::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: conic-gradient(from 0deg, transparent, var(--neon-blue), var(--neon-purple), transparent);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+  .rule-box:hover::before { opacity: 0.4; }
+  .rule-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 60px rgba(157,0,255,0.4), 0 0 50px rgba(0,255,255,0.3);
+    border-color: var(--neon-blue);
+  }
+  .rule-box h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: var(--neon-blue);
+    text-shadow: 0 0 15px var(--neon-blue);
+  }
+  .rule-box ul {
+    list-style: none;
+    padding: 0;
+    line-height: 1.9;
+    font-size: 1.1rem;
+  }
+  .rule-box li {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+  }
+  .rule-box li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: var(--neon-purple);
+    text-shadow: 0 0 10px var(--neon-purple);
+  }
+  .ip-section {
+    margin-top: 40px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 14px 40px;
+    background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(157,0,255,0.6);
+    transition: all 0.4s;
+  }
+  .btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 50px rgba(0,255,255,0.8);
+  }
+  .ip-box {
+    margin-top: 25px;
+    background: rgba(10,0,21,0.8);
+    backdrop-filter: blur(15px);
+    border: 2px solid var(--neon-blue);
+    border-radius: 16px;
+    padding: 25px;
+    font-size: 1.4rem;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(0,255,255,0.5);
+    display: none;
+    animation: glow 2s infinite alternate;
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 20px rgba(0,255,255,0.4); }
+    to { box-shadow: 0 0 60px rgba(0,255,255,0.8); }
+  }
+  .ip-box b {
+    color: var(--neon-pink);
+    font-size: 1.6rem;
+  }
+  .copy-btn {
+    margin-top: 15px;
+    padding: 10px 25px;
+    background: var(--neon-purple);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .copy-btn:hover { background: var(--neon-blue); }
+  .back {
+    display: inline-block;
+    margin-top: 50px;
+    padding: 14px 35px;
+    background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    box-shadow: 0 0 30px rgba(0,255,255,0.5);
+  }
+  .back:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 60px rgba(157,0,255,0.7);
+  }
 </style>
 </head>
-
 <body>
 
 <header>
-📜 Luật Server KaizenMC
+  <h1>📜 LUẬT SERVER KAIZENMC</h1>
 </header>
 
 <div class="container">
 
-<div class="rule-box">
-<h2>1. Quy định chung</h2>
-<ul>
-<li>Tôn trọng tất cả người chơi.</li>
-<li>Không xúc phạm, gây war chat.</li>
-<li>Tuân theo hướng dẫn của Staff.</li>
-</ul>
-</div>
+  <div class="rule-box">
+    <h2>1. Quy định chung</h2>
+    <ul>
+      <li>Tôn trọng tất cả người chơi, không phân biệt.</li>
+      <li>Không xúc phạm, gây war chat hoặc toxic.</li>
+      <li>Tuân thủ hướng dẫn của Staff/Admin.</li>
+      <li>Không chia sẻ thông tin cá nhân của người khác.</li>
+    </ul>
+  </div>
 
-<div class="rule-box">
-<h2>2. Hack / Cheat</h2>
-<ul>
-<li>Cấm hack client.</li>
-<li>Cấm Xray, fly hack, speed hack.</li>
-<li>Phát hiện sẽ ban vĩnh viễn.</li>
-</ul>
-</div>
+  <div class="rule-box">
+    <h2>2. Hack / Cheat / Mod cấm</h2>
+    <ul>
+      <li>Cấm mọi loại hack client (Xray, fly, speed, kill aura...).</li>
+      <li>Cấm sử dụng mod lợi thế không được phép.</li>
+      <li>Phát hiện → Ban vĩnh viễn + xóa dữ liệu.</li>
+    </ul>
+  </div>
 
-<div class="rule-box">
-<h2>3. Spam / Quảng cáo</h2>
-<ul>
-<li>Không spam chat.</li>
-<li>Cấm quảng cáo server khác.</li>
-<li>Không gửi link độc hại.</li>
-</ul>
-</div>
+  <div class="rule-box">
+    <h2>3. Spam / Quảng cáo / Link độc</h2>
+    <ul>
+      <li>Không spam chat, macro chat, flood.</li>
+      <li>Cấm quảng cáo server khác hoặc sản phẩm ngoài.</li>
+      <li>Không gửi link lừa đảo, phishing, virus.</li>
+    </ul>
+  </div>
 
-<div class="rule-box">
-<h2>4. Phá hoại</h2>
-<ul>
-<li>Không grief nhà người khác.</li>
-<li>Không phá map public.</li>
-<li>Không đặt bẫy gây hại.</li>
-</ul>
-</div>
+  <div class="rule-box">
+    <h2>4. Phá hoại / Grief</h2>
+    <ul>
+      <li>Không grief nhà, farm, build của người khác.</li>
+      <li>Không phá hoại khu vực public/spawn.</li>
+      <li>Không đặt bẫy TNT/redstone gây hại lớn.</li>
+    </ul>
+  </div>
 
-<div class="rule-box">
-<h2>5. Hình phạt</h2>
-<ul>
-<li>Cảnh cáo.</li>
-<li>Mute chat.</li>
-<li>Kick khỏi server.</li>
-<li>Ban tạm thời.</li>
-<li>Ban vĩnh viễn.</li>
-</ul>
-</div>
+  <div class="rule-box">
+    <h2>5. Hình phạt & Quy trình</h2>
+    <ul>
+      <li>Cảnh cáo → Mute chat (1-7 ngày).</li>
+      <li>Kick → Ban tạm thời (3-30 ngày).</li>
+      <li>Ban vĩnh viễn (không kháng cáo nếu vi phạm nặng).</li>
+      <li>Staff có quyền quyết định cuối cùng.</li>
+    </ul>
+  </div>
 
-<!-- khu vực lấy IP -->
-<div class="rule-box">
-<h2>🌐 Tham gia Server</h2>
+  <div class="rule-box ip-section">
+    <h2>🌐 Tham gia Server KaizenMC</h2>
+    <button class="btn" id="getip" onclick="showIP()">LẤY IP SERVER</button>
+    <div class="ip-box" id="ipbox">
+      IP Server: <b>180.93.103.140:26666</b><br>
+      <small>(Copy và paste vào Minecraft Multiplayer)</small>
+      <br><br>
+      <button class="copy-btn" onclick="copyIP()">COPY IP</button>
+    </div>
+  </div>
 
-<button class="btn" id="getip" onclick="showIP()">Lấy IP Server</button>
-
-<div class="ip-box" id="ipbox">
-IP Server: <b>180.93.103.140--/--26666</b>
-</div>
-
-</div>
-
-<a class="back" href="index.html">⬅ Quay lại trang chủ</a>
+  <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
 
 </div>
 
 <script>
-
-let login = localStorage.getItem("login")
-
-if(login !== "true"){
-document.getElementById("getip").style.display="none"
+const login = localStorage.getItem("login");
+if (login !== "true") {
+  document.getElementById("getip").style.display = "none";
 }
 
-function showIP(){
-document.getElementById("ipbox").style.display="block"
+function showIP() {
+  document.getElementById("ipbox").style.display = "block";
 }
 
+function copyIP() {
+  navigator.clipboard.writeText("180.93.103.140:26666")
+    .then(() => alert("Đã copy IP: 180.93.103.140:26666 ✓"))
+    .catch(() => alert("Copy thất bại, copy thủ công nhé!"));
+}
 </script>
 
 </body>
