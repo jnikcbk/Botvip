@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng ký</title>
 
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <style>
 
 body{
@@ -22,7 +24,7 @@ color:white;
 background:#111827;
 padding:40px;
 border-radius:14px;
-width:330px;
+width:350px;
 text-align:center;
 box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
@@ -34,16 +36,12 @@ margin-bottom:20px;
 input{
 width:100%;
 padding:12px;
-margin:10px 0;
+margin:8px 0;
 border:none;
 border-radius:8px;
 background:#1f2937;
 color:white;
 outline:none;
-}
-
-input:focus{
-background:#374151;
 }
 
 button{
@@ -56,12 +54,18 @@ background:#2563eb;
 color:white;
 font-weight:bold;
 cursor:pointer;
-transition:0.25s;
 }
 
 button:hover{
 background:#1d4ed8;
-transform:scale(1.03);
+}
+
+.gmail{
+background:#ea4335;
+}
+
+.verify{
+background:#22c55e;
 }
 
 .msg{
@@ -76,10 +80,6 @@ color:#60a5fa;
 text-decoration:none;
 }
 
-a:hover{
-text-decoration:underline;
-}
-
 </style>
 </head>
 
@@ -87,13 +87,22 @@ text-decoration:underline;
 
 <div class="box">
 
-<h1>📝 Đăng ký tài khoản</h1>
+<h1>📝 Đăng ký KaizenMC</h1>
 
 <input id="user" placeholder="Tên tài khoản">
-
 <input id="pass" type="password" placeholder="Mật khẩu">
 
-<button onclick="register()">Đăng ký</button>
+<button onclick="register()">Đăng ký tài khoản</button>
+
+<hr style="margin:20px 0;opacity:0.2;">
+
+<input id="gmail" placeholder="Nhập Gmail">
+
+<button class="gmail" onclick="sendCode()">Gửi mã xác minh</button>
+
+<input id="code" placeholder="Nhập mã OTP">
+
+<button class="verify" onclick="verify()">Xác minh Gmail</button>
 
 <p id="msg" class="msg"></p>
 
@@ -103,21 +112,71 @@ text-decoration:underline;
 
 <script>
 
+(function(){
+emailjs.init("kcbIQHJFwC1v2brL3")
+})();
+
+let otp=""
+
 function register(){
 
 let user=document.getElementById("user").value
 let pass=document.getElementById("pass").value
 
 if(user=="" || pass==""){
-document.getElementById("msg").innerText="⚠️ Nhập đầy đủ thông tin"
+msg("⚠️ Nhập đầy đủ thông tin")
 return
 }
 
 localStorage.setItem("tk",user)
 localStorage.setItem("mk",pass)
 
-document.getElementById("msg").innerText="✅ Đăng ký thành công"
+msg("✅ Đăng ký tài khoản thành công")
 
+}
+
+function sendCode(){
+
+let gmail=document.getElementById("gmail").value
+
+if(gmail==""){
+msg("⚠️ Nhập Gmail")
+return
+}
+
+otp=Math.floor(100000+Math.random()*900000)
+
+emailjs.send("service_uhcqzpe","template_etl5hyj",{
+email:gmail,
+code:otp
+}).then(function(){
+
+msg("📧 Đã gửi mã xác minh")
+
+})
+
+}
+
+function verify(){
+
+let code=document.getElementById("code").value
+
+if(code==otp){
+
+localStorage.setItem("gmail_verified","true")
+
+msg("✅ Gmail xác minh thành công")
+
+}else{
+
+msg("❌ Sai mã xác minh")
+
+}
+
+}
+
+function msg(t){
+document.getElementById("msg").innerText=t
 }
 
 </script>
