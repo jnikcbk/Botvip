@@ -3,198 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng nhập</title>
-
+<title>Đăng nhập - KaizenMC</title>
 <style>
-
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.box{
-background:rgba(17,24,39,0.9);
-padding:45px;
-border-radius:16px;
-width:350px;
-text-align:center;
-box-shadow:0 10px 40px rgba(0,0,0,0.7);
-backdrop-filter:blur(8px);
-border:1px solid rgba(255,255,255,0.05);
-}
-
-.logo{
-font-size:34px;
-margin-bottom:8px;
-}
-
-h1{
-margin:5px 0 25px 0;
-font-size:26px;
-}
-
-.input-group{
-position:relative;
-margin-bottom:12px;
-}
-
-input{
-width:100%;
-padding:12px 12px 12px 38px;
-border:none;
-border-radius:8px;
-background:#1f2937;
-color:white;
-outline:none;
-font-size:14px;
-transition:0.25s;
-}
-
-input:focus{
-background:#374151;
-box-shadow:0 0 0 2px #2563eb;
-}
-
-.icon{
-position:absolute;
-left:12px;
-top:50%;
-transform:translateY(-50%);
-opacity:0.6;
-}
-
-button{
-width:100%;
-padding:13px;
-margin-top:12px;
-border:none;
-border-radius:8px;
-background:linear-gradient(90deg,#2563eb,#3b82f6);
-color:white;
-font-weight:bold;
-cursor:pointer;
-transition:0.25s;
-font-size:15px;
-}
-
-button:hover{
-transform:translateY(-2px);
-box-shadow:0 6px 20px rgba(37,99,235,0.6);
-}
-
-.msg{
-margin-top:12px;
-color:#f87171;
-font-size:14px;
-}
-
-a{
-display:block;
-margin-top:18px;
-color:#60a5fa;
-text-decoration:none;
-font-size:14px;
-}
-
-a:hover{
-text-decoration:underline;
-}
-
-.footer{
-margin-top:20px;
-font-size:12px;
-color:#9ca3af;
-}
-
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #020617, #0f172a, #1e293b);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    overflow: hidden;
+  }
+  .box {
+    background: rgba(17, 24, 39, 0.92);
+    padding: 50px 40px;
+    border-radius: 20px;
+    width: 380px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(37,99,235,0.25);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(37,99,235,0.3);
+    animation: fadeIn 0.8s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .logo {
+    font-size: 48px;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite alternate;
+  }
+  @keyframes pulse { to { transform: scale(1.05); } }
+  h1 {
+    margin: 0 0 30px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #60a5fa;
+    text-shadow: 0 0 10px rgba(96,165,250,0.5);
+  }
+  .input-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 14px 14px 14px 45px;
+    border: none;
+    border-radius: 10px;
+    background: #1f2937;
+    color: white;
+    font-size: 15px;
+    transition: all 0.3s;
+  }
+  input:focus {
+    background: #374151;
+    box-shadow: 0 0 0 3px #2563eb, 0 0 15px rgba(37,99,235,0.5);
+    outline: none;
+  }
+  .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .eye {
+    right: 15px;
+    left: auto;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+    background-size: 200% 100%;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.4s;
+  }
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(59,130,246,0.6);
+    background-position: right center;
+  }
+  .msg {
+    margin-top: 15px;
+    color: #f87171;
+    font-size: 14px;
+    min-height: 20px;
+  }
+  .success { color: #22c55e !important; }
+  a {
+    display: block;
+    margin-top: 20px;
+    color: #60a5fa;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  a:hover { text-decoration: underline; color: #93c5fd; }
+  .footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #6b7280;
+  }
 </style>
 </head>
-
 <body>
 
 <div class="box">
+  <div class="logo">🌍</div>
+  <h1>KaizenMC Login</h1>
 
-<div class="logo">🌍</div>
-<h1>KaizenMC Login</h1>
+  <div class="input-group">
+    <span class="icon">👤</span>
+    <input id="user" placeholder="Tên tài khoản" autocomplete="username">
+  </div>
 
-<div class="input-group">
-<span class="icon">👤</span>
-<input id="user" placeholder="Tên tài khoản">
+  <div class="input-group">
+    <span class="icon">🔒</span>
+    <input id="pass" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+    <span class="eye icon" onclick="togglePass()">👁️</span>
+  </div>
+
+  <button onclick="login()">Đăng nhập</button>
+
+  <p id="msg" class="msg"></p>
+
+  <a href="dang-ky.html">Chưa có tài khoản? Đăng ký ngay</a>
+
+  <div class="footer">
+    © 2026 KaizenMC Server • Lao Cai, VN
+  </div>
 </div>
-
-<div class="input-group">
-<span class="icon">🔒</span>
-<input id="pass" type="password" placeholder="Mật khẩu">
-</div>
-
-<button onclick="login()">Đăng nhập</button>
-
-<p id="msg" class="msg"></p>
-
-<a href="dang-ky.html">Chưa có tài khoản? Đăng ký</a>
-
-<div class="footer">
-© 2026 KaizenMC Server
-</div>
-
-</div>
-
-
 
 <script>
+// Danh sách admin mặc định (giữ nguyên các tk bạn đã tạo)
+const defaultAdmins = [
+  { user: "kaizenadmin", pass: "123456789@" },
+  { user: "kaizenadmindz", pass: "123456789@" },
+  { user: "minhmeodz@!", pass: "123456789@" }
+];
 
-// tạo admin mặc định
-if(!localStorage.getItem("admin_user")){
-localStorage.setItem("admin_user","kaizenadmin")
-localStorage.setItem("admin_pass","123456789@")
-localStorage.setItem("admin_user","kaizenadmindz")
-localStorage.setItem("admin_pass","123456789@")
-localStorage.setItem("admin_user","minhmeodz@!")
-localStorage.setItem("admin_pass","123456789@")
+// Khởi tạo admin nếu chưa có
+if (!localStorage.getItem("admins")) {
+  localStorage.setItem("admins", JSON.stringify(defaultAdmins));
 }
 
-function login(){
-
-let user=document.getElementById("user").value
-let pass=document.getElementById("pass").value
-
-let tk=localStorage.getItem("tk")
-let mk=localStorage.getItem("mk")
-
-let adminUser=localStorage.getItem("admin_user")
-let adminPass=localStorage.getItem("admin_pass")
-
-// đăng nhập admin
-if(user===adminUser && pass===adminPass){
-
-localStorage.setItem("login","true")
-localStorage.setItem("role","admin")
-
-window.location.href="admin.html"
-return
-
+// Toggle hiển thị mật khẩu
+function togglePass() {
+  const passInput = document.getElementById("pass");
+  const eye = document.querySelector(".eye");
+  if (passInput.type === "password") {
+    passInput.type = "text";
+    eye.innerText = "🙈";
+  } else {
+    passInput.type = "password";
+    eye.innerText = "👁️";
+  }
 }
 
-// đăng nhập user thường
-if(user===tk && pass===mk){
+function login() {
+  const msg = document.getElementById("msg");
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value;
 
-localStorage.setItem("login","true")
-localStorage.setItem("role","member")
+  if (!user || !pass) {
+    msg.className = "msg";
+    msg.innerText = "⚠️ Vui lòng nhập đầy đủ thông tin!";
+    return;
+  }
 
-window.location.href="index.html"
-return
+  msg.innerText = "Đang đăng nhập...";
+  msg.className = "msg success";
 
+  // Lấy danh sách admin
+  const admins = JSON.parse(localStorage.getItem("admins")) || [];
+
+  // Check admin
+  const isAdmin = admins.some(admin => admin.user === user && admin.pass === pass);
+  if (isAdmin) {
+    localStorage.setItem("login", "true");
+    localStorage.setItem("role", "admin");
+    localStorage.setItem("username", user); // Lưu tên admin để hiển thị sau
+    window.location.href = "admin.html";
+    return;
+  }
+
+  // Check user thường (từ đăng ký)
+  const registeredUser = localStorage.getItem("tk");
+  const registeredPass = localStorage.getItem("mk");
+
+  if (registeredUser && user === registeredUser && pass === registeredPass) {
+    localStorage.setItem("login", "true");
+    localStorage.setItem("role", "member");
+    localStorage.setItem("username", user);
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Sai thông tin
+  msg.className = "msg";
+  msg.innerText = "❌ Sai tên tài khoản hoặc mật khẩu!";
 }
 
-document.getElementById("msg").innerText="❌ Sai tài khoản hoặc mật khẩu"
-
+// Nếu đã login thì tự động redirect
+if (localStorage.getItem("login") === "true") {
+  const role = localStorage.getItem("role");
+  if (role === "admin") {
+    window.location.href = "admin.html";
+  } else {
+    window.location.href = "index.html";
+  }
 }
-
 </script>
+
 </body>
 </html>
