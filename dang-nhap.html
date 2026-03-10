@@ -144,34 +144,17 @@ color:#9ca3af;
 
 </div>
 
+
+
 <script>
 
-function login(){
-
-let user=document.getElementById("user").value
-let pass=document.getElementById("pass").value
-
-let tk=localStorage.getItem("tk")
-let mk=localStorage.getItem("mk")
-
-if(user==tk && pass==mk){
-
-localStorage.setItem("login","true")
-window.location.href="index.html"
-
-}else{
-
-document.getElementById("msg").innerText="❌ Sai tài khoản hoặc mật khẩu"
-
-}
-
-}
-
-  // Tạo tài khoản admin mặc định nếu chưa có
+// tạo admin mặc định
 if(!localStorage.getItem("admin_user")){
 localStorage.setItem("admin_user","kaizenadmin")
 localStorage.setItem("admin_pass","123456789@")
 localStorage.setItem("admin_user","kaizenadmindz")
+localStorage.setItem("admin_pass","123456789@")
+localStorage.setItem("admin_user","minhmeodz@!")
 localStorage.setItem("admin_pass","123456789@")
 }
 
@@ -186,15 +169,32 @@ let mk=localStorage.getItem("mk")
 let adminUser=localStorage.getItem("admin_user")
 let adminPass=localStorage.getItem("admin_pass")
 
-// kiểm tra admin
+// đăng nhập admin
 if(user===adminUser && pass===adminPass){
+
 localStorage.setItem("login","true")
 localStorage.setItem("role","admin")
+
 window.location.href="admin.html"
 return
+
+}
+
+// đăng nhập user thường
+if(user===tk && pass===mk){
+
+localStorage.setItem("login","true")
+localStorage.setItem("role","member")
+
+window.location.href="index.html"
+return
+
+}
+
+document.getElementById("msg").innerText="❌ Sai tài khoản hoặc mật khẩu"
+
 }
 
 </script>
-
 </body>
 </html>
