@@ -2,122 +2,42 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng ký tài khoản</title>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#0f172a,#1e293b);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.box{
-background:#111827;
-padding:35px;
-border-radius:12px;
-width:320px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
-text-align:center;
-}
-
-h1{
-margin-bottom:20px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-border:none;
-border-radius:6px;
-outline:none;
-background:#1f2937;
-color:white;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:6px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-transition:0.3s;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.google{
-background:#ea4335;
-}
-
-.google:hover{
-background:#d93025;
-}
-
-.gmail{
-background:#34a853;
-}
-
-.gmail:hover{
-background:#2e9447;
-}
-
-a{
-display:block;
-margin-top:15px;
-color:#60a5fa;
-text-decoration:none;
-}
-
-a:hover{
-text-decoration:underline;
-}
-
-</style>
+<title>Đăng ký</title>
 </head>
 
 <body>
 
-<div class="box">
-
 <h1>Đăng ký</h1>
 
-<form>
+<input id="user" placeholder="Tên tài khoản"><br><br>
+<input id="pass" type="password" placeholder="Mật khẩu"><br><br>
 
-<input type="text" placeholder="Tên tài khoản" required>
+<button onclick="register()">Đăng ký</button>
 
-<input type="email" placeholder="Email / Gmail" required>
+<p id="msg"></p>
 
-<input type="password" placeholder="Mật khẩu" required>
+<a href="dang-nhap.html">Đã có tài khoản? Đăng nhập</a>
 
-<input type="password" placeholder="Nhập lại mật khẩu" required>
+<script>
 
-<button type="submit">Đăng ký</button>
+function register(){
 
-</form>
+let user=document.getElementById("user").value
+let pass=document.getElementById("pass").value
 
-<br>
+if(user=="" || pass==""){
+document.getElementById("msg").innerText="Nhập đầy đủ"
+return
+}
 
-<button class="google">Đăng ký bằng Google</button>
+localStorage.setItem("tk",user)
+localStorage.setItem("mk",pass)
 
-<button class="gmail">Đăng ký bằng Gmail</button>
+document.getElementById("msg").innerText="Đăng ký thành công"
 
-<a href="index.html">← Quay lại trang chủ</a>
+}
 
-</div>
+</script>
 
 </body>
 </html>
