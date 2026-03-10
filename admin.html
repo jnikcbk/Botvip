@@ -24,97 +24,110 @@
     text-align:center;
     box-shadow:0 10px 50px rgba(0,0,0,0.8);
   }
-  .main-content { display:none; width:1000px; max-width:95%; }
+  .main-content { display:none; width:1100px; max-width:95%; }
   h1 { color:#60a5fa; margin-bottom:20px; }
-  input {
+  input, button {
     width:100%;
     padding:14px;
     margin:12px 0;
     border:none;
     border-radius:8px;
-    background:#1f2937;
-    color:white;
     font-size:16px;
   }
+  input { background:#1f2937; color:white; }
   button {
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:8px;
     background:linear-gradient(90deg,#2563eb,#3b82f6);
     color:white;
     font-weight:bold;
     cursor:pointer;
-    font-size:16px;
   }
   button:hover { background:#1d4ed8; }
   .msg { margin-top:15px; color:#ef4444; font-size:15px; }
   .container { padding:30px 20px; }
-  .section { margin-bottom:40px; padding:20px; background:#0f172a; border-radius:12px; border:1px solid #334155; }
+  .section { margin-bottom:40px; padding:25px; background:#0f172a; border-radius:12px; border:1px solid #334155; }
   .item, .user-item { background:#111827; padding:16px; border-radius:10px; margin-bottom:12px; box-shadow:0 4px 15px rgba(0,0,0,0.5); }
-  .btn { padding:8px 14px; border:none; border-radius:6px; cursor:pointer; margin:4px 6px 4px 0; font-weight:bold; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin:6px; }
   .approve { background:#22c55e; color:white; }
   .delete { background:#ef4444; color:white; }
   .add { background:#3b82f6; color:white; }
-  .reset { background:#f59e0b; color:white; padding:12px 20px; font-size:16px; }
-  .danger { background:#b91c1c; }
+  .reset { background:#f59e0b; color:white; }
+  .danger { background:#b91c1c; color:white; }
   .status { font-weight:bold; color:#fbbf24; }
-  .back { display:inline-block; margin:25px 0 10px; padding:12px 24px; background:#2563eb; border-radius:8px; text-decoration:none; color:white; font-weight:bold; }
+  .back { display:inline-block; margin:25px 0; padding:12px 24px; background:#2563eb; border-radius:8px; text-decoration:none; color:white; font-weight:bold; }
 </style>
 </head>
 <body>
 
-<!-- Màn hình xác thực (mặc định hiển thị) -->
+<!-- Màn hình xác thực -->
 <div class="auth-box" id="authScreen">
-  <h1>🔒 Admin Verification - KaizenMC</h1>
-  <p style="margin-bottom:20px; color:#9ca3af;">Chỉ admin mới truy cập được. Nhập mã bí mật:</p>
-  <input id="secretKey" type="password" placeholder="Nhập secret key...">
+  <h1>🔒 Admin Verification</h1>
+  <p style="margin-bottom:20px; color:#9ca3af;">Nhập mã bí mật:</p>
+  <input id="secretKey" type="password" placeholder="Secret key...">
   <button onclick="verifyAdmin()">Xác nhận</button>
   <p id="msg" class="msg"></p>
 </div>
 
-<!-- Nội dung admin thật (ẩn ban đầu) -->
+<!-- Nội dung admin -->
 <div class="main-content" id="adminContent">
   <header>⚙️ Admin Panel KaizenMC</header>
   <div class="container">
-    <div class="section">
+
+    <!-- 3 nút chính -->
+    <div style="text-align:center; margin:30px 0;">
+      <button class="btn" style="background:#22c55e;" onclick="showSection('nap')">1. Quản lý nạp thẻ</button>
+      <button class="btn" style="background:#3b82f6;" onclick="showSection('purchase')">2. Lịch sử mua hàng</button>
+      <button class="btn" style="background:#ef4444;" onclick="showSection('delete')">3. Xóa tài khoản</button>
+    </div>
+
+    <!-- Section 1: Quản lý nạp thẻ -->
+    <div class="section" id="napSection" style="display:none;">
       <h2>📜 Quản lý nạp thẻ</h2>
       <button class="reset" onclick="resetNapHistory()">Reset lịch sử nạp</button>
       <div id="napList"></div>
     </div>
+
+    <!-- Section 2: Lịch sử mua hàng -->
+    <div class="section" id="purchaseSection" style="display:none;">
+      <h2>🛍️ Lịch sử mua hàng của member</h2>
+      <div id="purchaseList"></div>
+    </div>
+
+    <!-- Section 3: Xóa tài khoản -->
+    <div class="section" id="deleteSection" style="display:none;">
+      <h2>❌ Xóa tài khoản member</h2>
+      <input id="deleteUser" placeholder="Nhập tên tài khoản cần xóa">
+      <button class="danger" onclick="deleteUserAccount()">XÓA TÀI KHOẢN</button>
+      <p id="deleteMsg" class="msg"></p>
+    </div>
+
+    <!-- Lệnh linh tinh -->
     <div class="section">
-      <h2>➕ Thêm xu thủ công</h2>
+      <h2>⚙️ Lệnh linh tinh</h2>
       <div>
-        <input id="addUser" placeholder="Tên người dùng" style="width:180px;">
-        <input id="addXu" type="number" placeholder="Số xu muốn cộng" style="width:160px;">
-        <button class="btn add" onclick="addXuManual()">Cộng xu</button>
+        <input id="addUser" placeholder="Tên user" style="width:180px;">
+        <input id="addXu" type="number" placeholder="Số xu" style="width:160px;">
+        <button class="add" onclick="addXuManual()">Cộng xu</button>
       </div>
+      <button class="reset danger" onclick="resetAllData()" style="margin-top:20px;">Reset toàn bộ dữ liệu (CẢNH BÁO)</button>
     </div>
-    <div class="section">
-      <h2>👥 Quản lý người dùng</h2>
-      <div id="userList"></div>
-      <button class="reset danger" onclick="resetAllData()" style="margin-top:15px;">XÓA TOÀN BỘ DỮ LIỆU (CẢNH BÁO)</button>
-    </div>
+
     <a class="back" href="index.html">⬅ Quay lại trang chính</a>
   </div>
 </div>
 
 <script>
 // ======================
-// KHÓA ADMIN - CHỈ BẠN BIẾT MÃ NÀY
+// KHÓA ADMIN
 // ======================
-const SECRET_KEY_HASH = "aduadmindzvokia";  // ← THAY ĐỔI MÃ NÀY THÀNH MÃ RIÊNG CỦA BẠN (dài, phức tạp)
-const ALLOWED_ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"]; // Danh sách admin hợp lệ
+const SECRET_KEY_HASH = "aduadmindzvokia"; // Thay đổi mã này thành mã riêng của bạn
+const ALLOWED_ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
 
-// ======================
-// XÁC THỰC ADMIN
-// ======================
 function verifyAdmin() {
   const inputKey = document.getElementById("secretKey").value.trim();
   const msg = document.getElementById("msg");
 
   if (inputKey !== SECRET_KEY_HASH) {
-    msg.innerText = "❌ Mã bí mật sai! Truy cập bị chặn.";
+    msg.innerText = "❌ Mã bí mật sai!";
     setTimeout(() => {
       localStorage.removeItem("login");
       localStorage.removeItem("role");
@@ -126,23 +139,34 @@ function verifyAdmin() {
 
   const currentUser = localStorage.getItem("username") || "";
   if (!ALLOWED_ADMINS.includes(currentUser)) {
-    msg.innerText = "❌ Tài khoản không có quyền admin.";
+    msg.innerText = "❌ Tài khoản không phải admin.";
     setTimeout(() => { window.location.href = "dang-nhap.html"; }, 1500);
     return;
   }
 
-  // Pass hết → hiển thị admin thật
   document.getElementById("authScreen").style.display = "none";
   document.getElementById("adminContent").style.display = "block";
-  loadNap();
-  loadUsers();
+  loadNap(); // Load mặc định phần nạp thẻ
+}
+
+// Chuyển section
+function showSection(section) {
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+  if (section === 'nap') {
+    document.getElementById("napSection").style.display = "block";
+    loadNap();
+  } else if (section === 'purchase') {
+    document.getElementById("purchaseSection").style.display = "block";
+    loadPurchases();
+  } else if (section === 'delete') {
+    document.getElementById("deleteSection").style.display = "block";
+  }
 }
 
 // ======================
-// DỮ LIỆU & HÀM QUẢN LÝ NẠP THẺ
+// 1. Quản lý nạp thẻ (giữ nguyên)
 // ======================
 let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-
 const napBox = document.getElementById("napList");
 
 function loadNap() {
@@ -205,74 +229,97 @@ function resetNapHistory() {
 }
 
 // ======================
-// THÊM XU THỦ CÔNG
+// 2. Lịch sử mua hàng
+// ======================
+function loadPurchases() {
+  const purchaseBox = document.getElementById("purchaseList");
+  purchaseBox.innerHTML = "";
+  let hasPurchases = false;
+
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith("purchaseHistory_")) {
+      const username = key.replace("purchaseHistory_", "");
+      const purchases = JSON.parse(localStorage.getItem(key)) || [];
+
+      if (purchases.length > 0) {
+        hasPurchases = true;
+        purchaseBox.innerHTML += `<h3 style="color:#93c5fd; margin:20px 0 10px;">👤 ${username} - ${purchases.length} vật phẩm</h3>`;
+
+        purchases.forEach(p => {
+          purchaseBox.innerHTML += `
+            <div class="item">
+              <b>${p.item}</b> - ${p.price.toLocaleString()} xu<br>
+              ⏱ ${p.time}
+            </div>
+          `;
+        });
+      }
+    }
+  });
+
+  if (!hasPurchases) {
+    purchaseBox.innerHTML = "<p style='color:#9ca3af;text-align:center;'>Chưa có member nào mua vật phẩm.</p>";
+  }
+}
+
+// ======================
+// 3. Xóa tài khoản
+// ======================
+function deleteUserAccount() {
+  const username = document.getElementById("deleteUser").value.trim();
+  const msg = document.getElementById("deleteMsg");
+
+  if (!username) {
+    msg.innerText = "❌ Nhập tên tài khoản!";
+    return;
+  }
+
+  if (!confirm(`XÓA VĨNH VIỄN tài khoản ${username}?`)) return;
+
+  localStorage.removeItem(`xu_${username}`);
+  napHistory = napHistory.filter(item => item.user !== username);
+  localStorage.setItem("napHistory", JSON.stringify(napHistory));
+
+  // Xóa lịch sử mua
+  localStorage.removeItem(`purchaseHistory_${username}`);
+
+  // Xóa các key khác liên quan
+  Object.keys(localStorage).forEach(key => {
+    if (key.includes(username)) localStorage.removeItem(key);
+  });
+
+  msg.innerText = `✅ Đã xóa tài khoản ${username}!`;
+  document.getElementById("deleteUser").value = "";
+}
+
+// ======================
+// Lệnh linh tinh: Cộng xu
 // ======================
 function addXuManual() {
   const username = document.getElementById("addUser").value.trim();
   const amount = parseInt(document.getElementById("addXu").value);
   if (!username || isNaN(amount) || amount <= 0) {
-    alert("Vui lòng nhập tên user và số xu hợp lệ!");
+    alert("Nhập tên user và số xu hợp lệ!");
     return;
   }
   const xuKey = `xu_${username}`;
   let current = parseInt(localStorage.getItem(xuKey)) || 0;
   localStorage.setItem(xuKey, current + amount);
-  alert(`Đã cộng ${amount.toLocaleString()} xu cho ${username}\nTổng xu hiện tại: ${(current + amount).toLocaleString()}`);
+  alert(`Đã cộng ${amount.toLocaleString()} xu cho ${username}`);
   document.getElementById("addXu").value = "";
 }
 
 // ======================
-// QUẢN LÝ NGƯỜI DÙNG
+// Reset toàn bộ
 // ======================
-const userBox = document.getElementById("userList");
-
-function loadUsers() {
-  userBox.innerHTML = "";
-  const allKeys = Object.keys(localStorage);
-  const userList = allKeys
-    .filter(k => k.startsWith("xu_"))
-    .map(k => k.replace("xu_", ""));
-  if (userList.length === 0) {
-    userBox.innerHTML = "<p style='color:#9ca3af;text-align:center;'>Chưa có người dùng nào.</p>";
-    return;
-  }
-  userList.forEach(username => {
-    const xu = parseInt(localStorage.getItem(`xu_${username}`)) || 0;
-    userBox.innerHTML += `
-      <div class="user-item">
-        <b>👤 ${username}</b><br>
-        💰 Xu: ${xu.toLocaleString()}<br><br>
-        <button class="btn delete danger" onclick="xoaTaiKhoan('${username}')">XÓA TÀI KHOẢN</button>
-      </div>
-    `;
-  });
-}
-
-function xoaTaiKhoan(username) {
-  if (!confirm(`XÓA VĨNH VIỄN tài khoản ${username}?\nMọi xu và dữ liệu sẽ mất!`)) return;
-  // Xóa xu
-  localStorage.removeItem(`xu_${username}`);
-  // Xóa lịch sử nạp liên quan
-  napHistory = napHistory.filter(item => item.user !== username);
-  localStorage.setItem("napHistory", JSON.stringify(napHistory));
-  // Xóa các key khác nếu có (role, password,...)
-  Object.keys(localStorage).forEach(key => {
-    if (key.includes(username)) localStorage.removeItem(key);
-  });
-  loadUsers();
-  loadNap();
-}
-
 function resetAllData() {
-  if (!confirm("XÓA TOÀN BỘ DỮ LIỆU HỆ THỐNG?\nKhông thể khôi phục!")) return;
+  if (!confirm("XÓA TOÀN BỘ DỮ LIỆU? Không khôi phục được!")) return;
   localStorage.clear();
-  alert("Đã xóa toàn bộ dữ liệu!");
+  alert("Đã xóa hết!");
   location.reload();
 }
 
-// ======================
-// Bảo vệ bổ sung
-// ======================
+// Bảo vệ
 setInterval(() => {
   if (document.getElementById("adminContent").style.display === "block" &&
       localStorage.getItem("login") !== "true") {
