@@ -214,17 +214,17 @@ function register() {
   const gmail = document.getElementById("gmail").value.trim();
 
   if (!user || !pass || !gmail) {
-    msg("⚠️ Nhập đầy đủ thông tin!", "error");
+    msg("⚠️ Nhập đầy đủ tên, mật khẩu và Gmail!", "error");
     return;
   }
 
   if (user.toLowerCase().includes("admin") || user.toLowerCase() === "admindz") {
-    msg("❌ Tên tài khoản này bị cấm (chứa 'admin')!", "error");
+    msg("❌ Tên tài khoản này bị cấm (không dùng 'admin')!", "error");
     return;
   }
 
   if (!verified) {
-    msg("⚠️ Bạn phải xác minh Gmail trước khi đăng ký!", "error");
+    msg("⚠️ Phải xác minh Gmail trước khi đăng ký!", "error");
     return;
   }
 
@@ -232,10 +232,30 @@ function register() {
   localStorage.setItem("mk", pass);
   localStorage.setItem("gmail", gmail);
 
-  msg("🎉 Đăng ký thành công! Chuyển hướng đến đăng nhập...");
+  // Gửi log Discord khi đăng ký thành công
+  async function sendRegisterLog() {
+    try {
+      const response = await fetch("/api/send-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          type: "register", 
+          username: user 
+        })
+      });
+      if (!response.ok) {
+        console.error("Gửi log đăng ký thất bại:", response.status);
+      }
+    } catch (err) {
+      console.error("Lỗi gọi API log đăng ký:", err);
+    }
+  }
+
+  sendRegisterLog();
+
+  msg("🎉 Đăng ký thành công! Đang chuyển đến trang đăng nhập...");
   setTimeout(() => { window.location.href = "dang-nhap.html"; }, 1500);
 }
 </script>
-
 </body>
 </html>
