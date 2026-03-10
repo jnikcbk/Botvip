@@ -276,6 +276,29 @@ function buy(name, price) {
 
 // Khởi chạy
 updateBalance();
+  // Trong hàm buy(), sau localStorage.setItem(xuKey, xu); và updateBalance();
+async function sendPurchaseLog() {
+  const username = localStorage.getItem("tk") || "Unknown";
+  try {
+    const response = await fetch("/api/send-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        type: "purchase", 
+        username: username, 
+        item: name, 
+        price: price 
+      })
+    });
+    if (!response.ok) {
+      console.error("Gửi log mua thất bại:", response.status);
+    }
+  } catch (err) {
+    console.error("Lỗi gọi API log mua:", err);
+  }
+}
+
+sendPurchaseLog();
 </script>
 </body>
 </html>
