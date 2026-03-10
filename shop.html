@@ -3,207 +3,171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop Pokémon KaizenMC - Neon Cyber Shop</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<title>Shop Pokémon KaizenMC</title>
 <style>
-  :root {
-    --neon-pink: #ff00ff;
-    --neon-blue: #00ffff;
-    --neon-purple: #9d00ff;
-    --dark-bg: #0a0015;
-    --card-bg: rgba(20, 10, 40, 0.6);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(-45deg, #0a0015, #1a0033, #000033, #0a0015);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    color: white;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
-  @keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at 20% 30%, rgba(255,0,255,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(0,255,255,0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
+    margin:0;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
+    color:white;
+    min-height:100vh;
   }
   header {
-    text-align: center;
-    padding: 40px 20px 20px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 3.2rem;
-    font-weight: 700;
-    background: linear-gradient(90deg, #ff00ff, #00ffff, #9d00ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 20px rgba(255,0,255,0.7);
+    text-align:center;
+    padding:35px 20px 20px;
+    font-size:2.8rem;
+    font-weight:bold;
+    background:rgba(2,6,23,0.9);
+    border-bottom:4px solid #2563eb;
+    text-shadow:0 0 15px #2563eb;
   }
   .container {
-    max-width: 1400px;
-    margin: auto;
-    padding: 0 20px 60px;
-    text-align: center;
+    max-width:1400px;
+    margin:auto;
+    padding:40px 20px;
+    text-align:center;
   }
   .balance {
-    font-size: 1.8rem;
-    margin: 20px 0 40px;
-    font-family: 'Orbitron', sans-serif;
-    color: #00ffff;
-    text-shadow: 0 0 15px #00ffff;
-    animation: pulse 2s infinite alternate;
+    font-size:1.9rem;
+    margin:20px 0 40px;
+    color:#fbbf24;
+    font-weight:bold;
+    text-shadow:0 0 10px #fbbf24;
   }
-  @keyframes pulse { to { opacity: 0.8; } }
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:30px;
   }
   .item {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    border: 2px solid transparent;
-    border-radius: 20px;
-    padding: 30px 20px;
-    transition: all 0.4s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 20px rgba(157,0,255,0.15);
-    position: relative;
-    overflow: hidden;
+    background:rgba(17,24,39,0.85);
+    backdrop-filter:blur(10px);
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.6);
+    transition:0.4s;
+    border:1px solid rgba(37,99,235,0.3);
   }
-  .item::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%; right: -50%; bottom: -50%;
-    background: conic-gradient(from 0deg, transparent, var(--neon-pink), var(--neon-blue), var(--neon-purple), transparent);
-    opacity: 0;
-    transition: opacity 0.6s;
-    animation: rotate 10s linear infinite;
-  }
-  .item:hover::before { opacity: 0.3; }
   .item:hover {
-    transform: translateY(-15px) scale(1.05);
-    border-color: var(--neon-pink);
-    box-shadow: 0 20px 60px rgba(255,0,255,0.4), 0 0 40px rgba(0,255,255,0.3);
+    transform:translateY(-12px);
+    box-shadow:0 25px 60px rgba(37,99,235,0.5);
   }
   .item img {
-    width: 160px;
-    height: 160px;
-    object-fit: contain;
-    margin-bottom: 20px;
-    filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
-    transition: transform 0.4s;
+    width:160px;
+    height:160px;
+    object-fit:contain;
+    margin-bottom:20px;
+    border-radius:12px;
+    box-shadow:0 0 20px rgba(255,255,255,0.2);
   }
-  .item:hover img { transform: scale(1.15) rotate(5deg); }
   .item h2 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.6rem;
-    margin: 10px 0;
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color:#60a5fa;
+    margin:15px 0 10px;
+    font-size:1.6rem;
   }
   .price {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #22ff22;
-    text-shadow: 0 0 10px #22ff22;
-    margin: 15px 0;
+    font-size:1.5rem;
+    color:#22c55e;
+    font-weight:bold;
+    margin:15px 0;
   }
   button {
-    padding: 14px 32px;
-    border: none;
-    border-radius: 50px;
-    background: linear-gradient(45deg, #ff00ff, #00ffff);
-    color: white;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,255,255,0.5);
-    transition: all 0.3s;
+    padding:14px 30px;
+    border:none;
+    border-radius:50px;
+    background:linear-gradient(90deg,#2563eb,#3b82f6);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:1.1rem;
+    transition:0.3s;
   }
   button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 40px rgba(255,0,255,0.7);
+    transform:scale(1.08);
+    box-shadow:0 0 25px rgba(59,130,246,0.7);
   }
   .msg {
-    margin: 40px 0;
-    font-size: 1.4rem;
-    font-weight: bold;
-    min-height: 40px;
-    text-shadow: 0 0 10px currentColor;
+    margin:40px 0;
+    font-size:1.4rem;
+    font-weight:bold;
+    min-height:40px;
   }
-  .success { color: #00ff88; }
-  .error { color: #ff3366; }
+  .success { color:#22c55e; }
+  .error { color:#ef4444; }
   .back {
-    display: inline-block;
-    margin-top: 50px;
-    padding: 15px 40px;
-    background: linear-gradient(45deg, #9d00ff, #00ffff);
-    border-radius: 50px;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
-    box-shadow: 0 0 25px rgba(157,0,255,0.6);
+    display:inline-block;
+    margin-top:50px;
+    padding:14px 35px;
+    background:#2563eb;
+    border-radius:50px;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
   }
-  .back:hover { transform: scale(1.08); box-shadow: 0 0 50px rgba(0,255,255,0.8); }
-
-  @keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+  .back:hover { background:#1d4ed8; }
 </style>
 </head>
 <body>
 
-<header>🌌 Neon Cyber Shop KaizenMC 🌌</header>
+<header>🛒 Shop Pokémon & Items KaizenMC</header>
 
 <div class="container">
 
-  <div class="balance" id="balance">💎 Số dư: 0 Xu</div>
+  <div class="balance" id="balance">Số dư: 0 Xu</div>
 
   <div class="grid">
 
-    <!-- Legendary Pokémon với ảnh đẹp -->
+    <!-- Legendary Pokémon -->
     <div class="item">
-      <img src="https://wallpapers.com/images/hd/legendary-pokemon-pictures-u0w1efc2z160tke6.jpg" alt="Legendary Group">
-      <h2>Legendary Bundle</h2>
-      <p class="price">2.500.000 Xu</p>
-      <button onclick="buy('Legendary Bundle', 2500000)">Mua Ngay</button>
+      <img src="https://img.pokemondb.net/artwork/large/mewtwo.jpg" alt="Mewtwo">
+      <h2>Mewtwo</h2>
+      <p class="price">500.000 Xu</p>
+      <button onclick="buy('Mewtwo', 500000)">Mua</button>
     </div>
 
     <div class="item">
-      <img src="https://wallpapers.com/images/featured/rayquaza-gc45z3v2qfkovf8z.jpg" alt="Rayquaza">
-      <h2>Rayquaza Mega</h2>
-      <p class="price">650.000 Xu</p>
-      <button onclick="buy('Rayquaza', 650000)">Mua</button>
+      <img src="https://img.pokemondb.net/artwork/large/rayquaza.jpg" alt="Rayquaza">
+      <h2>Rayquaza</h2>
+      <p class="price">450.000 Xu</p>
+      <button onclick="buy('Rayquaza', 450000)">Mua</button>
     </div>
 
     <div class="item">
-      <img src="https://wallpapers.com/images/featured/mewtwo-pictures-xkhd7f45ple13tc3.jpg" alt="Mewtwo">
-      <h2>Mewtwo Shadow</h2>
-      <p class="price">750.000 Xu</p>
-      <button onclick="buy('Mewtwo', 750000)">Mua</button>
+      <img src="https://img.pokemondb.net/artwork/large/arceus.jpg" alt="Arceus">
+      <h2>Arceus</h2>
+      <p class="price">1.200.000 Xu</p>
+      <button onclick="buy('Arceus', 1200000)">Mua</button>
     </div>
 
     <div class="item">
-      <img src="https://wallpapers.com/images/hd/every-legendary-pokemon-w3nclosyph6qop0e.jpg" alt="All Legendary">
-      <h2>Arceus God Form</h2>
-      <p class="price">1.800.000 Xu</p>
-      <button onclick="buy('Arceus', 1800000)">Mua</button>
+      <img src="https://img.pokemondb.net/artwork/large/mew.jpg" alt="Mew">
+      <h2>Mew</h2>
+      <p class="price">800.000 Xu</p>
+      <button onclick="buy('Mew', 800000)">Mua</button>
     </div>
 
-    <!-- Items với glow -->
+    <div class="item">
+      <img src="https://img.pokemondb.net/artwork/large/kyogre.jpg" alt="Kyogre">
+      <h2>Kyogre</h2>
+      <p class="price">600.000 Xu</p>
+      <button onclick="buy('Kyogre', 600000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://img.pokemondb.net/artwork/large/groudon.jpg" alt="Groudon">
+      <h2>Groudon</h2>
+      <p class="price">600.000 Xu</p>
+      <button onclick="buy('Groudon', 600000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://img.pokemondb.net/artwork/large/dialga.jpg" alt="Dialga">
+      <h2>Dialga</h2>
+      <p class="price">700.000 Xu</p>
+      <button onclick="buy('Dialga', 700000)">Mua</button>
+    </div>
+
+    <!-- Mega Stone & Item hỗ trợ -->
     <div class="item">
       <img src="https://img.pokemondb.net/sprites/items/master-ball.png" alt="Master Ball">
       <h2>Master Ball x5</h2>
@@ -225,25 +189,62 @@
       <button onclick="buy('Mega Stone Pack', 400000)">Mua</button>
     </div>
 
-    <!-- VIP & Key -->
+    <div class="item">
+      <img src="https://img.pokemondb.net/sprites/items/lucky-egg.png" alt="Lucky Egg">
+      <h2>Lucky Egg x10</h2>
+      <p class="price">150.000 Xu</p>
+      <button onclick="buy('Lucky Egg x10', 150000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://img.pokemondb.net/sprites/items/ability-capsule.png" alt="Ability Capsule">
+      <h2>Ability Capsule</h2>
+      <p class="price">100.000 Xu</p>
+      <button onclick="buy('Ability Capsule', 100000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://img.pokemondb.net/sprites/items/bottle-cap.png" alt="Bottle Cap">
+      <h2>Bottle Cap x50</h2>
+      <p class="price">250.000 Xu</p>
+      <button onclick="buy('Bottle Cap x50', 250000)">Mua</button>
+    </div>
+
+    <!-- Gói VIP & Key -->
     <div class="item">
       <img src="https://cdn-icons-png.flaticon.com/512/1040/1040230.png" alt="VIP">
-      <h2>Ultimate VIP</h2>
-      <p class="price">800.000 Xu</p>
-      <button onclick="buy('Ultimate VIP', 800000)">Mua</button>
+      <h2>Gói VIP Cơ Bản</h2>
+      <p class="price">150.000 Xu</p>
+      <button onclick="buy('Gói VIP Cơ Bản', 150000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Key Gacha">
+      <h2>Key Gacha x10</h2>
+      <p class="price">250.000 Xu</p>
+      <button onclick="buy('Key Gacha x10', 250000)">Mua</button>
+    </div>
+
+    <div class="item">
+      <img src="https://img.pokemondb.net/sprites/items/exp-share.png" alt="Exp Share">
+      <h2>Exp. Share vĩnh viễn</h2>
+      <p class="price">80.000 Xu</p>
+      <button onclick="buy('Exp Share vĩnh viễn', 80000)">Mua</button>
     </div>
 
   </div>
 
   <p id="msg" class="msg"></p>
-  <a class="back" href="index.html">⬅ Về Trang Chủ</a>
+  <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
 
 </div>
 
 <script>
 function updateBalance() {
-  const xu = parseInt(localStorage.getItem("xu")) || 0;
-  document.getElementById("balance").innerText = `💎 Số dư: ${xu.toLocaleString()} Xu`;
+  const username = localStorage.getItem("tk") || "";
+  const xuKey = username ? `xu_${username}` : "xu";
+  const xu = parseInt(localStorage.getItem(xuKey)) || 0;
+  document.getElementById("balance").innerText = `Số dư: ${xu.toLocaleString('vi-VN')} Xu`;
 }
 
 function buy(name, price) {
@@ -251,27 +252,30 @@ function buy(name, price) {
 
   if (localStorage.getItem("login") !== "true") {
     msgEl.className = "msg error";
-    msgEl.innerText = "⚠️ ĐĂNG NHẬP ĐỂ MUA HÀNG!";
+    msgEl.innerText = "⚠️ Bạn cần đăng nhập trước khi mua!";
     return;
   }
 
-  let xu = parseInt(localStorage.getItem("xu")) || 0;
+  const username = localStorage.getItem("tk") || "";
+  const xuKey = username ? `xu_${username}` : "xu";
+  let xu = parseInt(localStorage.getItem(xuKey)) || 0;
+
   if (xu < price) {
     msgEl.className = "msg error";
-    msgEl.innerText = `❌ KHÔNG ĐỦ XU! Cần ${price.toLocaleString()} (bạn có ${xu.toLocaleString()})`;
+    msgEl.innerText = `❌ Không đủ xu! Cần ${price.toLocaleString('vi-VN')} xu (bạn có ${xu.toLocaleString('vi-VN')})`;
     return;
   }
 
   xu -= price;
-  localStorage.setItem("xu", xu);
+  localStorage.setItem(xuKey, xu);
   updateBalance();
 
   msgEl.className = "msg success";
-  msgEl.innerText = `✨ THÀNH CÔNG: ĐÃ MUA ${name}! (-${price.toLocaleString()} xu)`;
+  msgEl.innerText = `✅ Đã mua thành công: ${name}! (-${price.toLocaleString('vi-VN')} xu)`;
 }
 
+// Khởi chạy
 updateBalance();
 </script>
-
 </body>
 </html>
