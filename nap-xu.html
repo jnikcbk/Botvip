@@ -3,206 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nạp Xu</title>
-
+<title>Nạp Xu - KaizenMC</title>
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#020617,#0f172a);
-color:white;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:40px 20px;
-}
-
-.box{
-background:#111827;
-padding:25px;
-border-radius:12px;
-margin-bottom:30px;
-box-shadow:0 10px 30px rgba(0,0,0,0.6);
-}
-
-h1{
-text-align:center;
-margin-bottom:20px;
-}
-
-select,input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border:none;
-border-radius:8px;
-background:#1f2937;
-color:white;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.msg{
-margin-top:12px;
-color:#22c55e;
-}
-
-.history{
-margin-top:20px;
-}
-
-.item{
-background:#020617;
-padding:10px;
-border-radius:6px;
-margin-bottom:8px;
-font-size:14px;
-}
-
-.back{
-display:inline-block;
-margin-top:20px;
-padding:10px 20px;
-background:#2563eb;
-border-radius:8px;
-text-decoration:none;
-color:white;
-}
-
+  body {
+    margin:0;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
+    color:white;
+    min-height:100vh;
+  }
+  .container {
+    max-width:950px;
+    margin:auto;
+    padding:40px 20px;
+  }
+  .box {
+    background:rgba(17,24,39,0.85);
+    backdrop-filter:blur(10px);
+    padding:35px;
+    border-radius:20px;
+    margin-bottom:35px;
+    box-shadow:0 15px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(37,99,235,0.15);
+    border:1px solid rgba(37,99,235,0.3);
+    animation:fadeIn 0.8s ease;
+  }
+  @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+  h1, h2 {
+    text-align:center;
+    margin-bottom:25px;
+    color:#60a5fa;
+    text-shadow:0 0 10px rgba(96,165,250,0.5);
+  }
+  select, input {
+    width:100%;
+    padding:14px 14px 14px 45px;
+    margin:12px 0;
+    border:none;
+    border-radius:10px;
+    background:#1f2937;
+    color:white;
+    font-size:15px;
+    transition:all 0.3s;
+  }
+  select:focus, input:focus {
+    background:#374151;
+    box-shadow:0 0 0 3px #2563eb, 0 0 15px rgba(37,99,235,0.4);
+    outline:none;
+  }
+  .input-group {
+    position:relative;
+  }
+  .icon {
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:18px;
+    opacity:0.7;
+    pointer-events:none;
+  }
+  button {
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa);
+    background-size:200%;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+    transition:all 0.4s;
+  }
+  button:hover {
+    background-position:right center;
+    transform:translateY(-3px);
+    box-shadow:0 10px 30px rgba(59,130,246,0.6);
+  }
+  .msg {
+    margin-top:20px;
+    text-align:center;
+    font-size:16px;
+    font-weight:bold;
+    min-height:25px;
+  }
+  .success { color:#22c55e; text-shadow:0 0 8px #22c55e; }
+  .error { color:#ef4444; text-shadow:0 0 8px #ef4444; }
+  .warning { color:#fbbf24; text-shadow:0 0 8px #fbbf24; }
+  .history-box {
+    background:rgba(17,24,39,0.85);
+    backdrop-filter:blur(10px);
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 15px 50px rgba(0,0,0,0.7);
+  }
+  .item {
+    background:#020617;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:12px;
+    font-size:14px;
+    border-left:5px solid #2563eb;
+    transition:0.3s;
+  }
+  .item:hover { transform:translateX(5px); }
+  .status-real { color:#22c55e; font-weight:bold; }
+  .status-fake { color:#fbbf24; font-weight:bold; }
+  .status-duyet { color:#22c55e; }
+  .status-tuchoi { color:#ef4444; }
+  .back {
+    display:inline-block;
+    margin-top:30px;
+    padding:12px 30px;
+    background:#2563eb;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+  }
+  .back:hover { background:#1d4ed8; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
 
-<div class="box">
+  <div class="box">
+    <h1>💳 NẠP XU KAIZENMC</h1>
+    
+    <div class="input-group">
+      <span class="icon">📱</span>
+      <select id="type">
+        <option>Viettel</option>
+        <option>Vinaphone</option>
+        <option>Mobifone</option>
+        <option>Zing</option>
+        <option>Garena</option>
+      </select>
+    </div>
 
-<h1>💳 Nạp Xu</h1>
+    <div class="input-group">
+      <span class="icon">💰</span>
+      <select id="menhgia">
+        <option value="10000">10.000đ</option>
+        <option value="20000">20.000đ</option>
+        <option value="50000">50.000đ</option>
+        <option value="100000">100.000đ</option>
+        <option value="200000">200.000đ</option>
+        <option value="500000">500.000đ</option>
+      </select>
+    </div>
 
-<select id="type">
-<option>Viettel</option>
-<option>Vinaphone</option>
-<option>Zing</option>
-</select>
+    <div class="input-group">
+      <span class="icon">🧾</span>
+      <input id="seri" placeholder="Số seri thẻ (chỉ số)">
+    </div>
 
-<select id="menhgia">
-<option value="10000">10.000</option>
-<option value="20000">20.000</option>
-<option value="50000">50.000</option>
-<option value="100000">100.000</option>
-<option value="200000">200.000</option>
-<option value="500000">500.000</option>
-</select>
+    <div class="input-group">
+      <span class="icon">🔑</span>
+      <input id="code" placeholder="Mã thẻ / PIN (chỉ số)">
+    </div>
 
-<input id="seri" placeholder="Số seri">
-<input id="code" placeholder="Mã thẻ">
+    <button onclick="nap()">NẠP THẺ NGAY</button>
 
-<button onclick="nap()">Nạp thẻ</button>
+    <p id="msg" class="msg"></p>
+  </div>
 
-<p id="msg" class="msg"></p>
+  <div class="history-box">
+    <h2>📜 LỊCH SỬ NẠP CỦA BẠN</h2>
+    <div id="history"></div>
+  </div>
 
-</div>
-
-
-<div class="box">
-
-<h2>📜 Lịch sử nạp</h2>
-
-<div id="history" class="history"></div>
-
-</div>
-
-<a class="back" href="index.html">⬅ Quay lại</a>
+  <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
 
 </div>
 
 <script>
-
-function nap(){
-
-if(localStorage.getItem("login")!=="true"){
-document.getElementById("msg").innerText="⚠️ Bạn cần đăng nhập"
-return
+function isPureNumber(str) {
+  return /^\d+$/.test(str.trim()); // Chỉ chứa số 0-9, không chữ cái, không ký tự đặc biệt
 }
 
-let user = localStorage.getItem("tk")
+function nap() {
+  const msgEl = document.getElementById("msg");
+  if (localStorage.getItem("login") !== "true") {
+    msgEl.className = "msg error";
+    msgEl.innerText = "⚠️ Bạn cần đăng nhập trước khi nạp!";
+    return;
+  }
 
-let type=document.getElementById("type").value
-let menhgia=parseInt(document.getElementById("menhgia").value)
-let seri=document.getElementById("seri").value
-let code=document.getElementById("code").value
+  const user = localStorage.getItem("tk") || "Unknown";
+  const type = document.getElementById("type").value;
+  const menhgia = parseInt(document.getElementById("menhgia").value);
+  const seri = document.getElementById("seri").value.trim();
+  const code = document.getElementById("code").value.trim();
 
-if(seri==""||code==""){
-document.getElementById("msg").innerText="❌ Nhập đầy đủ thông tin"
-return
+  if (!seri || !code) {
+    msgEl.className = "msg error";
+    msgEl.innerText = "❌ Vui lòng nhập đầy đủ seri và mã thẻ!";
+    return;
+  }
+
+  // Xác minh chỉ dựa vào số (không chữ cái)
+  const seriIsNumber = isPureNumber(seri);
+  const codeIsNumber = isPureNumber(code);
+  const isReal = seriIsNumber && codeIsNumber;
+  const cardType = isReal ? "Real" : "Fake";
+
+  msgEl.className = "msg " + (isReal ? "success" : "warning");
+  msgEl.innerText = `Đang xử lý... (${cardType === "Real" ? "Thẻ hợp lệ (chỉ số)" : "Thẻ không hợp lệ (có chữ/ký tự)"})`;
+
+  const time = new Date().toLocaleString("vi-VN");
+  const log = {
+    user: user,
+    type: type,
+    menhgia: menhgia,
+    seri: seri,
+    code: code,
+    time: time,
+    status: `Chờ duyệt (${cardType})`,
+    isReal: isReal
+  };
+
+  let history = JSON.parse(localStorage.getItem("napHistory")) || [];
+  history.push(log);
+  localStorage.setItem("napHistory", JSON.stringify(history));
+
+  setTimeout(() => {
+    msgEl.className = "msg success";
+    msgEl.innerText = `✅ Đã gửi thẻ thành công! (${cardType}) - Chờ admin duyệt`;
+    loadHistory();
+  }, 800);
 }
 
-let time=new Date().toLocaleString()
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem("napHistory")) || [];
+  const box = document.getElementById("history");
+  box.innerHTML = "";
 
-let log={
-user:user,
-type:type,
-menhgia:menhgia,
-seri:seri,
-code:code,
-time:time,
-status:"Chờ duyệt"
+  if (history.length === 0) {
+    box.innerHTML = "<p style='text-align:center;color:#9ca3af;'>Chưa có giao dịch nạp nào.</p>";
+    return;
+  }
+
+  const user = localStorage.getItem("tk") || "";
+  history.filter(h => h.user === user)
+    .slice().reverse()
+    .forEach(h => {
+      let statusClass = "";
+      if (h.status.includes("Đã duyệt")) statusClass = "status-duyet";
+      else if (h.status.includes("Từ chối")) statusClass = "status-tuchoi";
+      else if (h.status.includes("Real")) statusClass = "status-real";
+      else statusClass = "status-fake";
+
+      box.innerHTML += `
+        <div class="item">
+          <b>${h.type}</b> - ${h.menhgia.toLocaleString('vi-VN')}đ<br>
+          📌 Trạng thái: <span class="${statusClass}">${h.status}</span><br>
+          ⏱ ${h.time}
+        </div>
+      `;
+    });
 }
 
-let history=JSON.parse(localStorage.getItem("napHistory"))||[]
-history.push(log)
-
-localStorage.setItem("napHistory",JSON.stringify(history))
-
-document.getElementById("msg").innerText="✅ Đã gửi thẻ, chờ admin duyệt"
-
-loadHistory()
-
+// Khởi chạy
+if (localStorage.getItem("login") === "true") {
+  loadHistory();
+} else {
+  document.getElementById("msg").innerText = "⚠️ Đăng nhập để xem lịch sử nạp và nạp xu!";
 }
-
-function loadHistory(){
-
-let history=JSON.parse(localStorage.getItem("napHistory"))||[]
-let box=document.getElementById("history")
-
-box.innerHTML=""
-
-history.slice().reverse().forEach(h=>{
-
-let status=h.status||"Chờ duyệt"
-
-box.innerHTML+=`
-<div class="item">
-👤 ${h.user} | ${h.type} | ${h.menhgia}đ <br>
-📌 Trạng thái: ${status} <br>
-⏱ ${h.time}
-</div>
-`
-
-})
-
-}
-
-loadHistory()
-
 </script>
 </body>
 </html>
