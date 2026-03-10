@@ -10,8 +10,9 @@
 body{
 margin:0;
 font-family:Arial;
-background:linear-gradient(135deg,#0f172a,#020617);
+background:linear-gradient(135deg,#020617,#0f172a);
 color:white;
+min-height:100vh;
 }
 
 header{
@@ -26,7 +27,7 @@ border-bottom:2px solid #2563eb;
 nav{
 display:flex;
 justify-content:center;
-gap:18px;
+gap:15px;
 background:#111827;
 padding:12px;
 }
@@ -48,21 +49,25 @@ padding:60px 20px;
 text-align:center;
 }
 
-.container h1{
-font-size:38px;
-margin-bottom:10px;
+.server-box{
+background:#111827;
+padding:30px;
+border-radius:14px;
+display:inline-block;
+box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
 
-.container p{
-opacity:0.8;
+.server-box img{
+width:180px;
+margin-bottom:10px;
 }
 
 .btn{
 display:inline-block;
-margin:12px;
-padding:14px 24px;
+margin:10px;
+padding:12px 22px;
 background:#2563eb;
-border-radius:10px;
+border-radius:8px;
 text-decoration:none;
 color:white;
 font-weight:bold;
@@ -74,20 +79,6 @@ background:#1d4ed8;
 transform:scale(1.05);
 }
 
-.server-box{
-margin-top:30px;
-background:#111827;
-padding:25px;
-border-radius:14px;
-display:inline-block;
-box-shadow:0 0 25px rgba(0,0,0,0.6);
-}
-
-.server-box img{
-width:180px;
-margin-bottom:10px;
-}
-
 .user{
 margin-top:15px;
 font-size:16px;
@@ -95,8 +86,8 @@ color:#60a5fa;
 }
 
 .logout{
-margin-top:10px;
 background:#ef4444;
+margin-top:10px;
 }
 
 footer{
@@ -105,12 +96,11 @@ background:#020617;
 padding:25px;
 text-align:center;
 font-size:14px;
-opacity:0.8;
 }
 
 footer img{
-margin-top:10px;
 border-radius:50%;
+margin-top:10px;
 }
 
 </style>
@@ -132,18 +122,17 @@ border-radius:50%;
 
 <div class="container">
 
-<h1>Chào mừng đến với KaizenMC</h1>
+<div class="server-box">
+
+<h1>Chào mừng đến KaizenMC</h1>
 
 <p>Server Minecraft giải trí với nhiều tính năng hấp dẫn.</p>
-
-<div class="server-box">
 
 <img src="kaizen.png">
 
 <br>
 
 <a class="btn" href="shop.html">Vào Shop</a>
-
 <a class="btn" href="nap-xu.html">Nạp Xu</a>
 
 <div class="user" id="userBox"></div>
