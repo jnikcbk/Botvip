@@ -6,35 +6,37 @@
 <title>KaizenMC</title>
 
 <style>
+
 body{
 margin:0;
 font-family:Arial;
-background:#0f172a;
+background:linear-gradient(135deg,#0f172a,#020617);
 color:white;
 }
 
 header{
-background:#111827;
-padding:15px;
+background:#020617;
+padding:18px;
 text-align:center;
-font-size:24px;
+font-size:26px;
 font-weight:bold;
+border-bottom:2px solid #2563eb;
 }
 
 nav{
 display:flex;
 justify-content:center;
-gap:20px;
-background:#1f2937;
-padding:10px;
+gap:18px;
+background:#111827;
+padding:12px;
 }
 
 nav a{
 color:white;
 text-decoration:none;
-padding:8px 15px;
-border-radius:6px;
-transition:0.3s;
+padding:8px 16px;
+border-radius:8px;
+transition:0.25s;
 }
 
 nav a:hover{
@@ -42,40 +44,82 @@ background:#2563eb;
 }
 
 .container{
-padding:40px;
+padding:60px 20px;
 text-align:center;
+}
+
+.container h1{
+font-size:38px;
+margin-bottom:10px;
+}
+
+.container p{
+opacity:0.8;
 }
 
 .btn{
 display:inline-block;
-margin:10px;
-padding:12px 20px;
+margin:12px;
+padding:14px 24px;
 background:#2563eb;
-border-radius:8px;
+border-radius:10px;
 text-decoration:none;
 color:white;
 font-weight:bold;
-transition:0.3s;
+transition:0.25s;
 }
 
 .btn:hover{
 background:#1d4ed8;
+transform:scale(1.05);
+}
+
+.server-box{
+margin-top:30px;
+background:#111827;
+padding:25px;
+border-radius:14px;
+display:inline-block;
+box-shadow:0 0 25px rgba(0,0,0,0.6);
+}
+
+.server-box img{
+width:180px;
+margin-bottom:10px;
+}
+
+.user{
+margin-top:15px;
+font-size:16px;
+color:#60a5fa;
+}
+
+.logout{
+margin-top:10px;
+background:#ef4444;
 }
 
 footer{
-margin-top:40px;
-background:#111827;
-padding:20px;
+margin-top:60px;
+background:#020617;
+padding:25px;
 text-align:center;
 font-size:14px;
+opacity:0.8;
 }
+
+footer img{
+margin-top:10px;
+border-radius:50%;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
-🌍 KaizenMC Server
+🌍 KaizenMC Minecraft Server
 </header>
 
 <nav>
@@ -92,13 +136,21 @@ font-size:14px;
 
 <p>Server Minecraft giải trí với nhiều tính năng hấp dẫn.</p>
 
-<img src="kaizen.png" width="200">
+<div class="server-box">
 
-<br><br>
+<img src="kaizen.png">
 
-<a class="btn" href="dang-ky.html">Đăng ký</a>
-<a class="btn" href="dang-nhap.html">Đăng nhập</a>
+<br>
+
 <a class="btn" href="shop.html">Vào Shop</a>
+
+<a class="btn" href="nap-xu.html">Nạp Xu</a>
+
+<div class="user" id="userBox"></div>
+
+<button class="btn logout" onclick="logout()" id="logoutBtn" style="display:none;">Đăng xuất</button>
+
+</div>
 
 </div>
 
@@ -107,6 +159,25 @@ font-size:14px;
 <br>
 <img src="owner.png" width="80">
 </footer>
+
+<script>
+
+let login = localStorage.getItem("login")
+let user = localStorage.getItem("tk")
+
+if(login === "true"){
+document.getElementById("userBox").innerHTML="👤 Đã đăng nhập: <b>"+user+"</b>"
+document.getElementById("logoutBtn").style.display="inline-block"
+}else{
+document.getElementById("userBox").innerHTML="⚠️ Bạn chưa đăng nhập"
+}
+
+function logout(){
+localStorage.removeItem("login")
+location.reload()
+}
+
+</script>
 
 </body>
 </html>
