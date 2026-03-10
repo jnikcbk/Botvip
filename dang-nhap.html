@@ -2,119 +2,47 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập</title>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#0f172a,#1e293b);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.box{
-background:#111827;
-padding:35px;
-border-radius:12px;
-width:320px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
-text-align:center;
-}
-
-h1{
-margin-bottom:20px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-border:none;
-border-radius:6px;
-outline:none;
-background:#1f2937;
-color:white;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:6px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-transition:0.3s;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.google{
-background:#ea4335;
-}
-
-.google:hover{
-background:#d93025;
-}
-
-.gmail{
-background:#34a853;
-}
-
-.gmail:hover{
-background:#2e9447;
-}
-
-a{
-display:block;
-margin-top:15px;
-color:#60a5fa;
-text-decoration:none;
-}
-
-a:hover{
-text-decoration:underline;
-}
-
-</style>
 </head>
 
 <body>
 
-<div class="box">
-
 <h1>Đăng nhập</h1>
 
-<form>
+<input id="user" placeholder="Tên tài khoản"><br><br>
+<input id="pass" type="password" placeholder="Mật khẩu"><br><br>
 
-<input type="text" placeholder="Tên tài khoản hoặc Email" required>
+<button onclick="login()">Đăng nhập</button>
 
-<input type="password" placeholder="Mật khẩu" required>
+<p id="msg"></p>
 
-<button type="submit">Đăng nhập</button>
+<a href="dang-ky.html">Đăng ký</a>
 
-</form>
+<script>
 
-<br>
+function login(){
 
-<button class="google">Đăng nhập bằng Google</button>
+let user=document.getElementById("user").value
+let pass=document.getElementById("pass").value
 
-<button class="gmail">Đăng nhập bằng Gmail</button>
+let tk=localStorage.getItem("tk")
+let mk=localStorage.getItem("mk")
 
-<a href="dang-ky.html">Chưa có tài khoản? Đăng ký</a>
-<a href="index.html">← Quay lại trang chủ</a>
+if(user==tk && pass==mk){
 
-</div>
+localStorage.setItem("login","true")
+
+window.location.href="index.html"
+
+}else{
+
+document.getElementById("msg").innerText="Sai tài khoản hoặc mật khẩu"
+
+}
+
+}
+
+</script>
 
 </body>
 </html>
