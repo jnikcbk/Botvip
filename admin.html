@@ -3,182 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
-
+<title>Admin Panel - KaizenMC</title>
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#020617,#0f172a);
-color:white;
-}
-
-header{
-text-align:center;
-padding:20px;
-font-size:26px;
-font-weight:bold;
-background:#020617;
-border-bottom:2px solid #2563eb;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:40px 20px;
-}
-
-.item{
-background:#111827;
-padding:15px;
-border-radius:10px;
-margin-bottom:10px;
-box-shadow:0 5px 20px rgba(0,0,0,0.6);
-}
-
-.btn{
-padding:6px 12px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin-top:5px;
-margin-right:5px;
-}
-
-.approve{
-background:#22c55e;
-color:white;
-}
-
-.delete{
-background:#ef4444;
-color:white;
-}
-
-.reset{
-background:#f59e0b;
-color:white;
-padding:10px 15px;
-}
-
-.status{
-font-weight:bold;
-}
-
-.back{
-display:inline-block;
-margin-top:20px;
-padding:10px 20px;
-background:#2563eb;
-border-radius:8px;
-text-decoration:none;
-color:white;
-}
-
+  body {
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#020617,#0f172a);
+    color:white;
+    min-height:100vh;
+  }
+  header {
+    text-align:center;
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+    background:#020617;
+    border-bottom:3px solid #2563eb;
+  }
+  .container {
+    max-width:1000px;
+    margin:auto;
+    padding:30px 20px;
+  }
+  h2, h3 {
+    margin-top:0;
+    color:#93c5fd;
+  }
+  .item, .user-item {
+    background:#111827;
+    padding:16px;
+    border-radius:10px;
+    margin-bottom:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  }
+  .btn {
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin:4px 6px 4px 0;
+    font-weight:bold;
+  }
+  .approve  { background:#22c55e; color:white; }
+  .delete   { background:#ef4444; color:white; }
+  .add      { background:#3b82f6; color:white; }
+  .reset    { background:#f59e0b; color:white; padding:12px 20px; font-size:16px; }
+  .danger   { background:#b91c1c; }
+  .status   { font-weight:bold; color:#fbbf24; }
+  .back {
+    display:inline-block;
+    margin:25px 0 10px;
+    padding:12px 24px;
+    background:#2563eb;
+    border-radius:8px;
+    text-decoration:none;
+    color:white;
+    font-weight:bold;
+  }
+  input, select {
+    padding:8px 12px;
+    margin:6px 8px 6px 0;
+    border-radius:6px;
+    border:1px solid #4b5563;
+    background:#1f2937;
+    color:white;
+  }
+  .section {
+    margin-bottom:40px;
+    padding:20px;
+    background:#0f172a;
+    border-radius:12px;
+    border:1px solid #334155;
+  }
 </style>
 </head>
-
 <body>
 
-<header>
-⚙️ Admin Panel KaizenMC
-</header>
+<header>⚙️ Admin Panel KaizenMC</header>
 
 <div class="container">
 
-<h2>📜 Danh sách thẻ nạp</h2>
+  <div class="section">
+    <h2>📜 Quản lý nạp thẻ</h2>
+    <button class="reset" onclick="resetNapHistory()">Reset lịch sử nạp</button>
+    <div id="napList"></div>
+  </div>
 
-<button class="reset" onclick="reset()">Reset lịch sử</button>
+  <div class="section">
+    <h2>➕ Thêm xu thủ công</h2>
+    <div>
+      <input id="addUser" placeholder="Tên người dùng" style="width:180px;">
+      <input id="addXu" type="number" placeholder="Số xu muốn cộng" style="width:160px;">
+      <button class="btn add" onclick="addXuManual()">Cộng xu</button>
+    </div>
+  </div>
 
-<div id="list"></div>
+  <div class="section">
+    <h2>👥 Quản lý người dùng</h2>
+    <div id="userList"></div>
+    <button class="reset danger" onclick="resetAllData()" style="margin-top:15px;">XÓA TOÀN BỘ DỮ LIỆU (CẢNH BÁO)</button>
+  </div>
 
-<a class="back" href="index.html">⬅ Quay lại</a>
+  <a class="back" href="index.html">⬅ Quay lại trang chính</a>
 
 </div>
 
 <script>
-
-if(localStorage.getItem("role")!=="admin"){
-document.body.innerHTML="<h1 style='text-align:center;margin-top:100px;'>❌ Không có quyền</h1>"
+// Bảo vệ admin
+if(localStorage.getItem("role") !== "admin") {
+  document.body.innerHTML = "<h1 style='text-align:center;margin-top:120px;color:#ef4444;'>❌ Bạn không có quyền truy cập</h1>";
+  throw new Error("Access denied");
 }
 
-let data=JSON.parse(localStorage.getItem("napHistory"))||[]
+// ----------------------
+// Dữ liệu
+// ----------------------
+let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
+let users = JSON.parse(localStorage.getItem("users")) || {};
 
-let box=document.getElementById("list")
+// ----------------------
+// Nạp thẻ
+// ----------------------
+const napBox = document.getElementById("napList");
 
-function load(){
+function loadNap() {
+  napBox.innerHTML = "";
+  if (napHistory.length === 0) {
+    napBox.innerHTML = "<p style='color:#9ca3af;text-align:center;'>Chưa có giao dịch nạp nào.</p>";
+    return;
+  }
 
-box.innerHTML=""
+  napHistory.forEach((item, index) => {
+    const status = item.status || "Chờ duyệt";
+    const statusColor = status === "Đã duyệt" ? "#22c55e" : status === "Từ chối" ? "#ef4444" : "#fbbf24";
 
-data.forEach((d,i)=>{
-
-let status=d.status||"Chờ duyệt"
-
-box.innerHTML+=`
-<div class="item">
-👤 User: ${d.user}<br>
-📱 Thẻ: ${d.type}<br>
-💰 Mệnh giá: ${d.menhgia}đ<br>
-🔑 Mã: ${d.code}<br>
-🧾 Seri: ${d.seri}<br>
-⏱ ${d.time}<br>
-
-📌 Trạng thái: <span class="status">${status}</span>
-<br><br>
-
-<button class="btn approve" onclick="duyet(${i})">Duyệt</button>
-<button class="btn delete" onclick="xoa(${i})">Xóa</button>
-</div>
-`
-
-})
-
+    napBox.innerHTML += `
+      <div class="item">
+        <b>👤 User:</b> ${item.user}<br>
+        <b>📱 Loại thẻ:</b> ${item.type}<br>
+        <b>💰 Mệnh giá:</b> ${item.menhgia.toLocaleString()}đ<br>
+        <b>🔑 Mã:</b> ${item.code}<br>
+        <b>🧾 Seri:</b> ${item.seri}<br>
+        <b>⏱ Thời gian:</b> ${item.time}<br>
+        <b>📌 Trạng thái:</b> <span class="status" style="color:${statusColor}">${status}</span><br><br>
+        ${status !== "Đã duyệt" ? `
+          <button class="btn approve" onclick="duyetNap(${index})">Duyệt</button>
+          <button class="btn delete" onclick="tuChoiNap(${index})">Từ chối</button>
+        ` : ''}
+        <button class="btn delete" onclick="xoaNap(${index})">Xóa</button>
+      </div>
+    `;
+  });
 }
 
-function duyet(i){
+function duyetNap(i) {
+  if (napHistory[i].status === "Đã duyệt") return;
+  napHistory[i].status = "Đã duyệt";
 
-if(data[i].status==="Đã duyệt") return
+  const xuKey = `xu_${napHistory[i].user}`;
+  let currentXu = parseInt(localStorage.getItem(xuKey)) || 0;
+  const nhan = parseInt(napHistory[i].menhgia) * 10;
+  localStorage.setItem(xuKey, currentXu + nhan);
 
-data[i].status="Đã duyệt"
-
-let xu=parseInt(localStorage.getItem("xu"))||0
-
-let nhan=data[i].menhgia*10
-
-xu+=nhan
-
-localStorage.setItem("xu",xu)
-
-localStorage.setItem("napHistory",JSON.stringify(data))
-
-load()
-
+  localStorage.setItem("napHistory", JSON.stringify(napHistory));
+  loadNap();
 }
 
-function xoa(i){
-
-data.splice(i,1)
-
-localStorage.setItem("napHistory",JSON.stringify(data))
-
-load()
-
+function tuChoiNap(i) {
+  napHistory[i].status = "Từ chối";
+  localStorage.setItem("napHistory", JSON.stringify(napHistory));
+  loadNap();
 }
 
-function reset(){
-
-localStorage.removeItem("napHistory")
-
-data=[]
-
-load()
-
+function xoaNap(i) {
+  if (!confirm("Xác nhận xóa giao dịch này?")) return;
+  napHistory.splice(i, 1);
+  localStorage.setItem("napHistory", JSON.stringify(napHistory));
+  loadNap();
 }
 
-load()
+function resetNapHistory() {
+  if (!confirm("Xóa TOÀN BỘ lịch sử nạp?")) return;
+  localStorage.removeItem("napHistory");
+  napHistory = [];
+  loadNap();
+}
 
+// ----------------------
+// Thêm xu thủ công
+// ----------------------
+function addXuManual() {
+  const username = document.getElementById("addUser").value.trim();
+  const amount = parseInt(document.getElementById("addXu").value);
+
+  if (!username || isNaN(amount) || amount <= 0) {
+    alert("Vui lòng nhập tên user và số xu hợp lệ!");
+    return;
+  }
+
+  const xuKey = `xu_${username}`;
+  let current = parseInt(localStorage.getItem(xuKey)) || 0;
+  localStorage.setItem(xuKey, current + amount);
+
+  alert(`Đã cộng ${amount.toLocaleString()} xu cho ${username}\nTổng xu hiện tại: ${(current + amount).toLocaleString()}`);
+  document.getElementById("addXu").value = "";
+}
+
+// ----------------------
+// Quản lý user
+// ----------------------
+const userBox = document.getElementById("userList");
+
+function loadUsers() {
+  userBox.innerHTML = "";
+  const allKeys = Object.keys(localStorage);
+
+  const userList = allKeys
+    .filter(k => k.startsWith("xu_"))
+    .map(k => k.replace("xu_", ""));
+
+  if (userList.length === 0) {
+    userBox.innerHTML = "<p style='color:#9ca3af;text-align:center;'>Chưa có người dùng nào.</p>";
+    return;
+  }
+
+  userList.forEach(username => {
+    const xu = parseInt(localStorage.getItem(`xu_${username}`)) || 0;
+    userBox.innerHTML += `
+      <div class="user-item">
+        <b>👤 ${username}</b><br>
+        💰 Xu: ${xu.toLocaleString()}<br><br>
+        <button class="btn delete danger" onclick="xoaTaiKhoan('${username}')">XÓA TÀI KHOẢN</button>
+      </div>
+    `;
+  });
+}
+
+function xoaTaiKhoan(username) {
+  if (!confirm(`XÓA VĨNH VIỄN tài khoản ${username}?\nMọi xu và dữ liệu sẽ mất!`)) return;
+
+  // Xóa xu
+  localStorage.removeItem(`xu_${username}`);
+
+  // Xóa lịch sử nạp liên quan
+  napHistory = napHistory.filter(item => item.user !== username);
+  localStorage.setItem("napHistory", JSON.stringify(napHistory));
+
+  // Xóa các key khác nếu có (role, password,...)
+  Object.keys(localStorage).forEach(key => {
+    if (key.includes(username)) localStorage.removeItem(key);
+  });
+
+  loadUsers();
+  loadNap();
+}
+
+function resetAllData() {
+  if (!confirm("XÓA TOÀN BỘ DỮ LIỆU HỆ THỐNG?\nKhông thể khôi phục!")) return;
+  localStorage.clear();
+  alert("Đã xóa toàn bộ dữ liệu!");
+  location.reload();
+}
+
+// Khởi chạy
+loadNap();
+loadUsers();
 </script>
-
 </body>
 </html>
