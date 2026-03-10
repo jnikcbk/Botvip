@@ -27,8 +27,6 @@
     background: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=2000') no-repeat center center fixed;
     background-size: cover;
   }
-
-  /* Overlay tối + neon glow mạnh */
   body::before {
     content: '';
     position: fixed;
@@ -37,8 +35,6 @@
     z-index: 1;
     pointer-events: none;
   }
-
-  /* Neon pulse overlay (tím + xanh cyan) */
   body::after {
     content: '';
     position: fixed;
@@ -50,13 +46,10 @@
     z-index: 2;
     pointer-events: none;
   }
-
   @keyframes neonPulse {
     0% { opacity: 0.5; transform: scale(1); }
     100% { opacity: 0.9; transform: scale(1.05); }
   }
-
-  /* Sao rơi + nhấp nháy mạnh hơn */
   .stars {
     position: fixed;
     inset: 0;
@@ -92,12 +85,10 @@
     animation-duration: 200s;
     opacity: 0.4;
   }
-
   @keyframes starsFall {
     0% { transform: translateY(0); }
     100% { transform: translateY(2000px); }
   }
-
   header {
     text-align:center;
     padding:60px 20px 40px;
@@ -114,47 +105,147 @@
   }
   @keyframes pulse { to {opacity:0.85; transform:scale(1.03);} }
 
-  nav {
-    display:flex;
-    justify-content:center;
-    gap:20px;
-    background:rgba(15,23,42,0.85);
-    backdrop-filter:blur(12px);
-    padding:18px 10px;
-    flex-wrap:wrap;
-    border-bottom:3px solid rgba(0,240,255,0.4);
-    position:sticky;
-    top:0;
-    z-index: 10;
+  /* ── NAVIGATION ── */
+  .main-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 0, 21, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 2px solid rgba(0, 240, 255, 0.35);
+    padding: 0 30px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   }
-  nav a {
-    color:white;
-    text-decoration:none;
-    padding:12px 24px;
-    border-radius:50px;
-    font-weight:500;
-    transition:0.4s;
-    background:rgba(37,99,235,0.15);
+  .nav-logo {
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
-  nav a:hover {
-    background:linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-    transform:scale(1.1);
-    box-shadow:0 0 30px rgba(0,240,255,0.7);
+  .nav-logo img {
+    height: 48px;
+    transition: transform 0.4s;
+  }
+  .nav-logo img:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    z-index: 101;
+  }
+  .hamburger span {
+    width: 32px;
+    height: 4px;
+    background: linear-gradient(90deg, #00f0ff, #c300ff);
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(192, 0, 255, 0.7);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(10px, 10px);
+  }
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  .hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(9px, -9px);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .nav-links a {
+    color: #e0f2fe;
+    text-decoration: none;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 50px;
+    background: rgba(37, 99, 235, 0.12);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .nav-links a .icon {
+    margin-right: 8px;
+    font-size: 1.2rem;
+    opacity: 0.9;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00f0ff, #c300ff, #ff00aa);
+    transition: all 0.4s;
+    transform: translateX(-50%);
+  }
+  .nav-links a:hover {
+    background: linear-gradient(45deg, rgba(0,240,255,0.25), rgba(195,0,255,0.25));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
+  }
+  .nav-links a:hover::after {
+    width: 70%;
   }
   .admin-btn {
-    display:none;
-    background:linear-gradient(45deg, #ff3366, #cc0033);
-    padding:12px 24px;
-    border-radius:50px;
-    color:white;
-    font-weight:bold;
-    text-decoration:none;
-    transition:0.4s;
+    background: linear-gradient(45deg, #ff3366, #cc0033) !important;
+    color: white !important;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.6);
   }
   .admin-btn:hover {
-    transform:scale(1.1);
-    box-shadow:0 0 30px rgba(255,51,102,0.8);
+    box-shadow: 0 0 40px rgba(255, 51, 102, 0.9) !important;
+    transform: translateY(-4px) scale(1.05) !important;
   }
+  @media (max-width: 960px) {
+    .hamburger {
+      display: flex;
+    }
+    .nav-links {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 80%;
+      max-width: 320px;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(10,0,21,0.98), rgba(30,0,60,0.98));
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 35px;
+      transition: right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 99;
+      padding: 80px 20px;
+    }
+    .nav-links.active {
+      right: 0;
+    }
+    .nav-links a {
+      font-size: 1.5rem;
+      padding: 15px 40px;
+      width: 90%;
+      text-align: center;
+      background: rgba(37,99,235,0.2);
+      border-radius: 16px;
+    }
+    .nav-links a:hover {
+      transform: scale(1.08);
+    }
+  }
+
   .container {
     padding:80px 20px 100px;
     text-align:center;
@@ -278,16 +369,28 @@
 
 <header>🌌 KaizenMC Minecraft Server</header>
 
-<nav>
-  <a href="index.html">Trang chủ</a>
-  <a href="dang-ky.html">Đăng ký</a>
-  <a href="dang-nhap.html">Đăng nhập</a>
-  <a href="shop.html">Shop</a>
-  <a href="nap-xu.html">Nạp xu</a>
-  <a href="luat.html">Luật SV</a>
-  <a href="lichsudamua.html">Lịch sử mua</a>
-  <a href="admin.html" class="admin-btn" id="adminLink">Admin Panel</a>
-  <a href="tatcammber.html" class="admin-btn" id="memberListLink">Tất cả member</a>
+<nav class="main-nav">
+  <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="nav-logo">
+    <img src="kaizen.png" alt="KaizenMC">
+  </div>
+
+  <div class="nav-links" id="navLinks">
+    <a href="index.html"><span class="icon">🏠</span> Trang chủ</a>
+    <a href="dang-ky.html"><span class="icon">📝</span> Đăng ký</a>
+    <a href="dang-nhap.html"><span class="icon">🔑</span> Đăng nhập</a>
+    <a href="shop.html"><span class="icon">🛒</span> Shop</a>
+    <a href="nap-xu.html"><span class="icon">💎</span> Nạp xu</a>
+    <a href="luat.html"><span class="icon">📜</span> Luật SV</a>
+    <a href="lichsudamua.html"><span class="icon">📊</span> Lịch sử mua</a>
+    <a href="admin.html" class="admin-btn" id="adminLink"><span class="icon">🛡️</span> Admin Panel</a>
+    <a href="tatcammber.html" class="admin-btn" id="memberListLink"><span class="icon">👥</span> Tất cả member</a>
+  </div>
 </nav>
 
 <div class="container">
@@ -295,7 +398,6 @@
     <img src="kaizen.png" alt="KaizenMC Logo">
     <h1>Chào mừng đến KaizenMC</h1>
     <p>Server Minecraft Pokémon giải trí đỉnh cao – nơi bạn có thể bắt Pokémon, chiến đấu, giao dịch và khám phá thế giới rộng lớn!</p>
-
     <div class="features">
       <h3>Tính năng nổi bật</h3>
       <ul>
@@ -306,13 +408,10 @@
         <li>Phiên bản Pixelmon/Cobblemon mới nhất</li>
       </ul>
     </div>
-
     <div class="user" id="userBox"></div>
-
     <a class="btn" href="shop.html">🛒 Vào Shop</a>
     <a class="btn" href="nap-xu.html">💎 Nạp Xu</a>
     <button class="btn" onclick="copyIP()">Tham gia ngay (Copy IP)</button>
-
     <button class="btn logout" onclick="logout()" id="logoutBtn" style="display:none;">Đăng xuất</button>
   </div>
 </div>
@@ -322,7 +421,7 @@
   IP Server: <b>180.93.103.140:26666</b><br>
   <img src="owner.png" alt="Owner Avatar">
   <br><br>
-  Discord: <a href="https://discord.gg/8aHEPvZK" style="color:#60a5fa;">https://discord.gg/8aHEPvZK</a> | Facebook: <a href="#" style="color:#60a5fa;">https://www.facebook.com/share/1Ca7jyNpSR/<a>
+  Discord: <a href="https://discord.gg/8aHEPvZK" style="color:#60a5fa;">https://discord.gg/8aHEPvZK</a> | Facebook: <a href="#" style="color:#60a5fa;">https://www.facebook.com/share/1Ca7jyNpSR/</a>
 </footer>
 
 <script>
@@ -333,17 +432,14 @@ function updateUserInfo() {
   const logoutBtn = document.getElementById("logoutBtn");
   const adminLink = document.getElementById("adminLink");
   const memberListLink = document.getElementById("memberListLink");
-
   if (login === "true" && user) {
     const xuKey = `xu_${user}`;
     const xu = parseInt(localStorage.getItem(xuKey)) || 0;
     userBox.innerHTML = `👤 <b>${user}</b> | 💰 <span style="color:#fbbf24;">${xu.toLocaleString('vi-VN')} xu</span>`;
     logoutBtn.style.display = "inline-block";
-
     const role = localStorage.getItem("role");
-    const isAdmin = role === "admin" || 
+    const isAdmin = role === "admin" ||
                     ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"].includes(user.toLowerCase());
-
     if (isAdmin) {
       adminLink.style.display = "inline-block";
       memberListLink.style.display = "inline-block";
@@ -358,7 +454,6 @@ function updateUserInfo() {
     document.getElementById("memberListLink").style.display = "none";
   }
 }
-
 function logout() {
   if (confirm("Bạn chắc chắn muốn đăng xuất?")) {
     localStorage.removeItem("login");
@@ -367,13 +462,23 @@ function logout() {
     location.reload();
   }
 }
-
 function copyIP() {
   navigator.clipboard.writeText("180.93.103.140:26666")
     .then(() => alert("Đã copy IP: 180.93.103.140:26666 ✓\nPaste vào Minecraft để tham gia!"))
     .catch(() => alert("Copy thất bại, copy thủ công nhé!"));
 }
-
+function toggleMenu() {
+  const hamburger = document.getElementById("hamburgerBtn");
+  const navLinks = document.getElementById("navLinks");
+  hamburger.classList.toggle("active");
+  navLinks.classList.toggle("active");
+}
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById("hamburgerBtn").classList.remove("active");
+    document.getElementById("navLinks").classList.remove("active");
+  });
+});
 // Khởi chạy
 updateUserInfo();
 </script>
