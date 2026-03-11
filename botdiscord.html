@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC - Lệnh Bot Discord</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --neon-blue: #00f0ff;
+            --neon-purple: #c300ff;
+            --discord: #5865F2;
+            --glass: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            color: white;
+            min-height: 100vh;
+            background: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%);
+            overflow-x: hidden;
+        }
+
+        /* Ánh sáng nền */
+        body::before {
+            content: ""; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vh;
+            background: var(--discord); filter: blur(150px); opacity: 0.15; z-index: -1;
+        }
+
+        /* --- NAVBAR (Giống trang chủ) --- */
+        .main-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: 70px; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+        }
+        .nav-logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; text-decoration: none;}
+        .nav-logo img { height: 40px; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+        .nav-links a {
+            color: #e2e8f0; text-decoration: none; font-size: 14px; font-weight: 600;
+            padding: 10px 16px; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; gap: 6px;
+        }
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); color: var(--neon-blue); }
+        .admin-btn { background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 3px; transition: 0.3s; }
+
+        @media (max-width: 1100px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 70px; right: -100%; width: 280px; height: calc(100vh - 70px);
+                background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+                flex-direction: column; align-items: flex-start; padding: 20px; transition: 0.4s;
+                border-left: 1px solid var(--border);
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { width: 100%; padding: 15px; font-size: 16px; }
+        }
+
+        /* --- MAIN CONTENT --- */
+        .container { padding: 120px 20px 80px; max-width: 1000px; margin: auto; }
+        
+        .header-section { text-align: center; margin-bottom: 50px; }
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 38px; margin-bottom: 15px;
+            background: linear-gradient(to right, #fff, var(--discord), var(--neon-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
+        }
+        p.desc { color: #94a3b8; font-size: 16px; line-height: 1.6; max-width: 600px; margin: 0 auto; }
+
+        /* Nút Discord */
+        .btn-discord {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--discord); color: white; padding: 15px 30px;
+            border-radius: 14px; font-weight: 800; text-decoration: none; font-size: 16px;
+            margin-top: 20px; transition: 0.3s; box-shadow: 0 10px 25px rgba(88, 101, 242, 0.4);
+        }
+        .btn-discord:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(88, 101, 242, 0.6); }
+
+        /* Grid Lệnh Bot */
+        .cmd-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; margin-top: 40px;
+        }
+
+        .cmd-card {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 25px; border-radius: 20px; backdrop-filter: blur(10px);
+            transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .cmd-card:hover {
+            border-color: var(--discord); transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.15);
+        }
+        
+        .cmd-card::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--discord); transition: 0.3s; opacity: 0.5;
+        }
+        .cmd-card:hover::before { opacity: 1; box-shadow: 0 0 15px var(--discord); }
+
+        .cmd-title { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--neon-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
+        .cmd-title span { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; letter-spacing: 1px; color: #fff;}
+        .cmd-desc { color: #cbd5e1; font-size: 15px; line-height: 1.5; }
+
+        /* Footer */
+        footer {
+            background: #020617; padding: 30px 20px; text-align: center; border-top: 1px solid var(--border);
+            color: #64748b; font-size: 14px; margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="main-nav">
+    <a href="index.html" class="nav-logo">
+        <img src="kaizen.png" alt="Logo" onerror="this.src='https://via.placeholder.com/40/00f0ff/FFFFFF?text=K'">
+        KAIZEN MC
+    </a>
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="nav-links" id="navLinks">
+        <a href="index.html">🏠 Trang chủ</a>
+        <a href="dang-ky.html">📝 Đăng ký</a>
+        <a href="dang-nhap.html">🔑 Đăng nhập</a>
+        <a href="shop.html">🛒 Shop</a>
+        <a href="nap-xu.html">💎 Nạp xu</a>
+        <a href="botdiscord.html" style="color: var(--neon-blue);">🤖 Bot Discord</a>
+        <a href="luat.html">📜 Luật SV</a>
+        <a href="admin.html" class="admin-btn" id="adminLink" style="display:none;">🛡️ Panel Admin</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-section">
+        <h1>🤖 TRỢ LÝ BOT DISCORD</h1>
+        <p class="desc">Bot KaizenMC giúp bạn tra cứu thông tin server, kết nối tài khoản game và nhận thông báo quan trọng ngay trên Discord. Hãy tham gia server và trải nghiệm ngay!</p>
+        
+        <a href="https://discord.gg/8aHEPvZK" target="_blank" class="btn-discord">
+            <svg width="24" height="24" viewBox="0 0 127.14 96.36" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.08 0 72.37 72.37 0 0 0-3.36-6.83 105.15 105.15 0 0 0-26.23 8.09C2.04 33.84-2.69 58.97.92 83.46a105.73 105.73 0 0 0 32.27 16.17 77.7 77.7 0 0 0 6.89-11.1 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.66 1.75 1.34 2.66 2a68.42 68.42 0 0 1-10.87 5.19 77.7 77.7 0 0 0 6.89 11.1 105.73 105.73 0 0 0 32.27-16.17c4.01-27.43-1.89-51.52-18.46-75.39zM42.49 65.16c-5.32 0-9.76-4.86-9.76-10.82s4.36-10.82 9.76-10.82c5.44 0 9.88 4.9 9.76 10.82 0 5.96-4.32 10.82-9.76 10.82zm42.16 0c-5.32 0-9.76-4.86-9.76-10.82s4.36-10.82 9.76-10.82c5.44 0 9.88 4.9 9.76 10.82 0 5.96-4.32 10.82-9.76 10.82z"/>
+            </svg>
+            THAM GIA DISCORD KAIZENMC
+        </a>
+    </div>
+
+    <div class="cmd-grid">
+        <div class="cmd-card">
+            <div class="cmd-title">🔗 <span>/link</span></div>
+            <p class="cmd-desc">Liên kết tài khoản Minecraft của bạn với Discord. Giúp nhận thông báo nạp xu, mua đồ và bảo vệ tài khoản tốt hơn.</p>
+        </div>
+
+        <div class="cmd-card">
+            <div class="cmd-title">💰 <span>/xu</span></div>
+            <p class="cmd-desc">Kiểm tra số dư Xu hiện tại trong tài khoản của bạn ngay trên Discord mà không cần phải đăng nhập vào game hay web.</p>
+        </div>
+
+        <div class="cmd-card">
+            <div class="cmd-title">🌐 <span>/online</span></div>
+            <p class="cmd-desc">Xem số lượng và danh sách người chơi đang online trong Server KaizenMC theo thời gian thực.</p>
+        </div>
+
+        <div class="cmd-card">
+            <div class="cmd-title">🆘 <span>/hotro</span></div>
+            <p class="cmd-desc">Tạo một Ticket yêu cầu hỗ trợ. Admin sẽ nhận được thông báo và vào giải đáp/xử lý vấn đề cho bạn nhanh nhất.</p>
+        </div>
+        
+        <div class="cmd-card">
+            <div class="cmd-title">🏆 <span>/top</span></div>
+            <p class="cmd-desc">Xem bảng xếp hạng Server: Top Đại Gia (nhiều xu nhất), Top Bắt Pokémon, Top Level.</p>
+        </div>
+
+        <div class="cmd-card">
+            <div class="cmd-title">🎁 <span>/giftcode</span></div>
+            <p class="cmd-desc">Nhập mã Giftcode bạn nhận được từ các sự kiện trên Fanpage/Discord để nhận Xu hoặc vật phẩm thẳng vào tài khoản.</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2026 KaizenMC • Vận hành bởi <b>Minhmeo</b> & <b>Đăng Mạnh</b><br>
+    IP: <b>180.93.103.140:26666</b>
+</footer>
+
+<script>
+// --- CẤU HÌNH FIREBASE (Chỉ để check quyền Admin cho cái menu) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+
+// Logic Menu Mobile
+function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("active");
+}
+
+// Check quyền Admin ẩn/hiện nút Menu
+window.onload = function() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        const ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+        if (ADMINS.includes(username.toLowerCase())) {
+            document.getElementById("adminLink").style.display = "flex";
+        }
+    }
+}
+</script>
+</body>
+</html>
