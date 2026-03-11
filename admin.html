@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KaizenMC - Hệ Thống Quản Trị</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -27,7 +29,6 @@
             align-items: center;
         }
 
-        /* Thẻ bao ngoài */
         .admin-wrapper {
             background: rgba(17, 24, 39, 0.8);
             backdrop-filter: blur(10px);
@@ -44,7 +45,6 @@
 
         h1, h2 { color: var(--primary); margin-top: 0; }
         
-        /* Input & Button */
         input {
             width: 100%;
             padding: 12px 15px;
@@ -54,9 +54,7 @@
             border-radius: 8px;
             color: white;
             box-sizing: border-box;
-            transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); outline: none; }
 
         .btn {
             padding: 10px 18px;
@@ -64,34 +62,19 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
             color: white;
             margin: 5px;
         }
-        .btn:active { transform: scale(0.95); }
         .btn-primary { background: var(--primary); }
         .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
-        .btn-warning { background: var(--warning); }
 
-        /* Tabs điều hướng */
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        /* Danh sách nạp/mua */
         .section {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid #334155;
             margin-bottom: 20px;
-            animation: fadeIn 0.4s ease-out;
         }
-        @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
 
         .data-card {
             background: #111827;
@@ -99,14 +82,6 @@
             border-radius: 10px;
             margin-bottom: 10px;
             border-left: 4px solid var(--primary);
-            position: relative;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            text-transform: uppercase;
         }
 
         header {
@@ -118,8 +93,6 @@
             display: flex;
             justify-content: space-between;
         }
-
-        .msg { font-size: 14px; margin-top: 10px; min-height: 20px; }
     </style>
 </head>
 <body>
@@ -127,204 +100,114 @@
 <div class="admin-wrapper">
     <div id="authScreen">
         <h1>🔒 Admin Access</h1>
-        <p style="color: var(--text-dim)">Vui lòng xác minh quyền quản trị viên</p>
-        <input id="secretKey" type="password" placeholder="Mã bí mật (Secret Key)...">
+        <p style="color: var(--text-dim)">Nhập mã bí mật để quản trị</p>
+        <input id="secretKey" type="password" placeholder="Mã bí mật...">
         <button class="btn btn-primary" style="width: 100%" onclick="verifyAdmin()">Xác nhận</button>
-        <p id="msg" class="msg" style="color: var(--danger)"></p>
+        <p id="msgAuth" style="color: var(--danger); margin-top: 10px;"></p>
     </div>
 
     <div id="adminContent">
         <header>
-            <span>⚙️ KaizenMC Admin Panel</span>
-            <button class="btn btn-danger" onclick="location.reload()" style="font-size: 12px;">Đăng xuất</button>
+            <span>⚙️ KaizenMC Admin</span>
+            <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
         </header>
 
-        <div class="nav-tabs">
-            <button class="btn btn-primary" onclick="showSection('nap')">💳 Quản lý nạp thẻ</button>
-            <button class="btn btn-primary" onclick="showSection('purchase')">🛒 Lịch sử mua</button>
-            <button class="btn btn-primary" onclick="showSection('user')">👤 Quản lý thành viên</button>
-            <button class="btn btn-warning" onclick="showSection('system')">🛠 Hệ thống</button>
-        </div>
-
-        <div class="section" id="napSection">
-            <h2>📜 Danh sách thẻ chờ duyệt</h2>
-            <div id="napList"></div>
-        </div>
-
-        <div class="section" id="purchaseSection" style="display:none;">
-            <h2>🛍️ Lịch sử mua hàng của Member</h2>
-            <div id="purchaseList"></div>
-        </div>
-
-        <div class="section" id="userSection" style="display:none;">
-            <h2>👥 Quản lý thành viên</h2>
+        <div class="section">
+            <h2>👥 Quản lý thành viên (Firebase)</h2>
             <div style="background: #0f172a; padding: 15px; border-radius: 8px;">
-                <p>Cộng xu thủ công:</p>
-                <input id="addUser" placeholder="Tên tài khoản..." style="width: 45%;">
-                <input id="addXu" type="number" placeholder="Số xu cộng..." style="width: 45%;">
-                <button class="btn btn-success" onclick="addXuManual()">Cộng xu</button>
+                <p>Cộng xu trực tiếp lên mây:</p>
+                <input id="targetUser" placeholder="Tên tài khoản member..." style="width: 45%;">
+                <input id="amountXu" type="number" placeholder="Số xu cộng..." style="width: 45%;">
+                <button class="btn btn-success" onclick="addXuFirebase()">XÁC NHẬN CỘNG XU</button>
             </div>
-            <hr style="border: 0.5px solid #334155; margin: 20px 0;">
-            <p>Xóa tài khoản:</p>
-            <input id="deleteUser" placeholder="Nhập tên tài khoản cần xóa...">
-            <button class="btn btn-danger" onclick="deleteUserAccount()">XÓA TÀI KHOẢN</button>
         </div>
 
-        <div id="systemSection" class="section" style="display:none;">
-            <h2>🛠 Cấu hình hệ thống</h2>
-            <p>Cẩn thận: Các hành động này không thể hoàn tác.</p>
-            <button class="btn btn-warning" onclick="resetNapHistory()">Reset lịch sử nạp</button>
-            <button class="btn btn-danger" onclick="resetAllData()">RESET TOÀN BỘ DỮ LIỆU</button>
+        <div class="section">
+            <h2>📜 Thẻ nạp chờ duyệt (Demo)</h2>
+            <div id="napList"><p style="color:var(--text-dim)">Tính năng duyệt thẻ tự động đang được cập nhật...</p></div>
         </div>
 
-        <div style="margin-top: 20px; text-align: center;">
+        <div style="text-align: center;">
             <a href="index.html" style="color: var(--text-dim); text-decoration: none;">⬅ Quay lại trang chủ</a>
         </div>
     </div>
 </div>
 
 <script>
-// Cấu hình (Lưu ý: LocalStorage chỉ có tác dụng trên trình duyệt hiện tại)
-const SECRET_KEY_HASH = "aduadmindzvokia"; 
-const ALLOWED_ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+// 1. Cấu hình Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-// --- QUẢN LÝ TRẠNG THÁI ---
+// 2. Cấu hình quyền
+const SECRET_KEY = "aduadmindzvokia"; 
+const ADMIN_NAMES = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+
 function verifyAdmin() {
     const inputKey = document.getElementById("secretKey").value.trim();
-    const currentUser = localStorage.getItem("tk") || "";
-    const msg = document.getElementById("msg");
+    const loggedUser = localStorage.getItem("username"); // Lấy đúng key từ file Login mới
+    const msg = document.getElementById("msgAuth");
 
-    if (inputKey !== SECRET_KEY_HASH) {
+    // Kiểm tra mã bí mật
+    if (inputKey !== SECRET_KEY) {
         msg.innerText = "❌ Mã bí mật sai!";
         return;
     }
 
-    if (!ALLOWED_ADMINS.includes(currentUser.toLowerCase())) {
-        msg.innerText = "❌ Tài khoản '" + currentUser + "' không có quyền admin!";
+    // Kiểm tra tên tài khoản đang đăng nhập có trong list Admin không
+    if (!loggedUser || !ADMIN_NAMES.includes(loggedUser.toLowerCase())) {
+        msg.innerText = `❌ Tài khoản '${loggedUser || "Khách"}' không có quyền Admin!`;
         return;
     }
 
+    // Nếu ok thì mở giao diện
     document.getElementById("authScreen").style.display = "none";
     document.getElementById("adminContent").style.display = "block";
-    loadNap();
 }
 
-function showSection(section) {
-    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-    document.getElementById(`${section}Section`).style.display = "block";
-    if (section === 'nap') loadNap();
-    if (section === 'purchase') loadPurchases();
-}
+// 3. Hàm cộng xu lên Firebase
+async function addXuFirebase() {
+    const user = document.getElementById("targetUser").value.trim().toLowerCase();
+    const xuAdd = parseInt(document.getElementById("amountXu").value);
 
-// --- LOGIC NẠP THẺ ---
-function loadNap() {
-    const napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-    const napBox = document.getElementById("napList");
-    napBox.innerHTML = napHistory.length === 0 ? "<p>Trống.</p>" : "";
-
-    napHistory.forEach((item, index) => {
-        const color = item.status === "Đã duyệt" ? "var(--success)" : item.status === "Từ chối" ? "var(--danger)" : "var(--warning)";
-        napBox.innerHTML += `
-            <div class="data-card">
-                <b>👤 User:</b> ${item.user} | <b>💰 Mệnh giá:</b> ${Number(item.menhgia).toLocaleString()}đ<br>
-                <small>Loại: ${item.type} | Mã: ${item.code} | Seri: ${item.seri}</small><br>
-                <b>📌 Trạng thái:</b> <span style="color:${color}">${item.status || 'Chờ duyệt'}</span>
-                <div style="margin-top:10px;">
-                    ${item.status !== "Đã duyệt" ? `<button class="btn btn-success" style="padding:5px 10px;" onclick="duyetNap(${index})">Duyệt</button>` : ''}
-                    <button class="btn btn-danger" style="padding:5px 10px;" onclick="xoaNap(${index})">Xóa</button>
-                </div>
-            </div>`;
-    });
-}
-
-function duyetNap(index) {
-    let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-    let item = napHistory[index];
-
-    if (confirm(`Duyệt thẻ ${item.menhgia}đ cho ${item.user}?`)) {
-        // Cập nhật số dư cho User (Lấy từ key 'users' hoặc key tên user tùy theo code của bạn)
-        // Giả sử dữ liệu user lưu tại: user_DATA_tên-user
-        let userData = JSON.parse(localStorage.getItem(`user_${item.user}`)) || { xu: 0 };
-        userData.xu = (userData.xu || 0) + Number(item.menhgia);
-        localStorage.setItem(`user_${item.user}`, JSON.stringify(userData));
-
-        // Cập nhật trạng thái thẻ
-        item.status = "Đã duyệt";
-        localStorage.setItem("napHistory", JSON.stringify(napHistory));
-        alert("Thành công! User đã nhận được xu.");
-        loadNap();
+    if (!user || isNaN(xuAdd)) {
+        alert("⚠️ Nhập đủ tên và số xu!");
+        return;
     }
-}
 
-function xoaNap(index) {
-    if (confirm("Xóa bản ghi này?")) {
-        let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-        napHistory.splice(index, 1);
-        localStorage.setItem("napHistory", JSON.stringify(napHistory));
-        loadNap();
-    }
-}
-
-// --- LOGIC MUA HÀNG ---
-function loadPurchases() {
-    const list = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
-    const box = document.getElementById("purchaseList");
-    box.innerHTML = list.length === 0 ? "<p>Chưa có ai mua gì.</p>" : "";
-    
-    list.forEach(p => {
-        box.innerHTML += `
-            <div class="data-card" style="border-left-color: #a855f7">
-                <b>👤 ${p.user}</b> đã mua <b>📦 ${p.item}</b><br>
-                <small>Giá: ${p.price} | Thời gian: ${p.time}</small>
-            </div>`;
-    });
-}
-
-// --- LOGIC USER ---
-function addXuManual() {
-    const user = document.getElementById("addUser").value.trim();
-    const xu = document.getElementById("addXu").value;
-    if (!user || !xu) return alert("Nhập đủ thông tin!");
-
-    let userData = JSON.parse(localStorage.getItem(`user_${user}`)) || { xu: 0 };
-    userData.xu = (Number(userData.xu) || 0) + Number(xu);
-    localStorage.setItem(`user_${user}`, JSON.stringify(userData));
-    alert(`Đã cộng ${xu} xu cho ${user}`);
-}
-
-function deleteUserAccount() {
-    const user = document.getElementById("deleteUser").value.trim();
-    if (confirm(`Bạn chắc chắn muốn XÓA VĨNH VIỄN tài khoản ${user}?`)) {
-        localStorage.removeItem(`user_${user}`);
-        alert("Đã xóa!");
-    }
-}
-
-// --- RESET DỮ LIỆU ---
-function resetNapHistory() {
-    if (confirm("Reset toàn bộ lịch sử nạp?")) {
-        localStorage.removeItem("napHistory");
-        loadNap();
-    }
-}
-
-function resetAllData() {
-    if (confirm("⚠️ CẢNH BÁO: Hành động này sẽ xóa sạch dữ liệu người dùng, xu, và lịch sử. Tiếp tục?")) {
-        localStorage.clear();
-        alert("Dữ liệu đã trống. Vui lòng F5 lại.");
-        location.reload();
-    }
-}
-
-// Bảo vệ đăng nhập
-setInterval(() => {
-    if (document.getElementById("adminContent").style.display === "block") {
-        if (localStorage.getItem("login") !== "true") {
-            location.reload();
+    try {
+        const ref = db.ref('users/' + user);
+        const snapshot = await ref.once('value');
+        
+        if (!snapshot.exists()) {
+            alert("❌ Không tìm thấy người dùng này trên Firebase!");
+            return;
         }
-    }
-}, 3000);
-</script>
 
+        const currentXu = snapshot.val().xu || 0;
+        await ref.update({
+            xu: currentXu + xuAdd
+        });
+
+        alert(`✅ Đã cộng ${xuAdd} xu cho ${user}. Tổng hiện tại: ${currentXu + xuAdd}`);
+        document.getElementById("amountXu").value = "";
+    } catch (e) {
+        alert("❗ Lỗi: " + e.message);
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "dang-nhap.html";
+}
+</script>
 </body>
 </html>
