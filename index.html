@@ -255,33 +255,32 @@ async function loadUserData() {
 }
 window.onload = loadUserData;
 
-  
-async function sendMsg() {
+  async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
     const text = input.value.trim();
 
     if (!text) return;
 
-    // 1. Hiển thị tin User
     chat.innerHTML += `<div class="msg user-msg">👤 ${text}</div>`;
     input.value = "";
     chat.scrollTop = chat.scrollHeight;
 
-    // 2. Hiển thị trạng thái chờ
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
-    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
+    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang trả lời...</i>";
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
-    // 3. Cấu hình chuẩn Gemini 1.5 Flash
-    const GEMINI_API_KEY = "AIzaSyCpVff-ecNWN546wvO-0HXdIoQc4tx5DA0"; 
-    // Dùng v1beta và gemini-1.5-flash là chắc chắn nhất hiện nay
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // THAY KEY CỦA BẠN VÀO ĐÂY
+    const GEMINI_API_KEY = "AIzaSyCpVff-ecNWN546wvO-0HXdIoQc4tx5DA0; 
+    
+    // Dùng Proxy để lách lỗi 404/CORS
+    const PROXY_URL = "https://corsproxy.io/?";
+    const TARGET_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(PROXY_URL + encodeURIComponent(TARGET_URL), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -289,7 +288,7 @@ async function sendMsg() {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: "Bạn là trợ lý ảo của server KaizenMC. Hãy trả lời ngắn gọn: " + text
+                        text: "Bạn là trợ lý ảo server KaizenMC. Trả lời ngắn gọn: " + text
                     }]
                 }]
             })
@@ -298,21 +297,22 @@ async function sendMsg() {
         const data = await response.json();
 
         if (data.error) {
-            // Hiển thị chi tiết lỗi từ Google để dễ debug
             aiDiv.innerHTML = `❌ Lỗi: ${data.error.message}`;
-            console.error("Full Error:", data.error);
         } else if (data.candidates && data.candidates[0].content) {
             const botReply = data.candidates[0].content.parts[0].text;
             aiDiv.innerHTML = `🤖 ${botReply}`;
         } else {
-            aiDiv.innerHTML = `❌ Không nhận được phản hồi hợp lệ.`;
+            aiDiv.innerHTML = `❌ Google không phản hồi. Hãy thử lại.`;
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối mạng hoặc chặn CORS.`;
+        aiDiv.innerHTML = `❌ Lỗi kết nối. Vui lòng kiểm tra lại Key hoặc mạng.`;
         console.error(e);
     }
     chat.scrollTop = chat.scrollHeight;
-}
+}  
+  
+
+   
     
 </script>
 
