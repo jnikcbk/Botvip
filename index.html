@@ -255,52 +255,66 @@ async function loadUserData() {
 }
 window.onload = loadUserData;
 
-    async function sendMsg() {
+   async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
     const text = input.value.trim();
 
     if (!text) return;
 
+    // 1. Hiển thị tin nhắn của User
     chat.innerHTML += `<div class="msg user-msg">👤 ${text}</div>`;
     input.value = "";
     chat.scrollTop = chat.scrollHeight;
 
+    // 2. Hiển thị trạng thái AI đang suy nghĩ
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
-    aiDiv.innerHTML = "🤖 <i>Đang suy nghĩ...</i>";
+    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
     chat.appendChild(aiDiv);
+    chat.scrollTop = chat.scrollHeight;
+
+    // 3. Cấu hình API Gemini
+    // THAY KEY CỦA BẠN VÀO ĐÂY
+    const GEMINI_API_KEY = "AIzaSyCpVff-ecNWN546wvO-0HXdIoQc4tx5DA0"; 
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
-        // Sử dụng một API thử nghiệm đơn giản (Ví dụ: PokeAPI để test kết nối)
-        // Hoặc bạn phải dùng một Backend Proxy. 
-        // Nếu bạn vẫn muốn dùng OpenAI, hãy dán KEY MỚI vào đây:
-       // Thêm link proxy vào trước link OpenAI
-        
-// Đây là API dùng model Llama 3 miễn phí
-const res = await fetch("https://api.claudevietnam.top/v1/chat/completions", { 
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-        model: "gpt-3.5-turbo", // Hoặc llama-3
-        messages: [{ role: "user", content: text }]
-    })
-});
-        
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: `Bạn là trợ lý ảo của server Minecraft Pokémon tên là KaizenMC. 
+                               Hãy trả lời ngắn gọn, thân thiện. 
+                               Câu hỏi của người chơi: ${text}`
+                    }]
+                }]
+            })
+        });
+
         const data = await response.json();
+
         if (data.error) {
-            aiDiv.innerHTML = `❌ Lỗi OpenAI: ${data.error.message}`;
+            aiDiv.innerHTML = `❌ Lỗi Gemini: ${data.error.message}`;
+            aiDiv.style.color = "#ef4444";
         } else {
-            aiDiv.innerHTML = `🤖 ${data.choices[0].message.content}`;
+            // Lấy nội dung trả lời từ cấu trúc JSON của Gemini
+            const botReply = data.candidates[0].content.parts[0].text;
+            aiDiv.innerHTML = `🤖 ${botReply}`;
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối: Bạn cần dán KEY MỚI hoặc kiểm tra mạng.`;
+        aiDiv.innerHTML = `❌ Lỗi kết nối: Không thể gọi Gemini API.`;
+        aiDiv.style.color = "#ef4444";
+        console.error("Lỗi:", e);
     }
+    
+    // Cuộn xuống dưới cùng
     chat.scrollTop = chat.scrollHeight;
 }
-// --- AI CHAT LOGIC ---
 
 </script>
 
