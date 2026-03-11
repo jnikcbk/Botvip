@@ -1,129 +1,266 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng ký - KaizenMC</title>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<style>
-  /* Giữ nguyên style cũ của bạn, mình không thay đổi để khớp */
-  body { margin:0; font-family:Arial; background:linear-gradient(135deg,#020617,#0f172a); height:100vh; display:flex; justify-content:center; align-items:center; color:white; }
-  .box { background:#111827; padding:40px; border-radius:14px; width:350px; text-align:center; box-shadow:0 0 30px rgba(0,0,0,0.6); }
-  h1 { margin-bottom:20px; }
-  input { width:100%; padding:12px; margin:8px 0; border:none; border-radius:8px; background:#1f2937; color:white; outline:none; }
-  button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:8px; background:#2563eb; color:white; font-weight:bold; cursor:pointer; }
-  button:hover { background:#1d4ed8; }
-  .gmail { background:#ea4335; }
-  .verify { background:#22c55e; }
-  .msg { margin-top:10px; color:#22c55e; }
-  a { display:block; margin-top:15px; color:#60a5fa; text-decoration:none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC | Đăng Ký Thành Viên</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+        :root {
+            --primary: #3b82f6;
+            --success: #00ff88;
+            --error: #ff4d4d;
+            --glass: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #020617;
+            color: white;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%);
+        }
+
+        /* Hiệu ứng nền mờ */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 400px; height: 400px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .container {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 28px;
+            width: 420px;
+            max-width: 95%;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, #fff, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 15px; position: relative; }
+
+        input {
+            width: 100%;
+            padding: 14px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .row { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+        }
+
+        .btn-main { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-otp { background: #475569; width: 140px; font-size: 13px; }
+        .btn-verify { background: var(--success); color: #000; }
+
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .msg { margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: 600; }
+
+        .links { margin-top: 25px; font-size: 14px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .links a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        /* Hiện/Ẩn mượt mà */
+        #otp-section { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-<div class="box">
-  <h1>📝 Đăng ký KaizenMC</h1>
-  <input id="user" placeholder="Tên tài khoản">
-  <input id="pass" type="password" placeholder="Mật khẩu">
-  <button onclick="register()">Đăng ký tài khoản</button>
-  <hr style="margin:20px 0;opacity:0.2;">
-  <input id="gmail" placeholder="Nhập Gmail">
-  <button class="gmail" onclick="sendCode()">Gửi mã xác minh</button>
-  <input id="code" placeholder="Nhập mã OTP" style="display:none">
-  <button class="verify" onclick="verify()" style="display:none">Xác minh Gmail</button>
-  <p id="msg" class="msg"></p>
-  <a href="dang-nhap.html">Đã có tài khoản? Đăng nhập</a>
+
+<div class="container">
+    <h1>📝 ĐĂNG KÝ</h1>
+    <p class="subtitle">Xác thực Gmail để bảo vệ tài khoản</p>
+
+    <div class="input-group">
+        <input id="user" placeholder="Tên tài khoản (viết liền)">
+    </div>
+    <div class="input-group">
+        <input id="pass" type="password" placeholder="Mật khẩu">
+    </div>
+
+    <div class="row">
+        <input id="gmail" placeholder="Địa chỉ Gmail">
+        <button class="btn-otp" onclick="sendCode()" id="btnSend">Gửi OTP</button>
+    </div>
+
+    <div id="otp-section">
+        <div class="row">
+            <input id="code" placeholder="Nhập mã 6 số">
+            <button class="btn-otp btn-verify" onclick="verify()">Xác minh</button>
+        </div>
+    </div>
+
+    <button class="btn-main" onclick="register()" style="margin-top: 10px;">TẠO TÀI KHOẢN</button>
+
+    <p id="msg" class="msg"></p>
+
+    <div class="links">
+        Đã có tài khoản? <a href="dang-nhap.html">Đăng nhập ngay</a>
+    </div>
 </div>
 
 <script>
-(function(){
-  emailjs.init("kcbIQHJFwC1v2brL3"); // THAY PUBLIC KEY EMAILJS
-})();
+// --- CẤU HÌNH ---
+emailjs.init("kcbIQHJFwC1v2brL3");
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 let otp = "";
 let verified = false;
 
-function msg(t, type = "success") {
-  const el = document.getElementById("msg");
-  el.innerText = t;
-  el.style.color = type === "error" ? "#ef4444" : "#22c55e";
+function showMsg(t, isError = false) {
+    const el = document.getElementById("msg");
+    el.innerText = t;
+    el.style.color = isError ? "var(--error)" : "var(--success)";
 }
 
+// --- HÀM GỬI OTP ---
 function sendCode(){
-  let gmail = document.getElementById("gmail").value.trim();
-  if(gmail==""){
-    msg("⚠️ Nhập Gmail", "error");
-    return;
-  }
-  otp = Math.floor(100000 + Math.random()*900000).toString();
-  msg("Đang gửi mã OTP...");
-  emailjs.send("service_uhcqzpe","template_etl5hyj",{ email:gmail, code:otp })
-  .then(function(){
-    msg("📧 Đã gửi mã OTP đến Gmail");
-    document.getElementById("code").style.display="block";
-    document.querySelector(".verify").style.display="block";
-  }).catch(err => {
-    console.error(err);
-    msg("❌ Lỗi gửi OTP", "error");
-  });
-}
-
-function verify(){
-  let code = document.getElementById("code").value.trim();
-  if(code == otp){
-    verified = true;
-    msg("✅ Gmail xác minh thành công");
-  }else{
-    msg("❌ Sai mã OTP", "error");
-  }
-}
-
-function register(){
-  let user = document.getElementById("user").value.trim();
-  let pass = document.getElementById("pass").value;
-  let gmail = document.getElementById("gmail").value.trim();
-
-  if(!user || !pass || !gmail){
-    msg("⚠️ Nhập đầy đủ thông tin", "error");
-    return;
-  }
-  if(user.toLowerCase().includes("admin") || user.toLowerCase() === "admindz"){
-    msg("❌ Tên này bị cấm", "error");
-    return;
-  }
-  if(!verified){
-    msg("⚠️ Phải xác minh Gmail trước", "error");
-    return;
-  }
-
-  localStorage.setItem("tk", user);
-  localStorage.setItem("mk", pass);
-  localStorage.setItem("gmail", gmail);
-
-  // GỬI LOG DISCORD KHI ĐĂNG KÝ THÀNH CÔNG
-  async function sendRegisterLog() {
-    console.log("Đang gửi log đăng ký cho user:", user); // Để debug
-    try {
-      const response = await fetch("/api/send-log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          type: "register", 
-          username: user 
-        })
-      });
-      const data = await response.json();
-      console.log("Kết quả gửi log đăng ký:", data);
-      if (!response.ok) {
-        console.error("Gửi log đăng ký thất bại:", response.status, data);
-      }
-    } catch (err) {
-      console.error("Lỗi gọi API log đăng ký:", err);
+    let gmail = document.getElementById("gmail").value.trim();
+    if(!gmail.includes("@")){
+        showMsg("⚠️ Gmail không hợp lệ!", true);
+        return;
     }
-  }
+    otp = Math.floor(100000 + Math.random()*900000).toString();
+    showMsg("⌛ Đang gửi mã...");
+    
+    emailjs.send("service_uhcqzpe","template_etl5hyj",{ email:gmail, code:otp })
+    .then(() => {
+        showMsg("📧 Check hòm thư Gmail của bạn nhé!");
+        document.getElementById("otp-section").style.display = "block";
+        document.getElementById("btnSend").innerText = "Gửi lại";
+    }).catch(err => {
+        showMsg("❌ Lỗi gửi mail. Thử lại sau!", true);
+    });
+}
 
-  sendRegisterLog();
+// --- HÀM XÁC MINH OTP ---
+function verify(){
+    let code = document.getElementById("code").value.trim();
+    if(code === otp && otp !== ""){
+        verified = true;
+        showMsg("✅ Xác minh thành công! Bấm Tạo tài khoản.");
+        document.getElementById("otp-section").style.opacity = "0.5";
+        document.getElementById("code").disabled = true;
+    } else {
+        showMsg("❌ Mã OTP không chính xác!", true);
+    }
+}
 
-  msg("🎉 Đăng ký thành công! Chuyển hướng đến đăng nhập...");
-  setTimeout(() => { window.location.href = "dang-nhap.html"; }, 1500);
+// --- HÀM ĐĂNG KÝ CHÍNH ---
+async function register(){
+    let user = document.getElementById("user").value.trim().toLowerCase();
+    let pass = document.getElementById("pass").value;
+    let gmail = document.getElementById("gmail").value.trim();
+
+    if(!user || !pass || !gmail){
+        showMsg("⚠️ Vui lòng điền đủ thông tin!", true);
+        return;
+    }
+    if(user.includes("admin")){
+        showMsg("❌ Tên tài khoản không hợp lệ!", true);
+        return;
+    }
+    if(!verified){
+        showMsg("⚠️ Bạn chưa xác minh Gmail!", true);
+        return;
+    }
+
+    showMsg("⌛ Đang tạo tài khoản...");
+
+    try {
+        // Kiểm tra xem user đã tồn tại trên Firebase chưa
+        const snapshot = await db.ref('users/' + user).once('value');
+        if(snapshot.exists()){
+            showMsg("❌ Tên tài khoản đã tồn tại!", true);
+            return;
+        }
+
+        // Lưu lên Firebase
+        await db.ref('users/' + user).set({
+            password: pass,
+            gmail: gmail,
+            xu: 0,
+            role: "member",
+            createDate: new Date().toLocaleString()
+        });
+
+        // Gửi Log Discord (Giữ nguyên logic của ông nhưng bọc try-catch)
+        try {
+            fetch("/api/send-log", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "register", username: user })
+            });
+        } catch(e) {}
+
+        showMsg("🎉 Đăng ký thành công! Đang chuyển hướng...");
+        setTimeout(() => { window.location.href = "dang-nhap.html"; }, 2000);
+
+    } catch (err) {
+        showMsg("❌ Lỗi Database! Kiểm tra lại Firebase Rules.", true);
+    }
 }
 </script>
 </body>
