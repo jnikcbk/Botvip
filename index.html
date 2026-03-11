@@ -13,22 +13,81 @@
 
 <style>
   
-.ai-box{
-background:rgba(15,23,42,.85);
-border:1px solid rgba(255,255,255,.1);
-border-radius:18px;
-padding:20px;
-width:380px;
-}
+<style>
+    /* Tổng thể khung chứa */
+    .ai-box {
+        width: 380px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
 
-#chat{
-height:320px;
-overflow-y:auto;
-background:#020617;
-border-radius:10px;
-padding:10px;
-margin-bottom:10px;
-}
+    /* Tiêu đề */
+    .ai-box h2 {
+        background: #1a73e8;
+        color: white;
+        margin: 0;
+        padding: 15px;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    /* Vùng hiển thị tin nhắn */
+    #chat {
+        height: 350px;
+        padding: 15px;
+        overflow-y: auto;
+        background: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Ô nhập liệu và nút gửi */
+    .ai-box div:last-child {
+        display: flex;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    #prompt {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        outline: none;
+        font-size: 14px;
+        transition: border 0.3s;
+    }
+
+    #prompt:focus {
+        border-color: #1a73e8;
+    }
+
+    button {
+        background: #1a73e8;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        margin-left: 8px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+    /* Tùy chỉnh thanh cuộn cho mượt */
+    #chat::-webkit-scrollbar { width: 5px; }
+    #chat::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
   
 .discord-box{
 max-width:420px;
@@ -476,39 +535,52 @@ document.getElementById("adminContainer").style.display="block";
 
 window.onload=loadUserData;
 
-async function sendMsg(){
+async function sendMsg() {
+    const input = document.getElementById("msg");
+    const chat = document.getElementById("chatArea");
+    const text = input.value.trim();
 
-const input=document.getElementById("msg");
-const chat=document.getElementById("chatArea");
+    if (!text) return;
 
-const text=input.value;
-if(!text) return;
+    // 1. Hiển thị tin nhắn người dùng
+    chat.innerHTML += `<div class="user-msg">👤 ${text}</div>`;
+    input.value = "";
+    
+    // Tạo một vùng chứa cho câu trả lời của AI và hiệu ứng chờ
+    const aiMsgDiv = document.createElement("div");
+    aiMsgDiv.className = "ai-msg";
+    aiMsgDiv.innerHTML = "🤖 <i>Đang suy nghĩ...</i>";
+    chat.appendChild(aiMsgDiv);
+    chat.scrollTop = chat.scrollHeight;
 
-chat.innerHTML += `<div>👤 ${text}</div>`;
+    try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer YOUR_API_KEY" // Nhớ cất key này đi nhé!
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: text }]
+            })
+        });
 
-input.value="";
+        const data = await res.json();
 
-const res = await fetch("https://api.openai.com/v1/chat/completions",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer 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"
-},
-body:JSON.stringify({
-model:"gpt-4o-mini",
-messages:[
-{role:"user",content:text}
-]
-})
-});
+        if (data.error) throw new Error(data.error.message);
 
-const data = await res.json();
+        const reply = data.choices[0].message.content;
+        
+        // 2. Hiển thị câu trả lời thật
+        aiMsgDiv.innerHTML = `🤖 ${reply}`;
 
-const reply = data.choices[0].message.content;
+    } catch (error) {
+        aiMsgDiv.innerHTML = `❌ Lỗi: ${error.message}`;
+        aiMsgDiv.style.color = "red";
+    }
 
-chat.innerHTML += `<div>🤖 ${reply}</div>`;
-
-chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop = chat.scrollHeight;
 }
   
 </script>
@@ -533,15 +605,14 @@ frameborder="0">
 </div>
 
 </section>
-
+  
 <div class="ai-box">
-<h2>Chat AI</h2>
-
-<div id="chat"></div>
-
-<input id="prompt" placeholder="Hỏi AI..." />
-<button onclick="askAI()">Gửi</button>
-
+    <h2>Chat AI</h2>
+    <div id="chat">
+        </div>
+    <div style="display: flex; padding: 10px;"> <input id="prompt" placeholder="Hỏi AI..." />
+        <button onclick="askAI()">Gửi</button>
+    </div>
 </div>
   
 </body>
