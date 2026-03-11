@@ -275,18 +275,20 @@ window.onload = loadUserData;
         // Sử dụng một API thử nghiệm đơn giản (Ví dụ: PokeAPI để test kết nối)
         // Hoặc bạn phải dùng một Backend Proxy. 
         // Nếu bạn vẫn muốn dùng OpenAI, hãy dán KEY MỚI vào đây:
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer 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" 
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: text }]
-            })
-        });
-
+       // Thêm link proxy vào trước link OpenAI
+        
+const res = await fetch("https://corsproxy.io/?https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-proj-KEY_MOI_CUA_BAN"
+    },
+    body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: text }]
+    })
+});
+        
         const data = await response.json();
         if (data.error) {
             aiDiv.innerHTML = `❌ Lỗi OpenAI: ${data.error.message}`;
