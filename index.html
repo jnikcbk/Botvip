@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaizenMC - Vũ Trụ Pokémon Minecraft</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KaizenMC - Vũ Trụ Pokémon Minecraft</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+<style>
 
 :root{
 --neon-blue:#00f0ff;
 --neon-purple:#c300ff;
 --neon-pink:#ff00aa;
---primary:#3b82f6;
---glass:rgba(15,23,42,.82);
 --border:rgba(255,255,255,.12);
+--glass:rgba(15,23,42,.82);
 --admin-red:#ef4444;
 }
-
-/* reset */
 
 *{
 margin:0;
@@ -27,53 +28,13 @@ padding:0;
 box-sizing:border-box;
 }
 
-/* body */
-
 body{
 font-family:'Plus Jakarta Sans',sans-serif;
+background:#020617;
 color:#f1f5f9;
 min-height:100vh;
 overflow-x:hidden;
-background:#020617;
-
-/* galaxy background */
-
-background-image:
-radial-gradient(circle at 20% 20%,#1e293b 0%,transparent 40%),
-radial-gradient(circle at 80% 10%,#001933 0%,transparent 45%),
-radial-gradient(circle at 50% 80%,#2b0033 0%,transparent 40%);
 }
-
-/* starfield */
-
-body::before{
-content:"";
-position:fixed;
-top:0;
-left:0;
-width:200%;
-height:200%;
-background-image:
-radial-gradient(white 1px,transparent 1px),
-radial-gradient(#00f0ff 1px,transparent 1px),
-radial-gradient(#c300ff 1px,transparent 1px);
-
-background-size:
-120px 120px,
-180px 180px,
-240px 240px;
-
-opacity:.18;
-animation:starsMove 120s linear infinite;
-pointer-events:none;
-}
-
-@keyframes starsMove{
-from{transform:translateY(0)}
-to{transform:translateY(-1200px)}
-}
-
-/* navbar */
 
 .main-nav{
 position:fixed;
@@ -82,313 +43,109 @@ left:0;
 right:0;
 height:72px;
 background:rgba(2,6,23,.95);
-backdrop-filter:blur(30px);
-border-bottom:1px solid var(--border);
+backdrop-filter:blur(25px);
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 28px;
-z-index:1000;
+padding:0 24px;
+border-bottom:1px solid var(--border);
+z-index:999;
 }
-
-/* glow line */
-
-.main-nav::after{
-content:"";
-position:absolute;
-bottom:-1px;
-left:0;
-width:100%;
-height:1px;
-background:linear-gradient(90deg,transparent,var(--neon-blue),var(--neon-purple),transparent);
-box-shadow:0 0 12px var(--neon-blue);
-}
-
-/* logo */
 
 .nav-logo{
 font-family:'Orbitron',sans-serif;
-font-size:28px;
+font-size:26px;
 font-weight:900;
-color:white;
 text-decoration:none;
+color:white;
 display:flex;
 align-items:center;
-gap:12px;
+gap:10px;
 }
 
 .nav-logo img{
-height:44px;
+height:42px;
 border-radius:50%;
-box-shadow:
-0 0 20px #00f0ff,
-0 0 40px #00f0ff;
+box-shadow:0 0 20px #00f0ff;
 }
-
-/* nav links */
 
 .nav-links{
 display:flex;
-gap:10px;
+gap:8px;
 align-items:center;
 }
 
 .nav-links a{
 color:#cbd5e1;
+text-decoration:none;
 font-weight:600;
 font-size:14px;
-text-decoration:none;
-padding:10px 16px;
+padding:10px 14px;
 border-radius:10px;
-transition:.3s;
+transition:.25s;
 }
 
 .nav-links a:hover{
-color:var(--neon-blue);
 background:rgba(255,255,255,.08);
-box-shadow:0 0 12px rgba(0,240,255,.4);
-transform:translateY(-2px);
+color:#00f0ff;
 }
 
-/* container */
-
-.container{
-padding:150px 24px 100px;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:90vh;
-}
-
-/* server box */
-
-.server-box{
-
-background:var(--glass);
-
-padding:70px 50px;
-
-border-radius:30px;
-
-max-width:680px;
-
-width:100%;
-
-text-align:center;
-
-border:1px solid var(--border);
-
-backdrop-filter:blur(35px);
-
-box-shadow:
-0 40px 100px rgba(0,0,0,.8),
-inset 0 0 40px rgba(255,255,255,.03);
-}
-
-/* logo */
-
-.main-logo{
-
-width:160px;
-
-border-radius:50%;
-
-margin-bottom:30px;
-
-box-shadow:
-0 0 40px #00f0ff,
-0 0 80px #00f0ff;
-
-animation:logoGlow 4s ease-in-out infinite;
-}
-
-@keyframes logoGlow{
-0%,100%{filter:brightness(1)}
-50%{filter:brightness(1.3)}
-}
-
-/* title */
-
-h1{
-
-font-family:'Orbitron',sans-serif;
-
-font-size:40px;
-
-margin-bottom:18px;
-
-background:linear-gradient(90deg,#fff,#00f0ff,#ff00aa);
-
--webkit-background-clip:text;
-
--webkit-text-fill-color:transparent;
-
-text-shadow:
-0 0 10px #00f0ff,
-0 0 20px #c300ff;
-}
-
-/* desc */
-
-.desc{
-
-color:#94a3b8;
-
-font-size:16px;
-
-line-height:1.6;
-
-margin-bottom:45px;
-}
-
-/* user box */
-
-.user-box{
-
-background:rgba(0,0,0,.55);
-
-border-radius:16px;
-
-padding:18px 30px;
-
-border:1px solid var(--border);
-
-margin-bottom:40px;
-
-font-size:16px;
-
-box-shadow:inset 0 0 15px rgba(255,255,255,.04);
-}
-
-/* buttons */
-
-.btn-group{
-
-display:flex;
-
-flex-wrap:wrap;
-
-gap:16px;
-
-justify-content:center;
-
-margin-bottom:35px;
-}
-
-.btn{
-
-padding:15px 32px;
-
-border-radius:14px;
-
-font-weight:700;
-
-font-size:15px;
-
-text-decoration:none;
-
-color:white;
-
-cursor:pointer;
-
-transition:.35s;
-
-display:inline-flex;
-
-align-items:center;
-
-gap:10px;
-
-border:none;
-}
-
-/* play button */
-
-.btn-play{
-
-background:linear-gradient(135deg,#00f0ff,#3b82f6);
-
-box-shadow:
-0 0 20px #00f0ff,
-0 10px 30px rgba(59,130,246,.5);
-}
-
-.btn-play:hover{
-
-transform:translateY(-4px);
-
-box-shadow:
-0 0 35px #00f0ff,
-0 15px 40px rgba(59,130,246,.7);
-}
-
-/* shop button */
-
-.btn-shop{
-
-background:rgba(255,255,255,.06);
-
-border:1px solid var(--border);
-}
-
-.btn-shop:hover{
-
-background:rgba(255,255,255,.1);
-
-box-shadow:0 0 18px rgba(255,255,255,.2);
-}
-
-/* logout */
-
-.logout-btn{
-
-width:100%;
-
-background:rgba(239,68,68,.18);
-
-border:1px solid var(--admin-red);
-
-color:#f87171;
-
+.admin-dropdown{
 display:none;
+position:relative;
 }
 
-/* footer */
+.admin-btn{
+color:#f87171;
+font-weight:700;
+}
 
-footer{
-
+.dropdown-content{
+display:none;
+position:absolute;
+top:40px;
+right:0;
 background:#020617;
-
-padding:60px 24px 40px;
-
-text-align:center;
-
-border-top:1px solid var(--border);
-
-color:#64748b;
-
-font-size:14px;
-
-line-height:1.6;
+border:1px solid var(--border);
+border-radius:10px;
+min-width:180px;
+overflow:hidden;
+box-shadow:0 10px 30px rgba(0,0,0,.6);
 }
-        
+
+.dropdown-content a{
+display:block;
+padding:10px 14px;
+font-size:14px;
+color:#cbd5e1;
+}
+
+.dropdown-content a:hover{
+background:rgba(255,255,255,.08);
+color:#00f0ff;
+}
+
+.admin-dropdown:hover .dropdown-content{
+display:block;
+}
+
 .hamburger{
-display:flex;
+display:none;
 flex-direction:column;
 gap:6px;
 cursor:pointer;
 }
 
 .hamburger span{
-width:28px;
+width:26px;
 height:3px;
 background:white;
 border-radius:3px;
-transition:0.3s;
+transition:.3s;
 }
 
 .hamburger.open span:nth-child(1){
-transform:rotate(45deg) translate(6px,6px);
+transform:rotate(45deg) translate(5px,5px);
 }
 
 .hamburger.open span:nth-child(2){
@@ -396,135 +153,288 @@ opacity:0;
 }
 
 .hamburger.open span:nth-child(3){
-transform:rotate(-45deg) translate(7px,-7px);
+transform:rotate(-45deg) translate(6px,-6px);
 }
+
+.container{
+padding:150px 20px 100px;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.server-box{
+background:var(--glass);
+border:1px solid var(--border);
+padding:60px 40px;
+border-radius:24px;
+max-width:650px;
+width:100%;
+text-align:center;
+box-shadow:0 40px 100px rgba(0,0,0,.8);
+}
+
+.main-logo{
+width:150px;
+border-radius:50%;
+margin-bottom:25px;
+box-shadow:0 0 40px #00f0ff;
+}
+
+h1{
+font-family:'Orbitron',sans-serif;
+font-size:36px;
+margin-bottom:15px;
+background:linear-gradient(90deg,#fff,#00f0ff,#ff00aa);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.desc{
+color:#94a3b8;
+line-height:1.6;
+margin-bottom:35px;
+}
+
+.user-box{
+background:rgba(0,0,0,.5);
+border:1px solid var(--border);
+padding:16px;
+border-radius:14px;
+margin-bottom:30px;
+}
+
+.btn-group{
+display:flex;
+flex-wrap:wrap;
+gap:14px;
+justify-content:center;
+margin-bottom:25px;
+}
+
+.btn{
+padding:14px 26px;
+border-radius:12px;
+font-weight:700;
+text-decoration:none;
+border:none;
+cursor:pointer;
+color:white;
+transition:.25s;
+}
+
+.btn-play{
+background:linear-gradient(135deg,#00f0ff,#3b82f6);
+box-shadow:0 0 20px #00f0ff;
+}
+
+.btn-play:hover{
+transform:translateY(-3px);
+}
+
+.btn-shop{
+background:rgba(255,255,255,.06);
+border:1px solid var(--border);
+}
+
+.logout-btn{
+width:100%;
+background:rgba(239,68,68,.2);
+border:1px solid var(--admin-red);
+color:#f87171;
+display:none;
+}
+
+footer{
+text-align:center;
+padding:50px 20px;
+border-top:1px solid var(--border);
+color:#64748b;
+font-size:14px;
+}
+
+@media(max-width:900px){
+
+.hamburger{
+display:flex;
+}
+
+.nav-links{
+position:fixed;
+top:72px;
+right:-300px;
+width:260px;
+height:100vh;
+background:#020617;
+flex-direction:column;
+padding:30px 20px;
+gap:6px;
+transition:.35s;
+}
+
+.nav-links.active{
+right:0;
+}
+
+}
+
 </style>
 </head>
+
 <body>
 
 <nav class="main-nav">
-    <a href="index.html" class="nav-logo">
-        <img src="kaizen.png" alt="KaizenMC"> KAIZEN MC
-    </a>
 
-    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
-    <span></span>
-    <span></span>
-    <span></span>
+<a href="index.html" class="nav-logo">
+<img src="kaizen.png">
+KAIZEN MC
+</a>
+
+<div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+<span></span>
+<span></span>
+<span></span>
 </div>
 
-    <div class="nav-links" id="navLinks">
-        <a href="dang-ky.html">🏠 Đăng ký</a>
-        <a href="shop.html">🛒 Shop</a>
-        <a href="nap-xu.html">💎 Nạp Xu</a>
-        <a href="top-nap-thang.html">🏆 Top nạp xu</a>
-        <a href="lichsudamua.html">🛍️ Lịch sử mua</a>
-        <a href="luat.html">⚖️ Luật server</a>
-        <a href="botdiscord.html">🤖 Bot Discord</a>
+<div class="nav-links" id="navLinks">
 
-        <div class="admin-dropdown" id="adminContainer">
-            <a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
-            <div class="dropdown-content">
-                <a href="admin.html">📊 Admin Panel</a>
-                <a href="tatcammember.html">👥 Tất cả Member</a>
-            </div>
-        </div>
+<a href="dang-ky.html">🏠 Đăng ký</a>
+<a href="shop.html">🛒 Shop</a>
+<a href="nap-xu.html">💎 Nạp Xu</a>
+<a href="top-nap-thang.html">🏆 Top nạp</a>
+<a href="lichsudamua.html">🛍️ Lịch sử mua</a>
+<a href="luat.html">⚖️ Luật</a>
+<a href="botdiscord.html">🤖 Bot</a>
 
-        <a href="dang-nhap.html" id="loginLink">🔑 Đăng nhập</a>
-    </div>
+<div class="admin-dropdown" id="adminContainer">
+
+<a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
+
+<div class="dropdown-content">
+<a href="admin.html">📊 Admin Panel</a>
+<a href="tatcammember.html">👥 Tất cả Member</a>
+</div>
+
+</div>
+
+<a href="dang-nhap.html" id="loginLink">🔑 Đăng nhập</a>
+
+</div>
 </nav>
 
 <div class="container">
-    <div class="server-box">
-        <img src="kaizen.png" alt="KaizenMC Logo" class="main-logo">
-        <h1>VŨ TRỤ POKÉMON</h1>
-        <p class="desc">Cộng đồng huấn luyện viên Pokémon lớn nhất tại Việt Nam — chia sẻ, thi đấu và trao đổi chiến thuật.<br>Tham gia ngay để bắt đầu hành trình của bạn.</p>
 
-        <div id="userDisplay" class="user-box">
-            Vui lòng đăng nhập để xem thông tin tài khoản
-        </div>
+<div class="server-box">
 
-        <div class="btn-group">
-            <button class="btn btn-play" onclick="copyIP()">🎮 Copy IP: 180.93.103.140:26666</button>
-            <a href="shop.html" class="btn btn-shop">🛒 Vào Shop</a>
-            <a href="lichsu-damua.html" class="btn btn-shop">🛍️ Lịch sử mua</a>
-        </div>
+<img src="kaizen.png" class="main-logo">
 
-        <button id="logoutBtn" class="btn logout-btn" onclick="logout()">
-            🚪 Đăng xuất
-        </button>
-    </div>
+<h1>VŨ TRỤ POKÉMON</h1>
+
+<p class="desc">
+Cộng đồng huấn luyện viên Pokémon lớn nhất tại Việt Nam.<br>
+Tham gia ngay để bắt đầu hành trình của bạn.
+</p>
+
+<div id="userDisplay" class="user-box">
+Vui lòng đăng nhập để xem thông tin
+</div>
+
+<div class="btn-group">
+
+<button class="btn btn-play" onclick="copyIP()">
+🎮 Copy IP: 180.93.103.140:26666
+</button>
+
+<a href="shop.html" class="btn btn-shop">
+🛒 Vào Shop
+</a>
+
+<a href="lichsudamua.html" class="btn btn-shop">
+🛍️ Lịch sử mua
+</a>
+
+</div>
+
+<button id="logoutBtn" class="btn logout-btn" onclick="logout()">
+🚪 Đăng xuất
+</button>
+
+</div>
 </div>
 
 <footer>
-    © 2026 KaizenMC • Vận hành bởi <b>Minhmeo</b> & <b>Đăng Mạnh</b><br>
-    IP Server: 180.93.103.140:26666
+© 2026 KaizenMC • Minhmeo & Đăng Mạnh<br>
+IP Server: 180.93.103.140:26666
 </footer>
 
 <script>
-// Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
-    projectId: "kaizenmc-web-ba518",
-    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
-    messagingSenderId: "342779721859",
-    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
-    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+const firebaseConfig={
+apiKey:"AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+authDomain:"kaizenmc-web-ba518.firebaseapp.com",
+databaseURL:"https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"kaizenmc-web-ba518"
 };
+
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-function copyIP() {
-    navigator.clipboard.writeText("180.93.103.140:26666").then(() => {
-        alert("✅ Đã copy IP server!");
-    });
+function toggleMenu(){
+
+const menu=document.getElementById("navLinks");
+const btn=document.getElementById("hamburgerBtn");
+
+menu.classList.toggle("active");
+btn.classList.toggle("open");
+
 }
 
-function logout() {
-    if (confirm("Bạn có chắc muốn đăng xuất?")) {
-        localStorage.clear();
-        location.reload();
-    }
+function copyIP(){
+
+navigator.clipboard.writeText("180.93.103.140:26666");
+
+alert("Đã copy IP server");
+
 }
 
-async function loadUserData() {
-    const username = localStorage.getItem("username");
-    if (!username) return;
+function logout(){
 
-    document.getElementById("loginLink").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "block";
+localStorage.clear();
+location.reload();
 
-    try {
-        const snapshot = await db.ref('users/' + username).once('value');
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            document.getElementById("userDisplay").innerHTML = `
-                👤 <b>${username}</b> • 💰 <span style="color:#facc15;">${(data.xu || 0).toLocaleString()} Xu</span>
-            `;
-
-            const ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
-            if (ADMINS.includes(username.toLowerCase())) {
-                document.getElementById("adminContainer").style.display = "block";
-            }
-        } else {
-            document.getElementById("userDisplay").innerHTML = "Không tìm thấy tài khoản!";
-        }
-    } catch (err) {
-        document.getElementById("userDisplay").innerHTML = "❌ Lỗi kết nối dữ liệu";
-        console.error(err);
-    }
 }
 
-window.onload = loadUserData;
-    
-    function toggleMenu(){
-    const menu = document.getElementById("navLinks");
-    const btn = document.getElementById("hamburgerBtn");
+async function loadUserData(){
 
-    menu.classList.toggle("active");
-    btn.classList.toggle("open");
+const username=localStorage.getItem("username");
+if(!username)return;
+
+document.getElementById("loginLink").style.display="none";
+document.getElementById("logoutBtn").style.display="block";
+
+const snap=await db.ref("users/"+username).once("value");
+
+if(!snap.exists()){
+document.getElementById("userDisplay").innerHTML="Không tìm thấy tài khoản";
+return;
 }
+
+const data=snap.val();
+
+document.getElementById("userDisplay").innerHTML=
+`👤 <b>${username}</b> • 💰 <span style="color:#facc15">${(data.xu||0).toLocaleString()} Xu</span>`;
+
+const ADMINS=["kaizenadmin","kaizenadmindz","minhmeodz@!"];
+
+if(ADMINS.includes(username.toLowerCase())){
+document.getElementById("adminContainer").style.display="block";
+}
+
+}
+
+window.onload=loadUserData;
+
 </script>
+
 </body>
 </html>
