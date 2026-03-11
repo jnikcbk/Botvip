@@ -13,6 +13,23 @@
 
 <style>
   
+.ai-box{
+background:rgba(15,23,42,.85);
+border:1px solid rgba(255,255,255,.1);
+border-radius:18px;
+padding:20px;
+width:380px;
+}
+
+#chat{
+height:320px;
+overflow-y:auto;
+background:#020617;
+border-radius:10px;
+padding:10px;
+margin-bottom:10px;
+}
+  
 .discord-box{
 max-width:420px;
 margin:50px auto;
@@ -459,6 +476,41 @@ document.getElementById("adminContainer").style.display="block";
 
 window.onload=loadUserData;
 
+async function sendMsg(){
+
+const input=document.getElementById("msg");
+const chat=document.getElementById("chatArea");
+
+const text=input.value;
+if(!text) return;
+
+chat.innerHTML += `<div>👤 ${text}</div>`;
+
+input.value="";
+
+const res = await fetch("https://api.openai.com/v1/chat/completions",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer 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"
+},
+body:JSON.stringify({
+model:"gpt-4o-mini",
+messages:[
+{role:"user",content:text}
+]
+})
+});
+
+const data = await res.json();
+
+const reply = data.choices[0].message.content;
+
+chat.innerHTML += `<div>🤖 ${reply}</div>`;
+
+chat.scrollTop = chat.scrollHeight;
+}
+  
 </script>
   
 
@@ -482,6 +534,15 @@ frameborder="0">
 
 </section>
 
+<div class="ai-box">
+<h2>Chat AI</h2>
 
+<div id="chat"></div>
+
+<input id="prompt" placeholder="Hỏi AI..." />
+<button onclick="askAI()">Gửi</button>
+
+</div>
+  
 </body>
 </html>
