@@ -230,15 +230,14 @@
     </div>
 </div>
 
-<script>
-// Dữ liệu Admin mặc định
+// 1. Danh sách Admin (Giữ nguyên hoặc thêm bớt tùy ông)
 const defaultAdmins = [
     { user: "kaizenadmin", pass: "123456789@" },
     { user: "kaizenadmindz", pass: "123456789@" },
     { user: "minhmeodz@!", pass: "123456789@" }
 ];
 
-// Khởi tạo
+// Khởi tạo danh sách admin vào máy nếu chưa có
 if (!localStorage.getItem("admins")) {
     localStorage.setItem("admins", JSON.stringify(defaultAdmins));
 }
@@ -268,41 +267,49 @@ function showMsg(text, type) {
 }
 
 function login() {
-    const user = document.getElementById("user").value.trim();
+    const user = document.getElementById("user").value.trim().toLowerCase(); // Chuyển về chữ thường cho chắc
     const pass = document.getElementById("pass").value;
 
     if (!user || !pass) {
-        showMsg("⚠️ Bạn chưa nhập tài khoản/mật khẩu!", "error");
+        showMsg("⚠️ Nhập tài khoản và mật khẩu đã ông giáo!", "error");
         return;
     }
 
-    // Kiểm tra Admin
-    const admins = JSON.parse(localStorage.getItem("admins")) || [];
-    const adminAccount = admins.find(a => a.user === user && a.pass === pass);
+    // XÓA DỮ LIỆU ĐĂNG NHẬP CŨ TRƯỚC KHI CHECK MỚI (Tránh bị dính role admin cũ)
+    localStorage.removeItem("login");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
 
-    if (adminAccount) {
-        showMsg("✅ Đăng nhập Admin thành công!", "success");
+    // 2. Kiểm tra danh sách Admin
+    const admins = JSON.parse(localStorage.getItem("admins")) || [];
+    const isAdmin = admins.find(a => a.user.toLowerCase() === user && a.pass === pass);
+
+    if (isAdmin) {
+        showMsg("✅ Chào Sếp! Đang vào Admin Panel...", "success");
         saveAndRedirect(user, "admin", "admin.html");
         return;
     }
 
-    // Kiểm tra User thường (Logic từ trang đăng ký của bạn)
+    // 3. Kiểm tra User thường (Dữ liệu từ trang dang-ky.html)
+    // Lưu ý: Nếu ông đăng ký nhiều user, logic này cần chỉnh lại để check mảng users.
+    // Hiện tại đang check 1 user duy nhất lưu ở key 'tk' và 'mk'
     const registeredUser = localStorage.getItem("tk");
     const registeredPass = localStorage.getItem("mk");
 
-    if (registeredUser && user === registeredUser && pass === registeredPass) {
-        showMsg("✅ Đăng nhập thành công!", "success");
+    if (registeredUser && user === registeredUser.toLowerCase() && pass === registeredPass) {
+        showMsg("✅ Đăng nhập Member thành công!", "success");
         saveAndRedirect(user, "member", "index.html");
         return;
     }
 
-    showMsg("❌ Tài khoản hoặc mật khẩu không chính xác!", "error");
+    showMsg("❌ Sai tên tài khoản hoặc mật khẩu rồi!", "error");
 }
 
 function saveAndRedirect(username, role, target) {
+    // Lưu chính xác role để không bị nhảy nhầm trang
     localStorage.setItem("login", "true");
-    localStorage.setItem("role", role);
-    localStorage.setItem("tk", username); // Giữ nguyên key cũ để đồng bộ trang admin
+    localStorage.setItem("role", role); 
+    localStorage.setItem("tk", username);
     localStorage.setItem("username", username);
     
     setTimeout(() => {
@@ -310,14 +317,20 @@ function saveAndRedirect(username, role, target) {
     }, 1000);
 }
 
-// Chặn truy cập nếu đã login
+// 4. FIX LỖI TỰ CHUYỂN TRANG KHI LOAD
 window.onload = () => {
-    if (localStorage.getItem("login") === "true") {
-        const role = localStorage.getItem("role");
-        window.location.href = (role === "admin") ? "admin.html" : "index.html";
+    const isLogin = localStorage.getItem("login");
+    const role = localStorage.getItem("role");
+
+    if (isLogin === "true") {
+        // Nếu là admin thì mới sang admin.html, còn lại auto về index.html
+        if (role === "admin") {
+            window.location.href = "admin.html";
+        } else if (role === "member") {
+            window.location.href = "index.html";
+        }
     }
 }
-</script>
-
+    
 </body>
 </html>
