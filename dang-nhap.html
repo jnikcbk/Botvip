@@ -3,157 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaizenMC | Đăng Nhập Hệ Thống</title>
+    <title>KaizenMC | Secure Login</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
         :root {
             --primary: #3b82f6;
             --accent: #60a5fa;
-            --error: #ef4444;
-            --success: #22c55e;
-            --bg: #020617;
+            --error: #ff4d4d;
+            --success: #00ff88;
+            --glass: rgba(15, 23, 42, 0.65);
+            --border: rgba(255, 255, 255, 0.1);
         }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
         body {
             margin: 0;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: #020617;
             color: white;
             overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(37, 99, 235, 0.15) 0%, transparent 40%);
         }
 
-        /* Hiệu ứng mờ ảo phía sau */
-        body::before {
-            content: "";
+        /* Hiệu ứng hạt trôi lơ lửng */
+        .bg-blobs {
             position: absolute;
-            width: 300px; height: 300px;
-            background: var(--primary);
-            filter: blur(150px);
-            opacity: 0.2;
-            top: 20%; left: 30%;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             z-index: -1;
         }
 
-        .login-container {
-            background: rgba(15, 23, 42, 0.7);
-            padding: 40px;
-            border-radius: 24px;
-            width: 380px;
-            max-width: 90%;
+        .blob {
+            position: absolute;
+            background: var(--primary);
+            filter: blur(80px);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(0, 0); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        .login-card {
+            background: var(--glass);
+            padding: 50px 40px;
+            border-radius: 32px;
+            width: 420px;
+            max-width: 95%;
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             text-align: center;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes appear {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        .login-card:hover { transform: translateY(-5px); }
 
-        .logo-box {
-            font-size: 50px;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 0 10px var(--primary));
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         h1 {
-            margin: 0 0 10px;
-            font-size: 26px;
             font-weight: 800;
-            letter-spacing: 1px;
-            background: linear-gradient(to bottom, #fff, #94a3b8);
+            font-size: 30px;
+            margin: 0 0 8px;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .subtitle {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
+        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 35px; }
 
-        .input-group {
+        .input-box {
             position: relative;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
-        .input-group span.icon {
+        .input-box input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .input-box i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             opacity: 0.5;
+            font-style: normal;
         }
 
-        input {
+        .btn-login {
             width: 100%;
-            padding: 14px 15px 14px 45px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            font-size: 15px;
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .eye {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            opacity: 0.6;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 10px;
+            padding: 16px;
             border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border-radius: 16px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 16px;
             cursor: pointer;
             transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+            margin-top: 10px;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.6);
         }
-
-        button:active { transform: translateY(0); }
 
         .msg {
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 14px;
+            font-weight: 600;
             min-height: 20px;
-            transition: 0.3s;
         }
-        .msg.error { color: var(--error); animation: shake 0.3s; }
+
+        .msg.error { color: var(--error); animation: shake 0.4s; }
         .msg.success { color: var(--success); }
 
         @keyframes shake {
@@ -162,138 +168,138 @@
             75% { transform: translateX(5px); }
         }
 
-        .link-area {
-            margin-top: 25px;
+        .links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
             font-size: 14px;
         }
 
-        .link-area a {
+        .links a {
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
+            transition: 0.3s;
         }
 
-        .link-area a:hover { text-decoration: underline; }
+        .links a:hover { color: white; text-shadow: 0 0 10px var(--accent); }
 
-        .footer {
-            margin-top: 35px;
-            font-size: 11px;
-            color: #475569;
-            letter-spacing: 1px;
+        /* Icon mắt cho mật khẩu */
+        .toggle-pass {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
 
-<div class="login-container" id="loginBox">
-    <div class="logo-box">🌍</div>
-    <h1>KAIZENMC LOGIN</h1>
-    <p class="subtitle">Hành trình Minecraft của bạn bắt đầu tại đây</p>
+<div class="bg-blobs">
+    <div class="blob" style="width: 400px; height: 400px; top: -100px; left: -100px;"></div>
+    <div class="blob" style="width: 300px; height: 300px; bottom: -50px; right: -50px; background: #1e40af;"></div>
+</div>
 
-    <div class="input-group">
-        <span class="icon">👤</span>
-        <input id="user" placeholder="Tên tài khoản" autocomplete="off">
+<div class="login-card">
+    <div class="logo-wrapper">🌍</div>
+    <h1>KAIZENMC</h1>
+    <p class="subtitle">Welcome back, Traveler!</p>
+
+    <div class="input-box">
+        <i>👤</i>
+        <input type="text" id="user" placeholder="Username" autocomplete="off">
     </div>
 
-    <div class="input-group">
-        <span class="icon">🔒</span>
-        <input id="pass" type="password" placeholder="Mật khẩu">
-        <span class="eye" onclick="togglePass()" id="eyeIcon">👁️</span>
+    <div class="input-box">
+        <i>🔒</i>
+        <input type="password" id="pass" placeholder="Password">
+        <span class="toggle-pass" onclick="togglePass()" id="eye">👁️</span>
     </div>
 
-    <button onclick="login()">ĐĂNG NHẬP NGAY</button>
+    <button class="btn-login" onclick="login()">ĐĂNG NHẬP</button>
 
     <p id="msg" class="msg"></p>
 
-    <div class="link-area">
-        <span style="opacity: 0.6">Thành viên mới?</span> 
-        <a href="dang-ky.html">Đăng ký tài khoản</a>
+    <div class="links">
+        New here? <a href="dang-ky.html">Create an Account</a>
     </div>
-
-    <div class="footer">© 2026 KAIZENMC SERVER • LAO CAI</div>
 </div>
 
 <script>
-// Danh sách admin (Phải khớp chính xác)
-const admins = [
-    { user: "kaizenadmin", pass: "123456789@" },
-    { user: "kaizenadmindz", pass: "123456789@" },
-    { user: "minhmeodz@!", pass: "123456789@" }
-];
+// --- CẤU HÌNH FIREBASE (DÙNG KEY CỦA ÔNG) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    measurementId: "G-JYHYYGDPRC",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
 
 function togglePass() {
     const p = document.getElementById("pass");
-    const e = document.getElementById("eyeIcon");
-    if(p.type === "password") {
-        p.type = "text"; e.innerText = "🙈";
-    } else {
-        p.type = "password"; e.innerText = "👁️";
-    }
+    const e = document.getElementById("eye");
+    p.type = p.type === "password" ? "text" : "password";
+    e.innerText = p.type === "password" ? "👁️" : "🙈";
 }
 
-function login() {
-    const msg = document.getElementById("msg");
-    const user = document.getElementById("user").value.trim();
+async function login() {
+    const user = document.getElementById("user").value.trim().toLowerCase();
     const pass = document.getElementById("pass").value;
+    const msg = document.getElementById("msg");
 
     if (!user || !pass) {
-        msg.innerText = "⚠️ Nhập đầy đủ thông tin đã sếp ơi!";
-        msg.className = "msg error";
+        showMsg("⚠️ Hãy nhập đủ thông tin sếp ơi!", "error");
         return;
     }
 
-    // --- BƯỚC FIX QUAN TRỌNG ---
-    // Xóa sạch session cũ trước khi check mới để tránh nhầm Role
-    localStorage.removeItem("login");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
+    showMsg("⌛ Đang xác thực...", "success");
 
-    // 1. Kiểm tra Admin
-    const adminFound = admins.find(a => a.user === user && a.pass === pass);
-    if (adminFound) {
-        msg.innerText = "✅ Đang chuyển hướng Admin Panel...";
-        msg.className = "msg success";
-        
-        localStorage.setItem("login", "true");
-        localStorage.setItem("role", "admin");
-        localStorage.setItem("username", user);
-        localStorage.setItem("tk", user); // Giữ cho trang admin cũ
-        
-        setTimeout(() => window.location.href = "admin.html", 1000);
+    // Clear session cũ
+    localStorage.clear();
+
+    // 1. Check Admin
+    if (ADMIN_LIST.includes(user) && pass === "123456789@") {
+        saveAndGo(user, "admin", "admin.html");
         return;
     }
 
-    // 2. Kiểm tra Member (Từ đăng ký)
-    const regUser = localStorage.getItem("tk");
-    const regPass = localStorage.getItem("mk");
+    // 2. Check Firebase
+    try {
+        const snapshot = await db.ref('users/' + user).once('value');
+        const userData = snapshot.val();
 
-    if (regUser && user === regUser && pass === regPass) {
-        msg.innerText = "✅ Đăng nhập thành công! Đang vào game...";
-        msg.className = "msg success";
-        
-        localStorage.setItem("login", "true");
-        localStorage.setItem("role", "member"); // Gán đúng role member
-        localStorage.setItem("username", user);
-        
-        setTimeout(() => window.location.href = "index.html", 1000);
-        return;
+        if (userData && userData.password === pass) {
+            saveAndGo(user, "member", "index.html");
+        } else {
+            showMsg("❌ Sai tài khoản hoặc mật khẩu!", "error");
+        }
+    } catch (e) {
+        showMsg("❗ Lỗi kết nối Firebase!", "error");
     }
-
-    // 3. Sai thông tin
-    msg.innerText = "❌ Sai tài khoản hoặc mật khẩu rồi!";
-    msg.className = "msg error";
 }
 
-// Chặn việc tự ý nhảy trang khi load lại
-window.onload = () => {
-    if (localStorage.getItem("login") === "true") {
-        const role = localStorage.getItem("role");
-        if (role === "admin") {
-            window.location.href = "admin.html";
-        } else if (role === "member") {
-            window.location.href = "index.html";
-        }
-    }
+function saveAndGo(u, r, target) {
+    localStorage.setItem("login", "true");
+    localStorage.setItem("username", u);
+    localStorage.setItem("role", r);
+    showMsg("✅ Thành công! Đang chuyển hướng...", "success");
+    setTimeout(() => { window.location.href = target; }, 1200);
+}
+
+function showMsg(txt, type) {
+    const m = document.getElementById("msg");
+    m.innerText = txt;
+    m.className = "msg " + type;
 }
 </script>
 
