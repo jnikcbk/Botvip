@@ -1,329 +1,293 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng nhập | KaizenMC - Server Minecraft</title>
-<style>
-    :root {
-        --primary-blue: #3b82f6;
-        --secondary-blue: #2563eb;
-        --accent-blue: #60a5fa;
-        --bg-dark: #020617;
-        --card-bg: rgba(15, 23, 42, 0.8);
-        --text-gray: #94a3b8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC | Đăng Nhập Hệ Thống</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --accent: #60a5fa;
+            --error: #ef4444;
+            --success: #22c55e;
+            --bg: #020617;
+        }
 
-    * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
 
-    body {
-        margin: 0;
-        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-        background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        overflow: hidden;
-    }
+        /* Hiệu ứng mờ ảo phía sau */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 300px; height: 300px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.2;
+            top: 20%; left: 30%;
+            z-index: -1;
+        }
 
-    /* Hiệu ứng hạt bụi bay lơ lửng (trang trí) */
-    body::before {
-        content: "";
-        position: absolute;
-        width: 100%; height: 100%;
-        background-image: radial-gradient(white 1px, transparent 1px);
-        background-size: 50px 50px;
-        opacity: 0.1;
-        z-index: -1;
-    }
+        .login-container {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 40px;
+            border-radius: 24px;
+            width: 380px;
+            max-width: 90%;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    .login-card {
-        background: var(--card-bg);
-        padding: 45px 35px;
-        border-radius: 24px;
-        width: 400px;
-        max-width: 95%;
-        text-align: center;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                    0 0 20px rgba(59, 130, 246, 0.1);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+        @keyframes appear {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(40px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .logo-box {
+            font-size: 50px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px var(--primary));
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
 
-    .logo-area {
-        margin-bottom: 25px;
-    }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
 
-    .logo-circle {
-        width: 70px;
-        height: 70px;
-        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-        margin: 0 auto 15px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 35px;
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
-        transform: rotate(-5deg);
-        transition: 0.3s;
-    }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(to bottom, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    .login-card:hover .logo-circle {
-        transform: rotate(0deg) scale(1.1);
-    }
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
 
-    h1 {
-        margin: 0;
-        font-size: 26px;
-        letter-spacing: -0.5px;
-        background: linear-gradient(to right, #fff, var(--accent-blue));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
 
-    p.subtitle {
-        color: var(--text-gray);
-        font-size: 14px;
-        margin: 8px 0 30px;
-    }
+        .input-group span.icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+        }
 
-    .input-box {
-        position: relative;
-        margin-bottom: 20px;
-    }
+        input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
 
-    .input-box span.icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-gray);
-        font-size: 18px;
-    }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
 
-    input {
-        width: 100%;
-        padding: 15px 15px 15px 48px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        background: rgba(0, 0, 0, 0.2);
-        color: white;
-        font-size: 15px;
-        transition: all 0.2s;
-    }
+        .eye {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.6;
+        }
 
-    input:focus {
-        outline: none;
-        background: rgba(0, 0, 0, 0.4);
-        border-color: var(--primary-blue);
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-    }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
 
-    .btn-login {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 12px;
-        background: linear-gradient(90deg, var(--secondary-blue), var(--primary-blue));
-        color: white;
-        font-weight: 700;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s;
-        margin-top: 10px;
-        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-    }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+        }
 
-    .btn-login:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
-    }
+        button:active { transform: translateY(0); }
 
-    .btn-login:active { transform: translateY(0); }
+        .msg {
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+            transition: 0.3s;
+        }
+        .msg.error { color: var(--error); animation: shake 0.3s; }
+        .msg.success { color: var(--success); }
 
-    .msg {
-        margin-top: 15px;
-        font-size: 14px;
-        padding: 10px;
-        border-radius: 8px;
-        display: none;
-    }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
 
-    .msg.error { display: block; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .msg.success { display: block; background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .link-area {
+            margin-top: 25px;
+            font-size: 14px;
+        }
 
-    .options {
-        margin-top: 25px;
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-        font-size: 14px;
-    }
+        .link-area a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
 
-    .options a {
-        color: var(--accent-blue);
-        text-decoration: none;
-        font-weight: 600;
-    }
+        .link-area a:hover { text-decoration: underline; }
 
-    .options a:hover { text-decoration: underline; }
-
-    .footer {
-        margin-top: 40px;
-        font-size: 11px;
-        color: #475569;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    /* Hiệu ứng rung khi sai */
-    .shake { animation: shake 0.4s ease-in-out; }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-8px); }
-        75% { transform: translateX(8px); }
-    }
-</style>
+        .footer {
+            margin-top: 35px;
+            font-size: 11px;
+            color: #475569;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="login-card" id="loginCard">
-    <div class="logo-area">
-        <div class="logo-circle">🌍</div>
-        <h1>KAIZENMC</h1>
-        <p class="subtitle">Chào mừng bạn trở lại!</p>
-    </div>
+<div class="login-container" id="loginBox">
+    <div class="logo-box">🌍</div>
+    <h1>KAIZENMC LOGIN</h1>
+    <p class="subtitle">Hành trình Minecraft của bạn bắt đầu tại đây</p>
 
-    <div class="input-box">
+    <div class="input-group">
         <span class="icon">👤</span>
-        <input id="user" type="text" placeholder="Tên tài khoản" autocomplete="off">
+        <input id="user" placeholder="Tên tài khoản" autocomplete="off">
     </div>
 
-    <div class="input-box">
+    <div class="input-group">
         <span class="icon">🔒</span>
         <input id="pass" type="password" placeholder="Mật khẩu">
-        <span onclick="togglePass()" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:0.5;" id="eyeIcon">👁️</span>
+        <span class="eye" onclick="togglePass()" id="eyeIcon">👁️</span>
     </div>
 
-    <button class="btn-login" onclick="login()">ĐĂNG NHẬP NGAY</button>
+    <button onclick="login()">ĐĂNG NHẬP NGAY</button>
 
-    <div id="msg" class="msg"></div>
+    <p id="msg" class="msg"></p>
 
-    <div class="options">
-        <span style="color: var(--text-gray)">Chưa có tài khoản?</span>
-        <a href="dang-ky.html">Đăng ký</a>
+    <div class="link-area">
+        <span style="opacity: 0.6">Thành viên mới?</span> 
+        <a href="dang-ky.html">Đăng ký tài khoản</a>
     </div>
 
-    <div class="footer">
-        Verified Secure • Server 2026
-    </div>
+    <div class="footer">© 2026 KAIZENMC SERVER • LAO CAI</div>
 </div>
 
-// 1. Danh sách Admin (Giữ nguyên hoặc thêm bớt tùy ông)
-const defaultAdmins = [
+<script>
+// Danh sách admin (Phải khớp chính xác)
+const admins = [
     { user: "kaizenadmin", pass: "123456789@" },
     { user: "kaizenadmindz", pass: "123456789@" },
     { user: "minhmeodz@!", pass: "123456789@" }
 ];
 
-// Khởi tạo danh sách admin vào máy nếu chưa có
-if (!localStorage.getItem("admins")) {
-    localStorage.setItem("admins", JSON.stringify(defaultAdmins));
-}
-
 function togglePass() {
-    const passInput = document.getElementById("pass");
-    const eyeIcon = document.getElementById("eyeIcon");
-    if (passInput.type === "password") {
-        passInput.type = "text";
-        eyeIcon.innerText = "🙈";
+    const p = document.getElementById("pass");
+    const e = document.getElementById("eyeIcon");
+    if(p.type === "password") {
+        p.type = "text"; e.innerText = "🙈";
     } else {
-        passInput.type = "password";
-        eyeIcon.innerText = "👁️";
-    }
-}
-
-function showMsg(text, type) {
-    const msg = document.getElementById("msg");
-    const card = document.getElementById("loginCard");
-    msg.innerText = text;
-    msg.className = "msg " + type;
-    
-    if (type === "error") {
-        card.classList.add("shake");
-        setTimeout(() => card.classList.remove("shake"), 400);
+        p.type = "password"; e.innerText = "👁️";
     }
 }
 
 function login() {
-    const user = document.getElementById("user").value.trim().toLowerCase(); // Chuyển về chữ thường cho chắc
+    const msg = document.getElementById("msg");
+    const user = document.getElementById("user").value.trim();
     const pass = document.getElementById("pass").value;
 
     if (!user || !pass) {
-        showMsg("⚠️ Nhập tài khoản và mật khẩu đã ông giáo!", "error");
+        msg.innerText = "⚠️ Nhập đầy đủ thông tin đã sếp ơi!";
+        msg.className = "msg error";
         return;
     }
 
-    // XÓA DỮ LIỆU ĐĂNG NHẬP CŨ TRƯỚC KHI CHECK MỚI (Tránh bị dính role admin cũ)
+    // --- BƯỚC FIX QUAN TRỌNG ---
+    // Xóa sạch session cũ trước khi check mới để tránh nhầm Role
     localStorage.removeItem("login");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
 
-    // 2. Kiểm tra danh sách Admin
-    const admins = JSON.parse(localStorage.getItem("admins")) || [];
-    const isAdmin = admins.find(a => a.user.toLowerCase() === user && a.pass === pass);
-
-    if (isAdmin) {
-        showMsg("✅ Chào Sếp! Đang vào Admin Panel...", "success");
-        saveAndRedirect(user, "admin", "admin.html");
+    // 1. Kiểm tra Admin
+    const adminFound = admins.find(a => a.user === user && a.pass === pass);
+    if (adminFound) {
+        msg.innerText = "✅ Đang chuyển hướng Admin Panel...";
+        msg.className = "msg success";
+        
+        localStorage.setItem("login", "true");
+        localStorage.setItem("role", "admin");
+        localStorage.setItem("username", user);
+        localStorage.setItem("tk", user); // Giữ cho trang admin cũ
+        
+        setTimeout(() => window.location.href = "admin.html", 1000);
         return;
     }
 
-    // 3. Kiểm tra User thường (Dữ liệu từ trang dang-ky.html)
-    // Lưu ý: Nếu ông đăng ký nhiều user, logic này cần chỉnh lại để check mảng users.
-    // Hiện tại đang check 1 user duy nhất lưu ở key 'tk' và 'mk'
-    const registeredUser = localStorage.getItem("tk");
-    const registeredPass = localStorage.getItem("mk");
+    // 2. Kiểm tra Member (Từ đăng ký)
+    const regUser = localStorage.getItem("tk");
+    const regPass = localStorage.getItem("mk");
 
-    if (registeredUser && user === registeredUser.toLowerCase() && pass === registeredPass) {
-        showMsg("✅ Đăng nhập Member thành công!", "success");
-        saveAndRedirect(user, "member", "index.html");
+    if (regUser && user === regUser && pass === regPass) {
+        msg.innerText = "✅ Đăng nhập thành công! Đang vào game...";
+        msg.className = "msg success";
+        
+        localStorage.setItem("login", "true");
+        localStorage.setItem("role", "member"); // Gán đúng role member
+        localStorage.setItem("username", user);
+        
+        setTimeout(() => window.location.href = "index.html", 1000);
         return;
     }
 
-    showMsg("❌ Sai tên tài khoản hoặc mật khẩu rồi!", "error");
+    // 3. Sai thông tin
+    msg.innerText = "❌ Sai tài khoản hoặc mật khẩu rồi!";
+    msg.className = "msg error";
 }
 
-function saveAndRedirect(username, role, target) {
-    // Lưu chính xác role để không bị nhảy nhầm trang
-    localStorage.setItem("login", "true");
-    localStorage.setItem("role", role); 
-    localStorage.setItem("tk", username);
-    localStorage.setItem("username", username);
-    
-    setTimeout(() => {
-        window.location.href = target;
-    }, 1000);
-}
-
-// 4. FIX LỖI TỰ CHUYỂN TRANG KHI LOAD
+// Chặn việc tự ý nhảy trang khi load lại
 window.onload = () => {
-    const isLogin = localStorage.getItem("login");
-    const role = localStorage.getItem("role");
-
-    if (isLogin === "true") {
-        // Nếu là admin thì mới sang admin.html, còn lại auto về index.html
+    if (localStorage.getItem("login") === "true") {
+        const role = localStorage.getItem("role");
         if (role === "admin") {
             window.location.href = "admin.html";
         } else if (role === "member") {
@@ -331,6 +295,7 @@ window.onload = () => {
         }
     }
 }
-    
+</script>
+
 </body>
 </html>
