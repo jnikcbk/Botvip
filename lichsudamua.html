@@ -1,164 +1,195 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lịch sử vật phẩm đã mua - KaizenMC</title>
-<style>
-  body {
-    margin:0;
-    font-family:'Segoe UI', Arial, sans-serif;
-    background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
-    color:white;
-    min-height:100vh;
-  }
-  header {
-    text-align:center;
-    padding:40px 20px 20px;
-    font-size:2.8rem;
-    font-weight:bold;
-    background:rgba(2,6,23,0.9);
-    border-bottom:3px solid #2563eb;
-    text-shadow:0 0 15px #2563eb;
-  }
-  .container {
-    max-width:900px;
-    margin:auto;
-    padding:50px 20px;
-    text-align:center;
-  }
-  .box {
-    background:rgba(17,24,39,0.85);
-    backdrop-filter:blur(12px);
-    padding:40px;
-    border-radius:20px;
-    box-shadow:0 15px 50px rgba(0,0,0,0.7);
-    border:1px solid rgba(37,99,235,0.4);
-  }
-  h1 {
-    color:#60a5fa;
-    margin-bottom:30px;
-    text-shadow:0 0 10px #60a5fa;
-  }
-  .msg {
-    font-size:1.3rem;
-    margin:20px 0;
-    color:#9ca3af;
-  }
-  .purchase-list {
-    text-align:left;
-    max-height:500px;
-    overflow-y:auto;
-    padding-right:10px;
-  }
-  .purchase-item {
-    background:#020617;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:15px;
-    border-left:5px solid #22c55e;
-    transition:0.3s;
-  }
-  .purchase-item:hover {
-    transform:translateX(8px);
-    box-shadow:0 0 20px rgba(34,197,94,0.4);
-  }
-  .purchase-item h3 {
-    margin:0 0 8px;
-    color:#22c55e;
-    font-size:1.3rem;
-  }
-  .purchase-item p {
-    margin:5px 0;
-    color:#cbd5f5;
-  }
-  .time {
-    font-size:0.9rem;
-    color:#9ca3af;
-  }
-  .empty {
-    text-align:center;
-    color:#9ca3af;
-    font-size:1.2rem;
-    padding:40px 0;
-  }
-  .back {
-    display:inline-block;
-    margin-top:40px;
-    padding:14px 35px;
-    background:#2563eb;
-    border-radius:50px;
-    color:white;
-    text-decoration:none;
-    font-weight:bold;
-    font-size:1.1rem;
-  }
-  .back:hover {
-    background:#1d4ed8;
-    transform:scale(1.05);
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC - Nhật Ký Giao Dịch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --neon-blue: #00f0ff;
+            --neon-green: #10b981;
+            --glass: rgba(15, 23, 42, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            color: white;
+            min-height: 100vh;
+            background: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* NAVBAR */
+        .main-nav {
+            width: 100%; height: 70px; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+            position: fixed; top: 0; z-index: 100;
+        }
+        .nav-logo { font-family: 'Orbitron', sans-serif; font-size: 20px; color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-logo img { height: 35px; border-radius: 50%; }
+
+        /* CONTAINER */
+        .container { max-width: 800px; width: 90%; margin: 120px auto 50px; }
+
+        .history-box {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 24px; padding: 40px; backdrop-filter: blur(15px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 28px; text-align: center;
+            margin-bottom: 30px; background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* LIST ITEMS */
+        .purchase-list {
+            display: flex; flex-direction: column; gap: 15px;
+            max-height: 500px; overflow-y: auto; padding-right: 10px;
+        }
+
+        /* Thanh cuộn custom */
+        .purchase-list::-webkit-scrollbar { width: 6px; }
+        .purchase-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .purchase-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 20px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+        .purchase-item:hover {
+            border-color: var(--neon-blue);
+            background: rgba(0, 240, 255, 0.05);
+            transform: scale(1.02);
+        }
+
+        .item-info h3 { color: var(--neon-blue); font-size: 18px; margin-bottom: 5px; }
+        .item-info p { font-size: 14px; color: #94a3b8; }
+
+        .item-price { text-align: right; }
+        .price-val { color: #fbbf24; font-weight: 800; font-size: 18px; }
+        .time-val { font-size: 12px; color: #64748b; margin-top: 5px; }
+
+        .empty-state {
+            text-align: center; padding: 50px 0; color: #64748b;
+        }
+        .empty-state i { font-size: 50px; display: block; margin-bottom: 15px; }
+
+        .btn-back {
+            display: block; width: fit-content; margin: 30px auto 0;
+            padding: 12px 30px; border-radius: 50px; background: var(--border);
+            color: white; text-decoration: none; font-weight: 600; transition: 0.3s;
+        }
+        .btn-back:hover { background: var(--primary); transform: translateY(-3px); }
+
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--neon-blue);
+            width: 40px; height: 40px; border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
-<header>📦 Lịch sử vật phẩm đã mua</header>
+<nav class="main-nav">
+    <a href="index.html" class="nav-logo"><img src="kaizen.png"> KAIZENMC</a>
+    <div id="userDisplay" style="color: var(--neon-blue); font-weight: 800;"></div>
+</nav>
 
 <div class="container">
-  <div class="box">
-    <h1>👤 Vật phẩm bạn đã mua từ Shop KaizenMC</h1>
+    <div class="history-box">
+        <h1>NHẬT KÝ MUA ĐỒ</h1>
+        
+        <div id="loading" class="loading-spinner"></div>
+        <div id="purchaseHistory" class="purchase-list"></div>
 
-    <div id="purchaseHistory" class="purchase-list"></div>
-
-    <p id="msg" class="msg"></p>
-
-    <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
-  </div>
+        <a href="shop.html" class="btn-back">⬅ Tiếp tục mua sắm</a>
+    </div>
 </div>
 
 <script>
-function loadPurchaseHistory() {
-  const login = localStorage.getItem("login");
-  const username = localStorage.getItem("tk");
-  const historyDiv = document.getElementById("purchaseHistory");
-  const msgEl = document.getElementById("msg");
+// --- CẤU HÌNH FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  if (login !== "true" || !username) {
-    msgEl.innerText = "⚠️ Bạn cần đăng nhập để xem lịch sử mua hàng!";
-    historyDiv.innerHTML = "";
-    return;
-  }
+async function loadHistory() {
+    const username = localStorage.getItem("username");
+    const historyDiv = document.getElementById("purchaseHistory");
+    const loading = document.getElementById("loading");
 
-  const purchases = JSON.parse(localStorage.getItem(`purchaseHistory_${username}`)) || [];
+    if (!username) {
+        window.location.href = "dang-nhap.html";
+        return;
+    }
 
-  if (purchases.length === 0) {
-    historyDiv.innerHTML = '<div class="empty">Bạn chưa mua vật phẩm nào từ shop.</div>';
-    msgEl.innerText = "";
-    return;
-  }
+    document.getElementById("userDisplay").innerText = "👤 " + username.toUpperCase();
 
-  msgEl.innerText = `Tổng cộng: ${purchases.length} vật phẩm đã mua`;
-  historyDiv.innerHTML = "";
+    try {
+        // Lấy dữ liệu từ node 'history/username'
+        const snapshot = await db.ref('history/' + username).once('value');
+        loading.style.display = "none";
 
-  purchases.slice().reverse().forEach(p => {
-    historyDiv.innerHTML += `
-      <div class="purchase-item">
-        <h3>${p.item}</h3>
-        <p>Giá: <span style="color:#fbbf24;">-${p.price.toLocaleString('vi-VN')} xu</span></p>
-        <p class="time">Mua lúc: ${p.time}</p>
-      </div>
-    `;
-  });
+        if (!snapshot.exists()) {
+            historyDiv.innerHTML = `
+                <div class="empty-state">
+                    <i>📦</i>
+                    <p>Bạn chưa có giao dịch nào.</p>
+                </div>`;
+            return;
+        }
+
+        const data = snapshot.val();
+        // Chuyển object thành array và đảo ngược để cái mới nhất lên đầu
+        const items = Object.values(data).reverse();
+
+        historyDiv.innerHTML = items.map(p => `
+            <div class="purchase-item">
+                <div class="item-info">
+                    <h3>${p.item}</h3>
+                    <p>Trạng thái: <span style="color:var(--neon-green)">Đã thanh toán</span></p>
+                </div>
+                <div class="item-price">
+                    <div class="price-val">-${p.price.toLocaleString()} Xu</div>
+                    <div class="time-val">${p.time}</div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error(error);
+        loading.style.display = "none";
+        historyDiv.innerHTML = "<p style='text-align:center; color:red;'>Lỗi tải dữ liệu!</p>";
+    }
 }
 
 // Khởi chạy
-loadPurchaseHistory();
-
-// Bảo vệ: Nếu logout hoặc không login thì đẩy về trang chủ
-if (localStorage.getItem("login") !== "true") {
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 2000);
-}
+loadHistory();
 </script>
+
 </body>
 </html>
