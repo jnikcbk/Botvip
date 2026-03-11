@@ -3,226 +3,319 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đăng nhập - KaizenMC</title>
+<title>Đăng nhập | KaizenMC - Server Minecraft</title>
 <style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #020617, #0f172a, #1e293b);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    overflow: hidden;
-  }
-  .box {
-    background: rgba(17, 24, 39, 0.92);
-    padding: 50px 40px;
-    border-radius: 20px;
-    width: 380px;
-    max-width: 90%;
-    text-align: center;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(37,99,235,0.25);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(37,99,235,0.3);
-    animation: fadeIn 0.8s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  .logo {
-    font-size: 48px;
-    margin-bottom: 10px;
-    animation: pulse 2s infinite alternate;
-  }
-  @keyframes pulse { to { transform: scale(1.05); } }
-  h1 {
-    margin: 0 0 30px;
-    font-size: 28px;
-    font-weight: 600;
-    color: #60a5fa;
-    text-shadow: 0 0 10px rgba(96,165,250,0.5);
-  }
-  .input-group {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  input {
-    width: 100%;
-    padding: 14px 14px 14px 45px;
-    border: none;
-    border-radius: 10px;
-    background: #1f2937;
-    color: white;
-    font-size: 15px;
-    transition: all 0.3s;
-  }
-  input:focus {
-    background: #374151;
-    box-shadow: 0 0 0 3px #2563eb, 0 0 15px rgba(37,99,235,0.5);
-    outline: none;
-  }
-  .icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    opacity: 0.7;
-    pointer-events: none;
-  }
-  .eye {
-    right: 15px;
-    left: auto;
-    cursor: pointer;
-    opacity: 0.8;
-  }
-  button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
-    background-size: 200% 100%;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.4s;
-  }
-  button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(59,130,246,0.6);
-    background-position: right center;
-  }
-  .msg {
-    margin-top: 15px;
-    color: #f87171;
-    font-size: 14px;
-    min-height: 20px;
-  }
-  .success { color: #22c55e !important; }
-  a {
-    display: block;
-    margin-top: 20px;
-    color: #60a5fa;
-    text-decoration: none;
-    font-size: 14px;
-  }
-  a:hover { text-decoration: underline; color: #93c5fd; }
-  .footer {
-    margin-top: 30px;
-    font-size: 12px;
-    color: #6b7280;
-  }
+    :root {
+        --primary-blue: #3b82f6;
+        --secondary-blue: #2563eb;
+        --accent-blue: #60a5fa;
+        --bg-dark: #020617;
+        --card-bg: rgba(15, 23, 42, 0.8);
+        --text-gray: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    /* Hiệu ứng hạt bụi bay lơ lửng (trang trí) */
+    body::before {
+        content: "";
+        position: absolute;
+        width: 100%; height: 100%;
+        background-image: radial-gradient(white 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    .login-card {
+        background: var(--card-bg);
+        padding: 45px 35px;
+        border-radius: 24px;
+        width: 400px;
+        max-width: 95%;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                    0 0 20px rgba(59, 130, 246, 0.1);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-area {
+        margin-bottom: 25px;
+    }
+
+    .logo-circle {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        margin: 0 auto 15px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 35px;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+        transform: rotate(-5deg);
+        transition: 0.3s;
+    }
+
+    .login-card:hover .logo-circle {
+        transform: rotate(0deg) scale(1.1);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: -0.5px;
+        background: linear-gradient(to right, #fff, var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+        color: var(--text-gray);
+        font-size: 14px;
+        margin: 8px 0 30px;
+    }
+
+    .input-box {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .input-box span.icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-gray);
+        font-size: 18px;
+    }
+
+    input {
+        width: 100%;
+        padding: 15px 15px 15px 48px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.2);
+        color: white;
+        font-size: 15px;
+        transition: all 0.2s;
+    }
+
+    input:focus {
+        outline: none;
+        background: rgba(0, 0, 0, 0.4);
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, var(--secondary-blue), var(--primary-blue));
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-login:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+
+    .msg {
+        margin-top: 15px;
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .msg.error { display: block; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .msg.success { display: block; background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+
+    .options {
+        margin-top: 25px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .options a {
+        color: var(--accent-blue);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .options a:hover { text-decoration: underline; }
+
+    .footer {
+        margin-top: 40px;
+        font-size: 11px;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Hiệu ứng rung khi sai */
+    .shake { animation: shake 0.4s ease-in-out; }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-8px); }
+        75% { transform: translateX(8px); }
+    }
 </style>
 </head>
 <body>
 
-<div class="box">
-  <div class="logo">🌍</div>
-  <h1>KaizenMC Login</h1>
+<div class="login-card" id="loginCard">
+    <div class="logo-area">
+        <div class="logo-circle">🌍</div>
+        <h1>KAIZENMC</h1>
+        <p class="subtitle">Chào mừng bạn trở lại!</p>
+    </div>
 
-  <div class="input-group">
-    <span class="icon">👤</span>
-    <input id="user" placeholder="Tên tài khoản" autocomplete="username">
-  </div>
+    <div class="input-box">
+        <span class="icon">👤</span>
+        <input id="user" type="text" placeholder="Tên tài khoản" autocomplete="off">
+    </div>
 
-  <div class="input-group">
-    <span class="icon">🔒</span>
-    <input id="pass" type="password" placeholder="Mật khẩu" autocomplete="current-password">
-    <span class="eye icon" onclick="togglePass()">👁️</span>
-  </div>
+    <div class="input-box">
+        <span class="icon">🔒</span>
+        <input id="pass" type="password" placeholder="Mật khẩu">
+        <span onclick="togglePass()" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:0.5;" id="eyeIcon">👁️</span>
+    </div>
 
-  <button onclick="login()">Đăng nhập</button>
+    <button class="btn-login" onclick="login()">ĐĂNG NHẬP NGAY</button>
 
-  <p id="msg" class="msg"></p>
+    <div id="msg" class="msg"></div>
 
-  <a href="dang-ky.html">Chưa có tài khoản? Đăng ký ngay</a>
+    <div class="options">
+        <span style="color: var(--text-gray)">Chưa có tài khoản?</span>
+        <a href="dang-ky.html">Đăng ký</a>
+    </div>
 
-  <div class="footer">
-    © 2026 KaizenMC Server • Lao Cai, VN
-  </div>
+    <div class="footer">
+        Verified Secure • Server 2026
+    </div>
 </div>
 
 <script>
-// Danh sách admin mặc định (giữ nguyên các tk bạn đã tạo)
+// Dữ liệu Admin mặc định
 const defaultAdmins = [
-  { user: "kaizenadmin", pass: "123456789@" },
-  { user: "kaizenadmindz", pass: "123456789@" },
-  { user: "minhmeodz@!", pass: "123456789@" }
+    { user: "kaizenadmin", pass: "123456789@" },
+    { user: "kaizenadmindz", pass: "123456789@" },
+    { user: "minhmeodz@!", pass: "123456789@" }
 ];
 
-// Khởi tạo admin nếu chưa có
+// Khởi tạo
 if (!localStorage.getItem("admins")) {
-  localStorage.setItem("admins", JSON.stringify(defaultAdmins));
+    localStorage.setItem("admins", JSON.stringify(defaultAdmins));
 }
 
-// Toggle hiển thị mật khẩu
 function togglePass() {
-  const passInput = document.getElementById("pass");
-  const eye = document.querySelector(".eye");
-  if (passInput.type === "password") {
-    passInput.type = "text";
-    eye.innerText = "🙈";
-  } else {
-    passInput.type = "password";
-    eye.innerText = "👁️";
-  }
+    const passInput = document.getElementById("pass");
+    const eyeIcon = document.getElementById("eyeIcon");
+    if (passInput.type === "password") {
+        passInput.type = "text";
+        eyeIcon.innerText = "🙈";
+    } else {
+        passInput.type = "password";
+        eyeIcon.innerText = "👁️";
+    }
+}
+
+function showMsg(text, type) {
+    const msg = document.getElementById("msg");
+    const card = document.getElementById("loginCard");
+    msg.innerText = text;
+    msg.className = "msg " + type;
+    
+    if (type === "error") {
+        card.classList.add("shake");
+        setTimeout(() => card.classList.remove("shake"), 400);
+    }
 }
 
 function login() {
-  const msg = document.getElementById("msg");
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value;
+    const user = document.getElementById("user").value.trim();
+    const pass = document.getElementById("pass").value;
 
-  if (!user || !pass) {
-    msg.className = "msg";
-    msg.innerText = "⚠️ Vui lòng nhập đầy đủ thông tin!";
-    return;
-  }
+    if (!user || !pass) {
+        showMsg("⚠️ Bạn chưa nhập tài khoản/mật khẩu!", "error");
+        return;
+    }
 
-  msg.innerText = "Đang đăng nhập...";
-  msg.className = "msg success";
+    // Kiểm tra Admin
+    const admins = JSON.parse(localStorage.getItem("admins")) || [];
+    const adminAccount = admins.find(a => a.user === user && a.pass === pass);
 
-  // Lấy danh sách admin
-  const admins = JSON.parse(localStorage.getItem("admins")) || [];
+    if (adminAccount) {
+        showMsg("✅ Đăng nhập Admin thành công!", "success");
+        saveAndRedirect(user, "admin", "admin.html");
+        return;
+    }
 
-  // Check admin
-  const isAdmin = admins.some(admin => admin.user === user && admin.pass === pass);
-  if (isAdmin) {
-    localStorage.setItem("login", "true");
-    localStorage.setItem("role", "admin");
-    localStorage.setItem("username", user); // Lưu tên admin để hiển thị sau
-    window.location.href = "admin.html";
-    return;
-  }
+    // Kiểm tra User thường (Logic từ trang đăng ký của bạn)
+    const registeredUser = localStorage.getItem("tk");
+    const registeredPass = localStorage.getItem("mk");
 
-  // Check user thường (từ đăng ký)
-  const registeredUser = localStorage.getItem("tk");
-  const registeredPass = localStorage.getItem("mk");
+    if (registeredUser && user === registeredUser && pass === registeredPass) {
+        showMsg("✅ Đăng nhập thành công!", "success");
+        saveAndRedirect(user, "member", "index.html");
+        return;
+    }
 
-  if (registeredUser && user === registeredUser && pass === registeredPass) {
-    localStorage.setItem("login", "true");
-    localStorage.setItem("role", "member");
-    localStorage.setItem("username", user);
-    window.location.href = "index.html";
-    return;
-  }
-
-  // Sai thông tin
-  msg.className = "msg";
-  msg.innerText = "❌ Sai tên tài khoản hoặc mật khẩu!";
+    showMsg("❌ Tài khoản hoặc mật khẩu không chính xác!", "error");
 }
 
-// Nếu đã login thì tự động redirect
-if (localStorage.getItem("login") === "true") {
-  const role = localStorage.getItem("role");
-  if (role === "admin") {
-    window.location.href = "admin.html";
-  } else {
-    window.location.href = "index.html";
-  }
+function saveAndRedirect(username, role, target) {
+    localStorage.setItem("login", "true");
+    localStorage.setItem("role", role);
+    localStorage.setItem("tk", username); // Giữ nguyên key cũ để đồng bộ trang admin
+    localStorage.setItem("username", username);
+    
+    setTimeout(() => {
+        window.location.href = target;
+    }, 1000);
+}
+
+// Chặn truy cập nếu đã login
+window.onload = () => {
+    if (localStorage.getItem("login") === "true") {
+        const role = localStorage.getItem("role");
+        window.location.href = (role === "admin") ? "admin.html" : "index.html";
+    }
 }
 </script>
 
