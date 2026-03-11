@@ -1,270 +1,266 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KaizenMC - Minecraft Pokémon Server</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --neon-blue: #00f0ff;
-    --neon-purple: #c300ff;
-    --neon-pink: #ff00aa;
-    --dark-bg: #0a0015;
-    --glow-blue: 0 0 20px rgba(0,240,255,0.6);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Roboto', sans-serif;
-    color: white;
-    min-height: 100vh;
-    background: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=2000') no-repeat center center fixed;
-    background-size: cover;
-    position: relative;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background: linear-gradient(to bottom, rgba(10,0,21,0.8), rgba(10,0,21,0.94));
-    z-index: 1;
-    pointer-events: none;
-  }
-  .stars { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.65; }
-  .stars::before, .stars::after { content:''; position:absolute; inset:0; background:transparent; animation:starsFall 120s linear infinite; }
-  .stars::before { background: radial-gradient(white 1px, transparent 1px); background-size:60px 60px; opacity:0.55; animation-duration:160s; }
-  .stars::after { background: radial-gradient(rgba(0,240,255,0.85) 1.2px, transparent 1.2px); background-size:100px 100px; opacity:0.45; animation-duration:200s; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC - Trải Nghiệm Minecraft Pokémon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
-  header {
-    text-align:center; padding:50px 20px 30px;
-    font-family:'Orbitron', sans-serif; font-size:3.2rem; font-weight:700;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    text-shadow: 0 0 30px rgba(0,240,255,0.7);
-    animation: pulse 6s infinite alternate;
-    position:relative; z-index:3;
-  }
-  @keyframes pulse { to { opacity:0.92; transform:scale(1.02); } }
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --neon-blue: #00f0ff;
+            --neon-purple: #c300ff;
+            --glass: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.1);
+        }
 
-  /* NAV */
-  .main-nav {
-    position: fixed; top:0; left:0; right:0; z-index:100;
-    height:68px; background: rgba(10,0,21,0.93); backdrop-filter:blur(16px);
-    border-bottom:1px solid rgba(0,240,255,0.3);
-    box-shadow: 0 4px 25px rgba(0,0,0,0.5);
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 25px;
-  }
-  .nav-logo img {
-    height:44px; border-radius:50%; transition:0.4s;
-    filter: drop-shadow(0 0 12px #00f0ff);
-  }
-  .nav-logo img:hover { transform:scale(1.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-  .hamburger {
-    display:none; flex-direction:column; gap:6px; cursor:pointer; z-index:101;
-  }
-  .hamburger span {
-    width:32px; height:4px;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-    border-radius:2px; box-shadow:var(--glow-blue);
-    transition:all 0.4s ease;
-  }
-  .hamburger.active span:nth-child(1) { transform:rotate(45deg) translate(9px,9px); }
-  .hamburger.active span:nth-child(2) { opacity:0; }
-  .hamburger.active span:nth-child(3) { transform:rotate(-45deg) translate(8px,-8px); }
+        body {
+            color: white;
+            min-height: 100vh;
+            background: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%);
+            overflow-x: hidden;
+        }
 
-  .nav-links {
-    display:flex; align-items:center; gap:16px;
-  }
-  .nav-links a {
-    color:#f0f9ff; text-decoration:none; font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:500;
-    padding:9px 18px; border-radius:50px; background:rgba(37,99,235,0.12);
-    transition:all 0.35s ease; position:relative; overflow:hidden;
-  }
-  .nav-links a .icon { margin-right:7px; font-size:1.15rem; }
-  .nav-links a::after {
-    content:''; position:absolute; bottom:0; left:50%; width:0; height:3px;
-    background:linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-    transition:all 0.35s; transform:translateX(-50%);
-  }
-  .nav-links a:hover {
-    background:linear-gradient(45deg, rgba(0,240,255,0.25), rgba(195,0,255,0.25));
-    transform:translateY(-3px); box-shadow:var(--glow-blue);
-  }
-  .nav-links a:hover::after { width:75%; }
+        /* Hiệu ứng mây mù / ánh sáng nền */
+        body::before {
+            content: ""; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vh;
+            background: var(--primary); filter: blur(150px); opacity: 0.15; z-index: -1;
+        }
+        body::after {
+            content: ""; position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vh;
+            background: var(--neon-purple); filter: blur(150px); opacity: 0.15; z-index: -1;
+        }
 
-  .admin-btn {
-    background:linear-gradient(45deg, #ff3366, #cc0033) !important;
-    box-shadow:0 0 20px rgba(255,51,102,0.6) !important;
-  }
-  .admin-btn:hover { box-shadow:0 0 35px rgba(255,51,102,0.85) !important; transform:translateY(-3px); }
+        /* --- NAVBAR --- */
+        .main-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: 70px; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+        }
 
-  @media (max-width: 960px) {
-    .hamburger { display:flex; }
-    .nav-links {
-      position:fixed; top:0; right:-100%; width:80%; max-width:320px; height:100vh;
-      background:linear-gradient(135deg, rgba(10,0,21,0.97), rgba(30,0,60,0.97));
-      backdrop-filter:blur(20px); flex-direction:column; justify-content:center; align-items:center;
-      gap:30px; transition:right 0.5s ease; z-index:99; padding:80px 15px;
-    }
-    .nav-links.active { right:0; }
-    .nav-links a { font-size:1.4rem; padding:14px 40px; width:90%; text-align:center; background:rgba(37,99,235,0.2); border-radius:18px; }
-  }
+        .nav-logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; text-decoration: none;}
+        .nav-logo img { height: 40px; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
 
-  .container { padding:100px 20px 120px; text-align:center; position:relative; z-index:3; }
-  .server-box {
-    background:rgba(17,24,39,0.85); backdrop-filter:blur(16px);
-    padding:50px 35px; border-radius:28px; max-width:560px; margin:auto;
-    box-shadow:0 20px 70px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,240,255,0.15);
-    border:1px solid rgba(0,240,255,0.35); animation:fadeIn 1.2s ease;
-  }
-  @keyframes fadeIn { from {opacity:0; transform:translateY(30px);} to {opacity:1; transform:translateY(0);} }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+        .nav-links a {
+            color: #e2e8f0; text-decoration: none; font-size: 14px; font-weight: 600;
+            padding: 10px 16px; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; gap: 6px;
+        }
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); color: var(--neon-blue); }
+        
+        .admin-btn { background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .admin-btn:hover { background: rgba(239, 68, 68, 0.3) !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
-  .server-box img {
-    width:220px; max-width:85%; margin:15px 0 25px; border-radius:50%;
-    box-shadow:0 0 40px rgba(0,240,255,0.5); animation:logoFloat 7s ease-in-out infinite;
-  }
-  @keyframes logoFloat { 0%,100% {transform:translateY(0);} 50% {transform:translateY(-12px);} }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 3px; transition: 0.3s; }
 
-  .server-box h1 {
-    font-family:'Orbitron',sans-serif; font-size:2.6rem; margin:0 0 20px;
-    background:linear-gradient(90deg, #a5d8ff, #c084fc, #ff99cc);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    text-shadow:0 0 20px rgba(165,216,255,0.6);
-  }
+        @media (max-width: 1100px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 70px; right: -100%; width: 280px; height: calc(100vh - 70px);
+                background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+                flex-direction: column; align-items: flex-start; padding: 20px; transition: 0.4s;
+                border-left: 1px solid var(--border);
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { width: 100%; padding: 15px; font-size: 16px; }
+        }
 
-  .server-box p { color:#d1d5db; font-size:1.05rem; line-height:1.6; margin-bottom:30px; }
+        /* --- HERO SECTION --- */
+        .container { padding: 120px 20px 80px; text-align: center; min-height: 80vh; display: flex; justify-content: center; align-items: center; }
+        
+        .server-box {
+            background: var(--glass); padding: 50px 40px; border-radius: 32px; width: 600px; max-width: 100%;
+            backdrop-filter: blur(25px); border: 1px solid var(--border);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;
+        }
 
-  .features { text-align:left; margin:45px 0; padding:22px; background:rgba(15,23,42,0.65); border-radius:20px; border:1px solid rgba(0,240,255,0.3); }
-  .features h3 { color:#93c5fd; margin-bottom:18px; font-size:1.5rem; text-shadow:0 0 10px #93c5fd; }
-  .features li { margin:14px 0; font-size:1.05rem; position:relative; padding-left:32px; }
-  .features li::before { content:'✦'; position:absolute; left:0; color:var(--neon-pink); text-shadow:0 0 10px var(--neon-pink); font-size:1.3rem; }
+        .server-box img.main-logo { width: 150px; border-radius: 50%; box-shadow: 0 0 40px rgba(0,240,255,0.4); margin-bottom: 20px; animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-  .btn {
-    display:inline-block; margin:12px 10px; padding:14px 40px; border-radius:50px;
-    background:linear-gradient(45deg, #2563eb, #60a5fa); background-size:300%;
-    color:white; font-weight:bold; font-size:1.15rem; text-decoration:none;
-    box-shadow:0 0 25px rgba(37,99,235,0.6); transition:0.5s;
-  }
-  .btn:hover { background-position:right center; transform:translateY(-4px) scale(1.06); box-shadow:0 0 45px rgba(37,99,235,0.9); }
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 38px; margin-bottom: 15px;
+            background: linear-gradient(to right, #fff, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-  .logout { background:linear-gradient(45deg, #ef4444, #f87171); }
+        p.desc { color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px; }
 
-  .user { margin:35px 0; font-size:1.5rem; color:#60a5fa; font-weight:bold; text-shadow:0 0 15px #60a5fa; }
+        /* Tính năng */
+        .features { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 25px; text-align: left; margin-bottom: 30px; border: 1px solid var(--border); }
+        .features h3 { color: var(--neon-blue); margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .features ul { list-style: none; }
+        .features li { margin: 10px 0; font-size: 15px; color: #cbd5e1; display: flex; align-items: center; gap: 10px; }
+        .features li::before { content: '✦'; color: var(--neon-purple); font-size: 18px; }
 
-  footer {
-    margin-top:100px; background:#020617; padding:50px 20px; text-align:center;
-    border-top:2px solid #1e293b; font-size:1rem; color:#9ca3af; position:relative; z-index:3;
-  }
-  footer img { border-radius:50%; margin:20px 0; width:100px; box-shadow:0 0 30px rgba(255,255,255,0.3); }
+        /* Nút bấm */
+        .btn-group { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 25px; }
+        .btn {
+            padding: 14px 28px; border-radius: 14px; font-weight: 700; text-decoration: none; color: white;
+            border: none; cursor: pointer; transition: 0.3s; font-size: 15px; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-play { background: linear-gradient(135deg, var(--primary), #2563eb); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+        .btn-shop { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); }
+        .btn:hover { transform: translateY(-3px); filter: brightness(1.2); }
+        
+        /* Thông tin User */
+        .user-box {
+            background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 16px; display: inline-block;
+            border: 1px solid var(--border); margin-bottom: 20px; font-size: 16px;
+        }
+        .user-box span { color: #facc15; font-weight: bold; }
 
-</style>
+        /* Footer */
+        footer {
+            background: #020617; padding: 40px 20px; text-align: center; border-top: 1px solid var(--border);
+            color: #64748b; font-size: 14px;
+        }
+        footer img { width: 60px; border-radius: 50%; margin: 15px 0; opacity: 0.8; }
+        footer a { color: var(--primary); text-decoration: none; }
+    </style>
 </head>
 <body>
-<div class="stars"></div>
-
-<header>🌌 KaizenMC</header>
 
 <nav class="main-nav">
-  <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
-    <span></span><span></span><span></span>
-  </div>
-  <div class="nav-logo">
-    <img src="kaizen.png" alt="KaizenMC">
-  </div>
-  <div class="nav-links" id="navLinks">
-    <a href="index.html"><span class="icon">🏠</span> Trang chủ</a>
-    <a href="dang-ky.html"><span class="icon">📝</span> Đăng ký</a>
-    <a href="dang-nhap.html"><span class="icon">🔑</span> Đăng nhập</a>
-    <a href="shop.html"><span class="icon">🛒</span> Shop</a>
-    <a href="nap-xu.html"><span class="icon">💎</span> Nạp xu</a>
-    <a href="luat.html"><span class="icon">📜</span> Luật SV</a>
-    <a href="lichsudamua.html"><span class="icon">📊</span> Lịch sử mua</a>
-    <a href="admin.html" class="admin-btn" id="adminLink"><span class="icon">🛡️</span> Admin Panel</a>
-    <a href="tatcammber.html" class="admin-btn" id="memberListLink"><span class="icon">👥</span> Tất cả member</a>
-  </div>
+    <a href="index.html" class="nav-logo">
+        <img src="kaizen.png" alt="Logo" onerror="this.src='https://via.placeholder.com/40/00f0ff/FFFFFF?text=K'">
+        KAIZEN MC
+    </a>
+    
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="nav-links" id="navLinks">
+        <a href="index.html">🏠 Trang chủ</a>
+        <a href="dang-ky.html">📝 Đăng ký</a>
+        <a href="dang-nhap.html">🔑 Đăng nhập</a>
+        <a href="shop.html">🛒 Shop</a>
+        <a href="nap-xu.html">💎 Nạp xu</a>
+        <a href="botdiscord.html">🤖 Bot Discord</a> <a href="luat.html">📜 Luật SV</a>
+        
+        <a href="admin.html" class="admin-btn" id="adminLink" style="display:none;">🛡️ Panel Admin</a>
+    </div>
 </nav>
 
 <div class="container">
-  <div class="server-box">
-    <img src="kaizen.png" alt="KaizenMC Logo">
-    <h1>Chào mừng đến KaizenMC</h1>
-    <p>Server Minecraft Pokémon giải trí đỉnh cao – bắt Pokémon, chiến đấu, giao dịch, khám phá!</p>
-    <div class="features">
-      <h3>Tính năng nổi bật</h3>
-      <ul>
-        <li>Pokémon đầy đủ (Legendary & Shiny)</li>
-        <li>Nạp xu & shop vật phẩm độc quyền</li>
-        <li>Sự kiện hàng tuần, PvP, Gym Leader</li>
-        <li>Cộng đồng thân thiện, Staff 24/7</li>
-        <li>Pixelmon/Cobblemon mới nhất</li>
-      </ul>
+    <div class="server-box">
+        <img src="kaizen.png" alt="KaizenMC" class="main-logo" onerror="this.src='https://via.placeholder.com/150/00f0ff/FFFFFF?text=KaizenMC'">
+        
+        <h1>VŨ TRỤ POKÉMON</h1>
+        <p class="desc">Tham gia ngay server Minecraft Pokémon giải trí đỉnh cao. Khám phá, sinh tồn, bắt Pokémon và trở thành nhà huấn luyện tài ba nhất!</p>
+        
+        <div id="userDisplay" class="user-box">
+            Đang tải dữ liệu người chơi...
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-play" onclick="copyIP()">🎮 IP: 180.93.103.140:26666</button>
+            <a class="btn btn-shop" href="shop.html">🛒 Vào Shop</a>
+            <a class="btn btn-shop" href="nap-xu.html">💎 Nạp Xu</a>
+        </div>
+
+        <div class="features">
+            <h3>⚡ Tính năng nổi bật</h3>
+            <ul>
+                <li>Hệ thống Pokémon đầy đủ, tỉ lệ ra Shiny cao.</li>
+                <li>Hệ thống Nhiệm vụ, Gym Leader và giải đấu PvP hàng tuần.</li>
+                <li>Shop vật phẩm xịn xò, cày chay vẫn thành VIP.</li>
+                <li>Đội ngũ Staff hỗ trợ 24/7 nhiệt tình.</li>
+            </ul>
+        </div>
+        
+        <button id="logoutBtn" class="btn btn-shop" style="width: 100%; justify-content: center; border-color: #ef4444; color: #ef4444; display: none;" onclick="logout()">
+            Đăng xuất tài khoản
+        </button>
     </div>
-    <div class="user" id="userBox"></div>
-    <a class="btn" href="shop.html">🛒 Vào Shop</a>
-    <a class="btn" href="nap-xu.html">💎 Nạp Xu</a>
-    <button class="btn" onclick="copyIP()">Tham gia ngay (Copy IP)</button>
-    <button class="btn logout" onclick="logout()" id="logoutBtn" style="display:none;">Đăng xuất</button>
-  </div>
 </div>
 
 <footer>
-  © 2026 KaizenMC • Owner: Minhmeo và đăng mạnh<br>
-  IP Server: <b>180.93.103.140:26666</b><br>
-  <img src="owner.png" alt="Owner Avatar">
-  <br><br>
-  Discord: <a href="https://discord.gg/8aHEPvZK" style="color:#60a5fa;">https://discord.gg/8aHEPvZK</a> | Facebook: <a href="#" style="color:#60a5fa;">https://www.facebook.com/share/1Ca7jyNpSR/</a>
+    © 2026 KaizenMC • Vận hành bởi <b>Minhmeo</b> & <b>Đăng Mạnh</b><br>
+    IP: <b>180.93.103.140:26666</b><br>
+    <img src="owner.png" alt="Owner" onerror="this.style.display='none'"><br>
+    Cộng đồng: <a href="https://discord.gg/8aHEPvZK" target="_blank">Discord</a> | <a href="#" target="_blank">Facebook Group</a>
 </footer>
 
 <script>
-// Giữ nguyên script cũ của bạn
-function updateUserInfo() {
-  const login = localStorage.getItem("login");
-  const user = localStorage.getItem("tk");
-  const userBox = document.getElementById("userBox");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const adminLink = document.getElementById("adminLink");
-  const memberListLink = document.getElementById("memberListLink");
-  if (login === "true" && user) {
-    const xuKey = `xu_${user}`;
-    const xu = parseInt(localStorage.getItem(xuKey)) || 0;
-    userBox.innerHTML = `👤 <b>${user}</b> | 💰 <span style="color:#fbbf24;">${xu.toLocaleString('vi-VN')} xu</span>`;
-    logoutBtn.style.display = "inline-block";
-    const role = localStorage.getItem("role");
-    const isAdmin = role === "admin" || ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"].includes(user.toLowerCase());
-    adminLink.style.display = isAdmin ? "inline-block" : "none";
-    memberListLink.style.display = isAdmin ? "inline-block" : "none";
-  } else {
-    userBox.innerHTML = "⚠️ Bạn chưa đăng nhập";
-    logoutBtn.style.display = "none";
-    adminLink.style.display = "none";
-    memberListLink.style.display = "none";
-  }
-}
-function logout() {
-  if (confirm("Bạn chắc chắn muốn đăng xuất?")) {
-    localStorage.removeItem("login");
-    localStorage.removeItem("role");
-    localStorage.removeItem("tk");
-    location.reload();
-  }
-}
-function copyIP() {
-  navigator.clipboard.writeText("180.93.103.140:26666")
-    .then(() => alert("Đã copy IP: 180.93.103.140:26666 ✓\nPaste vào Minecraft để tham gia!"))
-    .catch(() => alert("Copy thất bại, copy thủ công nhé!"));
-}
+// 1. CẤU HÌNH FIREBASE (GIỐNG HỆT TRANG ĐĂNG NHẬP/ĐĂNG KÝ)
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// 2. LOGIC GIAO DIỆN
 function toggleMenu() {
-  document.getElementById("hamburgerBtn").classList.toggle("active");
-  document.getElementById("navLinks").classList.toggle("active");
+    document.getElementById("navLinks").classList.toggle("active");
 }
-document.querySelectorAll('.nav-links a').forEach(link => {
-  link.addEventListener('click', () => {
-    document.getElementById("hamburgerBtn").classList.remove("active");
-    document.getElementById("navLinks").classList.remove("active");
-  });
-});
-updateUserInfo();
+
+function copyIP() {
+    navigator.clipboard.writeText("180.93.103.140:26666").then(() => {
+        alert("✅ Đã copy IP: 180.93.103.140:26666 \nVào game và dán ngay nhé!");
+    });
+}
+
+function logout() {
+    if (confirm("Bạn muốn đăng xuất?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// 3. TẢI THÔNG TIN TỪ FIREBASE
+async function loadUserData() {
+    const username = localStorage.getItem("username"); // Lấy tên từ localStorage lúc đăng nhập
+    const userDisplay = document.getElementById("userDisplay");
+    const adminLink = document.getElementById("adminLink");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (!username) {
+        userDisplay.innerHTML = "⚠️ Bạn chưa đăng nhập. Hãy đăng nhập để mua đồ!";
+        return;
+    }
+
+    try {
+        // Lấy dữ liệu của user này từ Firebase
+        const snapshot = await db.ref('users/' + username).once('value');
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const xu = data.xu || 0;
+            
+            // Hiển thị Tên và Xu
+            userDisplay.innerHTML = `👤 Xin chào, <b>${username}</b> &nbsp;|&nbsp; 💰 Số dư: <span>${xu.toLocaleString('vi-VN')} Xu</span>`;
+            logoutBtn.style.display = "flex";
+
+            // Hiển thị nút Admin nếu đúng tên
+            const ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+            if (ADMINS.includes(username.toLowerCase())) {
+                adminLink.style.display = "flex";
+            }
+        } else {
+            userDisplay.innerHTML = "❌ Lỗi: Không tìm thấy tài khoản trên hệ thống!";
+        }
+    } catch (e) {
+        userDisplay.innerHTML = "🔌 Mất kết nối tới máy chủ dữ liệu!";
+    }
+}
+
+// Chạy hàm khi load trang
+window.onload = loadUserData;
 </script>
 </body>
 </html>
