@@ -277,14 +277,14 @@ window.onload = loadUserData;
         // Nếu bạn vẫn muốn dùng OpenAI, hãy dán KEY MỚI vào đây:
        // Thêm link proxy vào trước link OpenAI
         
-const res = await fetch("https://corsproxy.io/?https://api.openai.com/v1/chat/completions", {
+// Đây là API dùng model Llama 3 miễn phí
+const res = await fetch("https://api.claudevietnam.top/v1/chat/completions", { 
     method: "POST",
     headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer sk-proj-KEY_MOI_CUA_BAN"
     },
     body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-3.5-turbo", // Hoặc llama-3
         messages: [{ role: "user", content: text }]
     })
 });
