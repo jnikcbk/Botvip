@@ -1,196 +1,330 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - KaizenMC</title>
-<style>
-  body {
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#020617,#0f172a);
-    color:white;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-  }
-  .auth-box, .main-content {
-    background:#111827;
-    padding:40px;
-    border-radius:16px;
-    width:420px;
-    max-width:90%;
-    text-align:center;
-    box-shadow:0 10px 50px rgba(0,0,0,0.8);
-  }
-  .main-content { display:none; width:1100px; max-width:95%; }
-  h1 { color:#60a5fa; margin-bottom:20px; }
-  input, button {
-    width:100%;
-    padding:14px;
-    margin:12px 0;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-  }
-  input { background:#1f2937; color:white; }
-  button {
-    background:linear-gradient(90deg,#2563eb,#3b82f6);
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-  }
-  button:hover { background:#1d4ed8; }
-  .msg { margin-top:15px; color:#ef4444; font-size:15px; }
-  .container { padding:30px 20px; }
-  .section { margin-bottom:40px; padding:25px; background:#0f172a; border-radius:12px; border:1px solid #334155; }
-  .item, .user-item { background:#111827; padding:16px; border-radius:10px; margin-bottom:12px; box-shadow:0 4px 15px rgba(0,0,0,0.5); }
-  .btn { padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin:6px; }
-  .approve { background:#22c55e; color:white; }
-  .delete { background:#ef4444; color:white; }
-  .add { background:#3b82f6; color:white; }
-  .reset { background:#f59e0b; color:white; }
-  .danger { background:#b91c1c; color:white; }
-  .status { font-weight:bold; color:#fbbf24; }
-  .back { display:inline-block; margin:25px 0; padding:12px 24px; background:#2563eb; border-radius:8px; text-decoration:none; color:white; font-weight:bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC - Hệ Thống Quản Trị</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #020617);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Thẻ bao ngoài */
+        .admin-wrapper {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 1000px;
+            max-width: 95%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #authScreen { width: 400px; text-align: center; }
+        #adminContent { display: none; }
+
+        h1, h2 { color: var(--primary); margin-top: 0; }
+        
+        /* Input & Button */
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: white;
+            margin: 5px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); }
+
+        /* Tabs điều hướng */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Danh sách nạp/mua */
+        .section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
+
+        .data-card {
+            background: #111827;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .msg { font-size: 14px; margin-top: 10px; min-height: 20px; }
+    </style>
 </head>
 <body>
 
-<!-- Màn hình xác thực -->
-<div class="auth-box" id="authScreen">
-  <h1>🔒 Admin Verification</h1>
-  <p style="margin-bottom:20px; color:#9ca3af;">Nhập mã bí mật (và phải đăng nhập tk admin trước):</p>
-  <input id="secretKey" type="password" placeholder="Secret key...">
-  <button onclick="verifyAdmin()">Xác nhận</button>
-  <p id="msg" class="msg"></p>
-</div>
+<div class="admin-wrapper">
+    <div id="authScreen">
+        <h1>🔒 Admin Access</h1>
+        <p style="color: var(--text-dim)">Vui lòng xác minh quyền quản trị viên</p>
+        <input id="secretKey" type="password" placeholder="Mã bí mật (Secret Key)...">
+        <button class="btn btn-primary" style="width: 100%" onclick="verifyAdmin()">Xác nhận</button>
+        <p id="msg" class="msg" style="color: var(--danger)"></p>
+    </div>
 
-<!-- Nội dung admin -->
-<div class="main-content" id="adminContent">
-  <header>⚙️ Admin Panel KaizenMC</header>
-  <div class="container">
-    <!-- Các phần còn lại giữ nguyên -->
-    <div style="text-align:center; margin:30px 0;">
-      <button class="btn" style="background:#22c55e;" onclick="showSection('nap')">1. Quản lý nạp thẻ</button>
-      <button class="btn" style="background:#3b82f6;" onclick="showSection('purchase')">2. Lịch sử mua hàng</button>
-      <button class="btn" style="background:#ef4444;" onclick="showSection('delete')">3. Xóa tài khoản</button>
+    <div id="adminContent">
+        <header>
+            <span>⚙️ KaizenMC Admin Panel</span>
+            <button class="btn btn-danger" onclick="location.reload()" style="font-size: 12px;">Đăng xuất</button>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="btn btn-primary" onclick="showSection('nap')">💳 Quản lý nạp thẻ</button>
+            <button class="btn btn-primary" onclick="showSection('purchase')">🛒 Lịch sử mua</button>
+            <button class="btn btn-primary" onclick="showSection('user')">👤 Quản lý thành viên</button>
+            <button class="btn btn-warning" onclick="showSection('system')">🛠 Hệ thống</button>
+        </div>
+
+        <div class="section" id="napSection">
+            <h2>📜 Danh sách thẻ chờ duyệt</h2>
+            <div id="napList"></div>
+        </div>
+
+        <div class="section" id="purchaseSection" style="display:none;">
+            <h2>🛍️ Lịch sử mua hàng của Member</h2>
+            <div id="purchaseList"></div>
+        </div>
+
+        <div class="section" id="userSection" style="display:none;">
+            <h2>👥 Quản lý thành viên</h2>
+            <div style="background: #0f172a; padding: 15px; border-radius: 8px;">
+                <p>Cộng xu thủ công:</p>
+                <input id="addUser" placeholder="Tên tài khoản..." style="width: 45%;">
+                <input id="addXu" type="number" placeholder="Số xu cộng..." style="width: 45%;">
+                <button class="btn btn-success" onclick="addXuManual()">Cộng xu</button>
+            </div>
+            <hr style="border: 0.5px solid #334155; margin: 20px 0;">
+            <p>Xóa tài khoản:</p>
+            <input id="deleteUser" placeholder="Nhập tên tài khoản cần xóa...">
+            <button class="btn btn-danger" onclick="deleteUserAccount()">XÓA TÀI KHOẢN</button>
+        </div>
+
+        <div id="systemSection" class="section" style="display:none;">
+            <h2>🛠 Cấu hình hệ thống</h2>
+            <p>Cẩn thận: Các hành động này không thể hoàn tác.</p>
+            <button class="btn btn-warning" onclick="resetNapHistory()">Reset lịch sử nạp</button>
+            <button class="btn btn-danger" onclick="resetAllData()">RESET TOÀN BỘ DỮ LIỆU</button>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="index.html" style="color: var(--text-dim); text-decoration: none;">⬅ Quay lại trang chủ</a>
+        </div>
     </div>
-    <!-- Section 1: Quản lý nạp thẻ -->
-    <div class="section" id="napSection" style="display:none;">
-      <h2>📜 Quản lý nạp thẻ</h2>
-      <button class="reset" onclick="resetNapHistory()">Reset lịch sử nạp</button>
-      <div id="napList"></div>
-    </div>
-    <!-- Section 2: Lịch sử mua hàng -->
-    <div class="section" id="purchaseSection" style="display:none;">
-      <h2>🛍️ Lịch sử mua hàng của member</h2>
-      <div id="purchaseList"></div>
-    </div>
-    <!-- Section 3: Xóa tài khoản -->
-    <div class="section" id="deleteSection" style="display:none;">
-      <h2>❌ Xóa tài khoản member</h2>
-      <input id="deleteUser" placeholder="Nhập tên tài khoản cần xóa">
-      <button class="danger" onclick="deleteUserAccount()">XÓA TÀI KHOẢN</button>
-      <p id="deleteMsg" class="msg"></p>
-    </div>
-    <!-- Lệnh linh tinh -->
-    <div class="section">
-      <h2>⚙️ Lệnh linh tinh</h2>
-      <div>
-        <input id="addUser" placeholder="Tên user" style="width:180px;">
-        <input id="addXu" type="number" placeholder="Số xu" style="width:160px;">
-        <button class="add" onclick="addXuManual()">Cộng xu</button>
-      </div>
-      <button class="reset danger" onclick="resetAllData()" style="margin-top:20px;">Reset toàn bộ dữ liệu (CẢNH BÁO)</button>
-    </div>
-    <a class="back" href="index.html">⬅ Quay lại trang chính</a>
-  </div>
 </div>
 
 <script>
-// ======================
-// KHÓA ADMIN - ĐÃ FIX
-// ======================
-const SECRET_KEY_HASH = "aduadmindzvokia"; // Mã bí mật của bạn
+// Cấu hình (Lưu ý: LocalStorage chỉ có tác dụng trên trình duyệt hiện tại)
+const SECRET_KEY_HASH = "aduadmindzvokia"; 
 const ALLOWED_ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
 
+// --- QUẢN LÝ TRẠNG THÁI ---
 function verifyAdmin() {
-  const inputKey = document.getElementById("secretKey").value.trim();
-  const msg = document.getElementById("msg");
-  msg.innerText = "";
+    const inputKey = document.getElementById("secretKey").value.trim();
+    const currentUser = localStorage.getItem("tk") || "";
+    const msg = document.getElementById("msg");
 
-  // Bước 1: Kiểm tra mã bí mật
-  if (inputKey !== SECRET_KEY_HASH) {
-    msg.innerText = "❌ Mã bí mật sai!";
-    return;
-  }
+    if (inputKey !== SECRET_KEY_HASH) {
+        msg.innerText = "❌ Mã bí mật sai!";
+        return;
+    }
 
-  // Bước 2: Kiểm tra tài khoản admin (dùng "tk" như code cũ)
-  const currentUser = localStorage.getItem("tk") || "";
-  if (!ALLOWED_ADMINS.includes(currentUser.toLowerCase())) {
-    msg.innerText = "❌ Bạn phải đăng nhập bằng tài khoản admin (kaizenadmin, kaizenadmindz, minhmeodz@!)";
-    setTimeout(() => {
-      localStorage.removeItem("login");
-      localStorage.removeItem("tk");
-      window.location.href = "dang-nhap.html";
-    }, 2000);
-    return;
-  }
+    if (!ALLOWED_ADMINS.includes(currentUser.toLowerCase())) {
+        msg.innerText = "❌ Tài khoản '" + currentUser + "' không có quyền admin!";
+        return;
+    }
 
-  // Thành công
-  document.getElementById("authScreen").style.display = "none";
-  document.getElementById("adminContent").style.display = "block";
-  loadNap(); // Load phần nạp thẻ đầu tiên
+    document.getElementById("authScreen").style.display = "none";
+    document.getElementById("adminContent").style.display = "block";
+    loadNap();
 }
-
-// Các hàm còn lại giữ nguyên (loadNap, duyetNap, tuChoiNap, xoaNap, resetNapHistory, loadPurchases, deleteUserAccount, addXuManual, resetAllData)
-let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-const napBox = document.getElementById("napList");
-function loadNap() {
-  napBox.innerHTML = "";
-  if (napHistory.length === 0) {
-    napBox.innerHTML = "<p style='color:#9ca3af;text-align:center;'>Chưa có giao dịch nạp nào.</p>";
-    return;
-  }
-  napHistory.forEach((item, index) => {
-    const status = item.status || "Chờ duyệt";
-    const statusColor = status === "Đã duyệt" ? "#22c55e" : status === "Từ chối" ? "#ef4444" : "#fbbf24";
-    napBox.innerHTML += `
-      <div class="item">
-        <b>👤 User:</b> ${item.user}<br>
-        <b>📱 Loại thẻ:</b> ${item.type}<br>
-        <b>💰 Mệnh giá:</b> ${item.menhgia.toLocaleString()}đ<br>
-        <b>🔑 Mã:</b> ${item.code}<br>
-        <b>🧾 Seri:</b> ${item.seri}<br>
-        <b>⏱ Thời gian:</b> ${item.time}<br>
-        <b>📌 Trạng thái:</b> <span class="status" style="color:${statusColor}">${status}</span><br><br>
-        ${status !== "Đã duyệt" ? `
-          <button class="btn approve" onclick="duyetNap(${index})">Duyệt</button>
-          <button class="btn delete" onclick="tuChoiNap(${index})">Từ chối</button>
-        ` : ''}
-        <button class="btn delete" onclick="xoaNap(${index})">Xóa</button>
-      </div>
-    `;
-  });
-}
-// ... (các hàm còn lại giữ nguyên như code cũ của bạn)
 
 function showSection(section) {
-  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-  document.getElementById(`${section}Section`).style.display = "block";
-  if (section === 'nap') loadNap();
-  if (section === 'purchase') loadPurchases();
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.getElementById(`${section}Section`).style.display = "block";
+    if (section === 'nap') loadNap();
+    if (section === 'purchase') loadPurchases();
 }
 
-// Bảo vệ reload nếu logout
+// --- LOGIC NẠP THẺ ---
+function loadNap() {
+    const napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
+    const napBox = document.getElementById("napList");
+    napBox.innerHTML = napHistory.length === 0 ? "<p>Trống.</p>" : "";
+
+    napHistory.forEach((item, index) => {
+        const color = item.status === "Đã duyệt" ? "var(--success)" : item.status === "Từ chối" ? "var(--danger)" : "var(--warning)";
+        napBox.innerHTML += `
+            <div class="data-card">
+                <b>👤 User:</b> ${item.user} | <b>💰 Mệnh giá:</b> ${Number(item.menhgia).toLocaleString()}đ<br>
+                <small>Loại: ${item.type} | Mã: ${item.code} | Seri: ${item.seri}</small><br>
+                <b>📌 Trạng thái:</b> <span style="color:${color}">${item.status || 'Chờ duyệt'}</span>
+                <div style="margin-top:10px;">
+                    ${item.status !== "Đã duyệt" ? `<button class="btn btn-success" style="padding:5px 10px;" onclick="duyetNap(${index})">Duyệt</button>` : ''}
+                    <button class="btn btn-danger" style="padding:5px 10px;" onclick="xoaNap(${index})">Xóa</button>
+                </div>
+            </div>`;
+    });
+}
+
+function duyetNap(index) {
+    let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
+    let item = napHistory[index];
+
+    if (confirm(`Duyệt thẻ ${item.menhgia}đ cho ${item.user}?`)) {
+        // Cập nhật số dư cho User (Lấy từ key 'users' hoặc key tên user tùy theo code của bạn)
+        // Giả sử dữ liệu user lưu tại: user_DATA_tên-user
+        let userData = JSON.parse(localStorage.getItem(`user_${item.user}`)) || { xu: 0 };
+        userData.xu = (userData.xu || 0) + Number(item.menhgia);
+        localStorage.setItem(`user_${item.user}`, JSON.stringify(userData));
+
+        // Cập nhật trạng thái thẻ
+        item.status = "Đã duyệt";
+        localStorage.setItem("napHistory", JSON.stringify(napHistory));
+        alert("Thành công! User đã nhận được xu.");
+        loadNap();
+    }
+}
+
+function xoaNap(index) {
+    if (confirm("Xóa bản ghi này?")) {
+        let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
+        napHistory.splice(index, 1);
+        localStorage.setItem("napHistory", JSON.stringify(napHistory));
+        loadNap();
+    }
+}
+
+// --- LOGIC MUA HÀNG ---
+function loadPurchases() {
+    const list = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
+    const box = document.getElementById("purchaseList");
+    box.innerHTML = list.length === 0 ? "<p>Chưa có ai mua gì.</p>" : "";
+    
+    list.forEach(p => {
+        box.innerHTML += `
+            <div class="data-card" style="border-left-color: #a855f7">
+                <b>👤 ${p.user}</b> đã mua <b>📦 ${p.item}</b><br>
+                <small>Giá: ${p.price} | Thời gian: ${p.time}</small>
+            </div>`;
+    });
+}
+
+// --- LOGIC USER ---
+function addXuManual() {
+    const user = document.getElementById("addUser").value.trim();
+    const xu = document.getElementById("addXu").value;
+    if (!user || !xu) return alert("Nhập đủ thông tin!");
+
+    let userData = JSON.parse(localStorage.getItem(`user_${user}`)) || { xu: 0 };
+    userData.xu = (Number(userData.xu) || 0) + Number(xu);
+    localStorage.setItem(`user_${user}`, JSON.stringify(userData));
+    alert(`Đã cộng ${xu} xu cho ${user}`);
+}
+
+function deleteUserAccount() {
+    const user = document.getElementById("deleteUser").value.trim();
+    if (confirm(`Bạn chắc chắn muốn XÓA VĨNH VIỄN tài khoản ${user}?`)) {
+        localStorage.removeItem(`user_${user}`);
+        alert("Đã xóa!");
+    }
+}
+
+// --- RESET DỮ LIỆU ---
+function resetNapHistory() {
+    if (confirm("Reset toàn bộ lịch sử nạp?")) {
+        localStorage.removeItem("napHistory");
+        loadNap();
+    }
+}
+
+function resetAllData() {
+    if (confirm("⚠️ CẢNH BÁO: Hành động này sẽ xóa sạch dữ liệu người dùng, xu, và lịch sử. Tiếp tục?")) {
+        localStorage.clear();
+        alert("Dữ liệu đã trống. Vui lòng F5 lại.");
+        location.reload();
+    }
+}
+
+// Bảo vệ đăng nhập
 setInterval(() => {
-  if (document.getElementById("adminContent").style.display === "block" && localStorage.getItem("login") !== "true") {
-    localStorage.clear();
-    location.reload();
-  }
+    if (document.getElementById("adminContent").style.display === "block") {
+        if (localStorage.getItem("login") !== "true") {
+            location.reload();
+        }
+    }
 }, 3000);
 </script>
+
 </body>
 </html>
