@@ -1,169 +1,188 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tất cả member - KaizenMC Admin</title>
-<style>
-  body {
-    margin:0;
-    font-family:'Roboto', sans-serif;
-    background:linear-gradient(135deg,#020617,#0f172a);
-    color:white;
-    min-height:100vh;
-  }
-  header {
-    text-align:center;
-    padding:40px 20px 20px;
-    font-size:2.5rem;
-    font-weight:bold;
-    background:#020617;
-    border-bottom:3px solid #ef4444;
-    text-shadow:0 0 15px #ef4444;
-  }
-  .container {
-    max-width:1000px;
-    margin:auto;
-    padding:40px 20px;
-  }
-  .section {
-    background:rgba(17,24,39,0.85);
-    backdrop-filter:blur(10px);
-    padding:30px;
-    border-radius:20px;
-    margin-bottom:30px;
-    box-shadow:0 15px 50px rgba(0,0,0,0.7);
-    border:1px solid rgba(239,68,68,0.3);
-  }
-  h2 {
-    color:#ef4444;
-    margin-bottom:20px;
-    text-shadow:0 0 10px #ef4444;
-  }
-  .user-item {
-    background:#020617;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:15px;
-    border-left:5px solid #ef4444;
-    transition:0.3s;
-  }
-  .user-item:hover {
-    transform:translateX(8px);
-    box-shadow:0 0 25px rgba(239,68,68,0.4);
-  }
-  .btn {
-    padding:10px 20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:bold;
-    margin:5px;
-  }
-  .delete {
-    background:#ef4444;
-    color:white;
-  }
-  .back {
-    display:inline-block;
-    margin-top:30px;
-    padding:14px 35px;
-    background:#2563eb;
-    border-radius:50px;
-    color:white;
-    text-decoration:none;
-    font-weight:bold;
-  }
-  .back:hover {
-    background:#1d4ed8;
-    transform:scale(1.05);
-  }
-  .no-access {
-    text-align:center;
-    color:#ef4444;
-    font-size:1.8rem;
-    margin-top:100px;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Member - KaizenMC Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --danger: #ef4444;
+            --neon-red: #ff0000;
+            --glass: rgba(15, 23, 42, 0.9);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #020617 70%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center; padding: 50px 20px;
+            background: rgba(2, 6, 23, 0.8); border-bottom: 2px solid var(--danger);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+        }
+
+        header h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; text-shadow: 0 0 15px var(--danger); }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        /* THANH TÌM KIẾM */
+        .search-box {
+            width: 100%; padding: 15px 25px; border-radius: 15px;
+            background: var(--glass); border: 1px solid var(--border);
+            color: white; font-size: 16px; margin-bottom: 30px;
+            outline: none; transition: 0.3s;
+        }
+        .search-box:focus { border-color: var(--danger); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+
+        /* USER LIST */
+        .user-grid { display: grid; gap: 15px; }
+
+        .user-card {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 20px; border-radius: 18px; display: flex;
+            justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+        .user-card:hover { border-color: var(--danger); transform: scale(1.01); }
+
+        .user-info h3 { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 18px; margin-bottom: 5px; }
+        .user-info p { color: #94a3b8; font-size: 14px; }
+        .xu-amount { color: #fbbf24; font-weight: 800; }
+
+        .actions { display: flex; gap: 10px; }
+        
+        .btn {
+            padding: 10px 18px; border-radius: 10px; border: none;
+            font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-delete { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-delete:hover { background: var(--danger); color: white; box-shadow: 0 0 20px var(--danger); }
+
+        .back-link {
+            display: block; width: fit-content; margin: 40px auto;
+            color: #64748b; text-decoration: none; font-weight: 600;
+        }
+        .back-link:hover { color: white; }
+
+        /* LOADING */
+        #loading { text-align: center; padding: 50px; font-size: 18px; color: var(--danger); }
+    </style>
 </head>
 <body>
 
-<header>👥 TẤT CẢ MEMBER - KaizenMC</header>
+<header>
+    <h1>🛡️ KAIZENMC ADMIN PANEL</h1>
+    <p style="margin-top:10px; color: #94a3b8;">Quản lý danh sách Member hệ thống</p>
+</header>
 
 <div class="container">
-  <div class="section">
-    <h2>Danh sách tất cả người dùng</h2>
-    <div id="userList"></div>
-  </div>
+    <input type="text" class="search-box" id="searchInput" placeholder="Tìm tên member..." onkeyup="filterUsers()">
+    
+    <div id="loading">Đang tải dữ liệu từ vệ tinh...</div>
+    <div id="userList" class="user-grid"></div>
 
-  <a class="back" href="index.html">⬅ Quay lại trang chủ</a>
+    <a href="index.html" class="back-link">⬅ Quay lại trang chủ</a>
 </div>
 
 <script>
-// Bảo vệ: Chỉ admin mới vào được
-const role = localStorage.getItem("role");
-const username = localStorage.getItem("tk") || localStorage.getItem("username") || "";
-const isAdmin = role === "admin" || 
-                ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"].includes(username.toLowerCase());
+// --- CẤU HÌNH FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-if (!isAdmin) {
-  document.body.innerHTML = '<div class="no-access">❌ Bạn không có quyền truy cập trang này!</div>';
-  setTimeout(() => { window.location.href = "index.html"; }, 3000);
-  throw new Error("Access denied");
+// --- BẢO VỆ ADMIN ---
+const username = (localStorage.getItem("username") || "").toLowerCase();
+const ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+if (!ADMINS.includes(username)) {
+    document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:100px;'>❌ CÚT! BẠN KHÔNG CÓ QUYỀN!</h1>";
+    setTimeout(() => location.href = "index.html", 2000);
 }
 
-// Load danh sách member
-function loadMembers() {
-  const userList = document.getElementById("userList");
-  userList.innerHTML = "";
+// --- LOAD MEMBER ---
+async function fetchMembers() {
+    const userList = document.getElementById("userList");
+    const loading = document.getElementById("loading");
 
-  const allKeys = Object.keys(localStorage);
-  const users = allKeys
-    .filter(key => key.startsWith("xu_"))
-    .map(key => key.replace("xu_", ""));
+    try {
+        db.ref('users').on('value', (snapshot) => {
+            loading.style.display = "none";
+            userList.innerHTML = "";
+            const data = snapshot.val();
+            
+            if (!data) {
+                userList.innerHTML = "<p style='text-align:center;'>Chưa có ai đăng ký :(</p>";
+                return;
+            }
 
-  if (users.length === 0) {
-    userList.innerHTML = '<p style="text-align:center;color:#9ca3af;">Chưa có member nào.</p>';
-    return;
-  }
-
-  users.forEach(username => {
-    const xu = parseInt(localStorage.getItem(`xu_${username}`)) || 0;
-    userList.innerHTML += `
-      <div class="user-item">
-        <b>👤 ${username}</b><br>
-        💰 Xu: ${xu.toLocaleString('vi-VN')}<br><br>
-        <button class="btn delete" onclick="deleteMember('${username}')">XÓA TÀI KHOẢN</button>
-      </div>
-    `;
-  });
+            Object.keys(data).forEach(uid => {
+                const user = data[uid];
+                const card = document.createElement("div");
+                card.className = "user-card";
+                card.setAttribute("data-name", uid.toLowerCase());
+                card.innerHTML = `
+                    <div class="user-info">
+                        <h3>👤 ${uid}</h3>
+                        <p>Số dư: <span class="xu-amount">${(user.xu || 0).toLocaleString()} Xu</span></p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-delete" onclick="deleteUser('${uid}')">BAN & XÓA</button>
+                    </div>
+                `;
+                userList.appendChild(card);
+            });
+        });
+    } catch (e) {
+        loading.innerText = "Lỗi kết nối Firebase!";
+    }
 }
 
-function deleteMember(username) {
-  if (!confirm(`XÓA VĨNH VIỄN tài khoản ${username}?\nMọi dữ liệu sẽ mất!`)) return;
+// --- XÓA MEMBER ---
+async function deleteUser(targetUser) {
+    if (!confirm(`CẢNH BÁO: Xóa vĩnh viễn tài khoản ${targetUser}?\nHành động này không thể hoàn tác!`)) return;
 
-  // Xóa xu
-  localStorage.removeItem(`xu_${username}`);
-
-  // Xóa lịch sử nạp
-  let napHistory = JSON.parse(localStorage.getItem("napHistory")) || [];
-  napHistory = napHistory.filter(item => item.user !== username);
-  localStorage.setItem("napHistory", JSON.stringify(napHistory));
-
-  // Xóa lịch sử mua
-  localStorage.removeItem(`purchaseHistory_${username}`);
-
-  // Xóa các key khác liên quan
-  Object.keys(localStorage).forEach(key => {
-    if (key.includes(username)) localStorage.removeItem(key);
-  });
-
-  alert(`Đã xóa tài khoản ${username}!`);
-  loadMembers(); // Load lại danh sách
+    try {
+        // Xóa thông tin user
+        await db.ref('users/' + targetUser).remove();
+        // Xóa lịch sử mua hàng
+        await db.ref('history/' + targetUser).remove();
+        
+        alert(`Đã tiễn biệt ${targetUser} khỏi server!`);
+    } catch (e) {
+        alert("Lỗi khi xóa: " + e.message);
+    }
 }
 
-// Khởi chạy
-loadMembers();
+// --- TÌM KIẾM ---
+function filterUsers() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.getElementsByClassName('user-card');
+
+    for (let card of cards) {
+        const name = card.getAttribute('data-name');
+        card.style.display = name.includes(input) ? "flex" : "none";
+    }
+}
+
+fetchMembers();
 </script>
 </body>
 </html>
