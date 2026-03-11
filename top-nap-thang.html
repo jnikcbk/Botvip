@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Nạp Tháng - KaizenMC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <style>
+        body { background: #020617; color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 900px; margin: 100px auto 60px; padding: 0 20px; }
+        h1 { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 42px; margin-bottom: 20px; 
+             background: linear-gradient(90deg, #00f0ff, #c300ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .current-month { text-align: center; font-size: 20px; color: #94a3b8; margin-bottom: 40px; }
+        .leaderboard { background: rgba(15,23,42,0.85); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 17px; }
+        .item:last-child { border-bottom: none; }
+        .rank { font-weight: bold; width: 50px; color: #facc15; }
+        .username { flex: 1; font-weight: 600; }
+        .amount { color: #00f0ff; font-weight: bold; }
+        .loading { text-align: center; font-size: 18px; color: #94a3b8; margin: 100px 0; }
+        .no-data { text-align: center; color: #64748b; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 TOP NẠP XU THÁNG NÀY</h1>
+    <div class="current-month" id="monthDisplay"></div>
+
+    <div class="leaderboard" id="leaderboard">
+        <div class="loading" id="loading">Đang tải bảng xếp hạng...</div>
+        <div id="topList" style="display:none;"></div>
+    </div>
+</div>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kaizenmc-web-ba518",
+    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
+    messagingSenderId: "342779721859",
+    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Lấy tháng hiện tại (YYYY-MM)
+const now = new Date();
+const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+document.getElementById('monthDisplay').textContent = `Tháng ${now.getMonth() + 1}/${now.getFullYear()}`;
+
+async function loadTopNap() {
+    try {
+        // Giả sử lịch sử nạp lưu ở 'nap_history/{user}/{key}' với field: amount, month
+        const snapshot = await db.ref('nap_history').once('value');
+        const data = snapshot.val() || {};
+
+        const monthlyNap = {};
+
+        // Tính tổng nạp theo user trong tháng hiện tại
+        Object.keys(data).forEach(user => {
+            const userNaps = data[user];
+            let total = 0;
+            Object.values(userNaps).forEach(nap => {
+                if (nap.month === currentMonth && nap.amount) {
+                    total += Number(nap.amount);
+                }
+            });
+            if (total > 0) {
+                monthlyNap[user] = total;
+            }
+        });
+
+        // Sort top
+        const topList = Object.entries(monthlyNap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);  // Top 10
+
+        const topListEl = document.getElementById('topList');
+        let html = '';
+
+        if (topList.length === 0) {
+            html = '<div class="no-data">Chưa có dữ liệu nạp trong tháng này</div>';
+        } else {
+            topList.forEach(([username, amount], index) => {
+                const rankColor = index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#94a3b8';
+                html += `
+                    <div class="item">
+                        <span class="rank" style="color:${rankColor}">#${index + 1}</span>
+                        <span class="username">${username}</span>
+                        <span class="amount">${amount.toLocaleString()} Xu</span>
+                    </div>
+                `;
+            });
+        }
+
+        topListEl.innerHTML = html;
+        document.getElementById('loading').style.display = 'none';
+        topListEl.style.display = 'block';
+
+    } catch (err) {
+        document.getElementById('loading').textContent = 'Lỗi tải dữ liệu!';
+        console.error(err);
+    }
+}
+
+window.onload = loadTopNap;
+</script>
+</body>
+</html>
