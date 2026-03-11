@@ -2,41 +2,38 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+// Nạp não bộ từ file knowledge.js
+const serverInfo = require('./knowledge'); 
 
 const app = express();
-app.use(cors()); 
-app.use(express.json()); 
-
-const PORT = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.json());
 
 app.post('/chat', async (req, res) => {
     try {
         const { message } = req.body;
-        const API_KEY = process.env.GEMINI_API_KEY; // Lưu key trong file .env
+        const API_KEY = process.env.GEMINI_API_KEY;
 
-        // Gọi sang Google Gemini API v1beta
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
             {
                 contents: [{
-                    parts: [{ text: message }]
+                    parts: [{ 
+                        // Gộp não bộ và câu hỏi của người chơi lại
+                        text: `${serverInfo}\n\nNgười chơi hỏi: ${message}` 
+                    }]
                 }]
-            },
-            {
-                headers: { 'Content-Type': 'application/json' }
             }
         );
 
-        // Cấu trúc trả về của Gemini khác OpenAI một chút
         const botReply = response.data.candidates[0].content.parts[0].text;
         res.json({ reply: botReply });
 
     } catch (error) {
-        console.error("Lỗi Server:", error.response ? error.response.data : error.message);
-        res.status(500).json({ error: "Có lỗi xảy ra khi kết nối với Gemini" });
+        console.error("Lỗi:", error.message);
+        res.status(500).json({ error: "Lỗi kết nối AI" });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server KaizenMC đang chạy tại http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server chạy tại port ${PORT}`));
