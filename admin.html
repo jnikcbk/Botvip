@@ -1,213 +1,293 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaizenMC - Hệ Thống Quản Trị</title>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #3b82f6;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top right, #1e1b4b, #020617);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<title>KaizenMC - Admin Panel</title>
 
-        .admin-wrapper {
-            background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 20px;
-            width: 1000px;
-            max-width: 95%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
-        #authScreen { width: 400px; text-align: center; }
-        #adminContent { display: none; }
+<style>
 
-        h1, h2 { color: var(--primary); margin-top: 0; }
-        
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            margin: 10px 0;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: white;
-            box-sizing: border-box;
-        }
+body{
+margin:0;
+font-family:Segoe UI;
+background:#020617;
+color:white;
+}
 
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: white;
-            margin: 5px;
-        }
-        .btn-primary { background: var(--primary); }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
+.wrapper{
+max-width:1000px;
+margin:auto;
+padding:40px;
+}
 
-        .section {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
+.section{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
 
-        .data-card {
-            background: #111827;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--primary);
-        }
+input{
+padding:10px;
+margin:5px;
+border-radius:6px;
+border:none;
+}
 
-        header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-    </style>
+button{
+padding:8px 16px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin:5px;
+color:white;
+}
+
+.btn-green{background:#22c55e;}
+.btn-red{background:#ef4444;}
+.btn-blue{background:#3b82f6;}
+
+.card{
+background:#111827;
+padding:15px;
+margin-top:10px;
+border-radius:8px;
+}
+
+#adminContent{display:none;}
+
+</style>
 </head>
+
 <body>
 
-<div class="admin-wrapper">
-    <div id="authScreen">
-        <h1>🔒 Admin Access</h1>
-        <p style="color: var(--text-dim)">Nhập mã bí mật để quản trị</p>
-        <input id="secretKey" type="password" placeholder="Mã bí mật...">
-        <button class="btn btn-primary" style="width: 100%" onclick="verifyAdmin()">Xác nhận</button>
-        <p id="msgAuth" style="color: var(--danger); margin-top: 10px;"></p>
-    </div>
+<div class="wrapper">
 
-    <div id="adminContent">
-        <header>
-            <span>⚙️ KaizenMC Admin</span>
-            <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
-        </header>
+<div id="authScreen">
 
-        <div class="section">
-            <h2>👥 Quản lý thành viên (Firebase)</h2>
-            <div style="background: #0f172a; padding: 15px; border-radius: 8px;">
-                <p>Cộng xu trực tiếp lên mây:</p>
-                <input id="targetUser" placeholder="Tên tài khoản member..." style="width: 45%;">
-                <input id="amountXu" type="number" placeholder="Số xu cộng..." style="width: 45%;">
-                <button class="btn btn-success" onclick="addXuFirebase()">XÁC NHẬN CỘNG XU</button>
-            </div>
-        </div>
+<h2>🔒 Admin Access</h2>
 
-        <div class="section">
-            <h2>📜 Thẻ nạp chờ duyệt (Demo)</h2>
-            <div id="napList"><p style="color:var(--text-dim)">Tính năng duyệt thẻ tự động đang được cập nhật...</p></div>
-        </div>
+<input id="secretKey" type="password" placeholder="Nhập Secret Key">
 
-        <div style="text-align: center;">
-            <a href="index.html" style="color: var(--text-dim); text-decoration: none;">⬅ Quay lại trang chủ</a>
-        </div>
-    </div>
+<button class="btn-blue" onclick="verifyAdmin()">Xác nhận</button>
+
+<p id="msgAuth"></p>
+
+</div>
+
+
+<div id="adminContent">
+
+<h1>⚙️ KaizenMC Admin Panel</h1>
+
+<div class="section">
+
+<h3>💰 Cộng Xu</h3>
+
+<input id="targetUser" placeholder="Tên user">
+<input id="amountXu" type="number" placeholder="Số xu">
+
+<button class="btn-green" onclick="addXu()">Cộng Xu</button>
+
+</div>
+
+
+<div class="section">
+
+<h3>🗑️ Xóa tài khoản</h3>
+
+<input id="deleteUser" placeholder="Tên user cần xóa">
+
+<button class="btn-red" onclick="deleteAccount()">Xóa Acc</button>
+
+</div>
+
+
+<div class="section">
+
+<h3>💳 Thẻ nạp chờ duyệt</h3>
+
+<div id="napList"></div>
+
+</div>
+
+</div>
+
 </div>
 
 <script>
-// 1. Cấu hình Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
-    projectId: "kaizenmc-web-ba518",
-    storageBucket: "kaizenmc-web-ba518.firebasestorage.app",
-    messagingSenderId: "342779721859",
-    appId: "1:342779721859:web:bc8b9f5ea4ae7fe77283b6",
-    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+const firebaseConfig={
+apiKey:"AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+authDomain:"kaizenmc-web-ba518.firebaseapp.com",
+databaseURL:"https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"kaizenmc-web-ba518"
 };
+
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-// 2. Cấu hình quyền
-const SECRET_KEY = "aduadmindzvokia"; 
-const ADMIN_NAMES = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
 
-function verifyAdmin() {
-    const inputKey = document.getElementById("secretKey").value.trim();
-    const loggedUser = localStorage.getItem("username"); // Lấy đúng key từ file Login mới
-    const msg = document.getElementById("msgAuth");
+const SECRET_KEY="aduadmindzvokia";
 
-    // Kiểm tra mã bí mật
-    if (inputKey !== SECRET_KEY) {
-        msg.innerText = "❌ Mã bí mật sai!";
-        return;
-    }
+const ADMIN_NAMES=[
+"kaizenadmin",
+"kaizenadmindz",
+"minhmeodz@!"
+];
 
-    // Kiểm tra tên tài khoản đang đăng nhập có trong list Admin không
-    if (!loggedUser || !ADMIN_NAMES.includes(loggedUser.toLowerCase())) {
-        msg.innerText = `❌ Tài khoản '${loggedUser || "Khách"}' không có quyền Admin!`;
-        return;
-    }
 
-    // Nếu ok thì mở giao diện
-    document.getElementById("authScreen").style.display = "none";
-    document.getElementById("adminContent").style.display = "block";
+function verifyAdmin(){
+
+const key=document.getElementById("secretKey").value.trim();
+const username=localStorage.getItem("username");
+const msg=document.getElementById("msgAuth");
+
+if(!username){
+msg.innerText="❌ Chưa đăng nhập";
+return;
 }
 
-// 3. Hàm cộng xu lên Firebase
-async function addXuFirebase() {
-    const user = document.getElementById("targetUser").value.trim().toLowerCase();
-    const xuAdd = parseInt(document.getElementById("amountXu").value);
-
-    if (!user || isNaN(xuAdd)) {
-        alert("⚠️ Nhập đủ tên và số xu!");
-        return;
-    }
-
-    try {
-        const ref = db.ref('users/' + user);
-        const snapshot = await ref.once('value');
-        
-        if (!snapshot.exists()) {
-            alert("❌ Không tìm thấy người dùng này trên Firebase!");
-            return;
-        }
-
-        const currentXu = snapshot.val().xu || 0;
-        await ref.update({
-            xu: currentXu + xuAdd
-        });
-
-        alert(`✅ Đã cộng ${xuAdd} xu cho ${user}. Tổng hiện tại: ${currentXu + xuAdd}`);
-        document.getElementById("amountXu").value = "";
-    } catch (e) {
-        alert("❗ Lỗi: " + e.message);
-    }
+if(!ADMIN_NAMES.includes(username.toLowerCase())){
+msg.innerText="❌ Không có quyền admin";
+return;
 }
 
-function logout() {
-    localStorage.clear();
-    window.location.href = "dang-nhap.html";
+if(key!==SECRET_KEY){
+msg.innerText="❌ Secret key sai";
+return;
 }
+
+document.getElementById("authScreen").style.display="none";
+document.getElementById("adminContent").style.display="block";
+
+loadCards();
+
+}
+
+
+
+async function addXu(){
+
+const user=document.getElementById("targetUser").value.trim().toLowerCase();
+const xu=parseInt(document.getElementById("amountXu").value);
+
+if(!user||isNaN(xu)){
+alert("Nhập đủ thông tin");
+return;
+}
+
+const ref=db.ref("users/"+user);
+const snap=await ref.once("value");
+
+if(!snap.exists()){
+alert("User không tồn tại");
+return;
+}
+
+const current=snap.val().xu||0;
+
+await ref.update({
+xu:current+xu
+});
+
+alert("Đã cộng xu");
+
+}
+
+
+
+async function deleteAccount(){
+
+const user=document.getElementById("deleteUser").value.trim().toLowerCase();
+
+if(!confirm("Xóa tài khoản "+user+" ?"))return;
+
+await db.ref("users/"+user).remove();
+
+alert("Đã xóa");
+
+}
+
+
+
+async function loadCards(){
+
+const list=document.getElementById("napList");
+
+const snap=await db.ref("napthe").once("value");
+
+list.innerHTML="";
+
+if(!snap.exists()){
+list.innerHTML="Không có thẻ";
+return;
+}
+
+snap.forEach(child=>{
+
+const data=child.val();
+
+const div=document.createElement("div");
+
+div.className="card";
+
+div.innerHTML=`
+
+<b>User:</b> ${data.user}<br>
+<b>Nhà mạng:</b> ${data.telco}<br>
+<b>Mệnh giá:</b> ${data.amount}<br>
+
+<button class="btn-green" onclick="approveCard('${child.key}','${data.user}',${data.amount})">Duyệt</button>
+
+<button class="btn-red" onclick="rejectCard('${child.key}')">Từ chối</button>
+
+`;
+
+list.appendChild(div);
+
+});
+
+}
+
+
+
+async function approveCard(id,user,amount){
+
+const ref=db.ref("users/"+user);
+const snap=await ref.once("value");
+
+const current=snap.val().xu||0;
+
+await ref.update({
+xu:current+amount
+});
+
+await db.ref("napthe/"+id).remove();
+
+alert("Đã duyệt thẻ");
+
+loadCards();
+
+}
+
+
+
+async function rejectCard(id){
+
+await db.ref("napthe/"+id).remove();
+
+alert("Đã xóa thẻ");
+
+loadCards();
+
+}
+
 </script>
+
 </body>
 </html>
