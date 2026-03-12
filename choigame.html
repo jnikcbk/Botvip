@@ -11,6 +11,99 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* --- VÒNG QUAY FULL CSS --- */
+.wheel-container {
+    position: relative;
+    width: 280px; /* Tăng kích thước một chút cho đẹp */
+    height: 280px;
+    margin: 30px auto;
+    background: #1e293b;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+}
+
+/* Kim chỉ số */
+.pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    color: #ff00aa;
+    font-size: 35px;
+    filter: drop-shadow(0 0 10px #ff00aa);
+}
+
+/* Thân vòng quay */
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 8px solid #334155;
+    position: relative;
+    overflow: hidden;
+    /* Hoạt ảnh xoay: 4 giây, chậm dần đều */
+    transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    background: #0f172a;
+}
+
+/* Các nan quạt (ô chia) */
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    background: var(--bg);
+    transform-origin: 100% 100%;
+    /* Công thức chia 8 ô: mỗi ô 45 độ */
+    transform: rotate(calc(45deg * var(--i))) skewY(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Chữ bên trong mỗi ô */
+.segment span {
+    transform: skewY(45deg) rotate(22.5deg);
+    position: absolute;
+    left: 15px;
+    top: 45px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color, #fff);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    text-align: center;
+    width: 70px;
+    white-space: nowrap;
+}
+
+/* Trục giữa vòng quay */
+.wheel-container::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #fff, #94a3b8);
+    border: 4px solid #334155;
+    border-radius: 50%;
+    z-index: 15;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+/* Đèn Led trang trí viền (Tùy chọn cho sang) */
+.wheel-container::before {
+    content: "";
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    z-index: 10;
+    pointer-events: none;
+}
         /* Hiệu ứng mở bát */
 #bowl.opened {
     transform: translate(50px, -100px) rotate(30deg); /* Nhấc bát ra và nghiêng đi */
@@ -247,7 +340,27 @@
         </div>
     </div>
 </div>
+<div class="game-card">
+    <h3>🎡 VÒNG QUAY KAIZEN</h3>
+    <p>Mỗi 15 phút một lượt quay. Cơ hội nhận tới <b>300 Xu</b> nếu trúng ô Độc Đắc!</p>
+    
+    <div class="wheel-container">
+        <div class="pointer">▼</div>
+        <div class="wheel" id="wheel">
+            <div class="segment" style="--i:1;--bg:#334155;"><span>0 Xu</span></div>
+            <div class="segment" style="--i:2;--bg:#1e293b;"><span>5 Xu</span></div>
+            <div class="segment" style="--i:3;--bg:#334155;"><span>0 Xu</span></div>
+            <div class="segment" style="--i:4;--bg:#f59e0b;--color:#000;"><span>50 Xu</span></div>
+            <div class="segment" style="--i:5;--bg:#334155;"><span>0 Xu</span></div>
+            <div class="segment" style="--i:6;--bg:#1e293b;"><span>10 Xu</span></div>
+            <div class="segment" style="--i:7;--bg:#334155;"><span>0 Xu</span></div>
+            <div class="segment" style="--i:8;--bg:#ff00aa;"><span>300 Xu</span></div>
+        </div>
+    </div>
 
+    <button class="btn-play" id="btnWheel" onclick="spinWheel()" style="margin-top: 20px; background: var(--neon-purple);">THỬ VẬN MAY</button>
+    <div class="log-msg" id="logWheel"></div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -437,7 +550,56 @@ function openBowl() {
     
     isShaked = false; // Reset trạng thái
 }
+    let isSpinning = false;
+
+function spinWheel() {
+    if (isSpinning) return;
+
+    const lastSpin = localStorage.getItem(`wheel_${username}`) || 0;
+    const now = Date.now();
+    const cooldown = 15 * 60 * 1000; // 15 phút
+
+    if (now - lastSpin < cooldown) {
+        const timeLeft = Math.ceil((cooldown - (now - lastSpin)) / 60000);
+        document.getElementById("logWheel").innerHTML = `<span class="text-wait">⏳ Kiên nhẫn nào! ${timeLeft} phút nữa mới quay tiếp được.</span>`;
+        return;
+    }
+
+    isSpinning = true;
+    const wheel = document.getElementById("wheel");
+    const log = document.getElementById("logWheel");
     
+    // Tạo vòng quay ngẫu nhiên (ít nhất 5 vòng = 1800 độ)
+    const randomDegree = Math.floor(Math.random() * 360) + 3600; 
+    wheel.style.transform = `rotate(${randomDegree}deg)`;
+    log.innerHTML = "🌀 Vòng quay đang chạy...";
+
+    setTimeout(() => {
+        isSpinning = false;
+        localStorage.setItem(`wheel_${username}`, Date.now());
+
+        // Tính toán ô trúng (Vòng quay có 8 ô, mỗi ô 45 độ)
+        const actualDegree = randomDegree % 360;
+        const prizeIndex = Math.floor((360 - actualDegree) / 45);
+        
+        // Danh sách phần thưởng tương ứng với các ô (phải khớp với HTML)
+        const prizes = [0, 5, 0, 50, 0, 10, 0, 300];
+        const winAmount = prizes[prizeIndex];
+
+        if (winAmount > 0) {
+            addXu(winAmount);
+            log.innerHTML = `<span class="text-win">🌟 Tuyệt vời! Bạn quay trúng ${winAmount} Xu!</span>`;
+        } else {
+            log.innerHTML = `<span class="text-lose">😭 Đen thôi! Ô này không có Xu nào cả.</span>`;
+        }
+        
+        // Reset vòng quay để có thể quay tiếp lần sau (không bị giật)
+        wheel.style.transition = "none";
+        wheel.style.transform = `rotate(${actualDegree}deg)`;
+        setTimeout(() => { wheel.style.transition = "transform 4s cubic-bezier(0.1, 0.7, 0.1, 1)"; }, 50);
+
+    }, 4000);
+}
 </script>
 
 </body>
