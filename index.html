@@ -245,19 +245,31 @@ async function loadUserData() {
     document.getElementById("loginLink").style.display = "none";
     document.getElementById("logoutBtn").style.display = "block";
 
-    const snap = await db.ref("users/" + username).once("value");
-    if (snap.exists()) {
-        const data = snap.val();
-        document.getElementById("userDisplay").innerHTML = `👤 <b>${username}</b> • 💰 <span style="color:#facc15">${(data.xu || 0).toLocaleString()} Xu</span>`;
-        
-        const ADMINS = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
-        if (ADMINS.includes(username.toLowerCase())) {
-            document.getElementById("adminContainer").style.display = "block";
+   // 1. Danh sách Admin (Phải khớp với tên lúc đăng ký/đăng nhập)
+const ADMIN_LIST = [
+    "kaizenadmin",
+    "kaizenadmindz",
+    "minhmeodz@!"
+];
+
+// 2. Hàm kiểm tra và hiện Menu Admin
+function checkAdminMenu() {
+    const username = localStorage.getItem("username"); // Lấy tên đã lưu khi đăng nhập
+    const adminTab = document.getElementById("adminContainer");
+
+    if (username && adminTab) {
+        // Kiểm tra nếu tên user nằm trong danh sách Admin
+        if (ADMIN_LIST.includes(username.toLowerCase())) {
+            adminTab.style.display = "block"; // Hiện tab Admin
+        } else {
+            adminTab.style.display = "none";  // Người thường thì ẩn đi
         }
     }
 }
-window.onload = loadUserData;
 
+// Chạy hàm kiểm tra ngay khi trang web vừa load xong
+window.onload = checkAdminMenu;
+    
 async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
