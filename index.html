@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KaizenMC - Vũ Trụ Pokémon Minecraft</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -73,8 +73,9 @@
         @media(max-width: 900px) {
             .hamburger { display: flex; }
             .nav-links {
-                position: fixed; top: 72px; right: -300px; width: 260px; height: 100vh;
+                position: fixed; top: 72px; right: -300px; width: 260px; height: calc(100vh - 72px);
                 background: #020617; flex-direction: column; padding: 30px 20px; transition: .35s;
+                overflow-y: auto;
             }
             .nav-links.active { right: 0; }
             .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
@@ -113,6 +114,7 @@
             background: var(--glass); border: 1px solid var(--border);
             border-radius: 20px; overflow: hidden; width: 100%; max-width: 420px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
         }
 
         .card-header {
@@ -123,16 +125,17 @@
 
         /* AI Chat cụ thể */
         #chatArea { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2); }
-        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
-        .user-msg { align-self: flex-end; background: var(--neon-blue); color: #020617; font-weight: 700; }
-        .ai-msg { align-self: flex-start; background: rgba(255,255,255,0.1); border-left: 3px solid var(--neon-pink); color: #f1f5f9; }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .user-msg { align-self: flex-end; background: var(--neon-blue); color: #020617; font-weight: 700; border-bottom-right-radius: 2px;}
+        .ai-msg { align-self: flex-start; background: rgba(255,255,255,0.1); border-left: 3px solid var(--neon-pink); color: #f1f5f9; border-bottom-left-radius: 2px;}
 
-        .input-group { display: flex; padding: 15px; background: rgba(0,0,0,0.3); gap: 10px; }
+        .input-group { display: flex; padding: 15px; background: rgba(0,0,0,0.3); gap: 10px; border-top: 1px solid var(--border); }
         #msgInput {
             flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            border-radius: 10px; padding: 12px; color: white; outline: none;
+            border-radius: 10px; padding: 12px; color: white; outline: none; font-size: 16px;
         }
-        .btn-send { background: var(--neon-blue); color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        .btn-send { background: var(--neon-blue); color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-send:hover { transform: scale(1.05); }
 
         footer { text-align: center; padding: 50px; border-top: 1px solid var(--border); color: #64748b; font-size: 14px; }
     </style>
@@ -149,24 +152,23 @@
     </div>
 
     <div class="nav-links" id="navLinks">
-            <a href="dang-ky.html">🏠 Đăng ký</a>
-            <a href="shop.html">🛒 Shop</a>
-            <a href="nap-xu.html">💎 Nạp Xu</a>
-            <a href="top-nap-thang.html">🏆 Top nạp</a>
-            <a href="luat.html">⚖️ Luật</a>
-            <a href="botdiscord.html">🤖 Bot</a>
-            <a href="chattg.html">🌍 Chat</a>
+        <a href="dang-ky.html">🏠 Đăng ký</a>
+        <a href="shop.html">🛒 Shop</a>
+        <a href="nap-xu.html">💎 Nạp Xu</a>
+        <a href="top-nap-thang.html">🏆 Top nạp</a>
+        <a href="luat.html">⚖️ Luật</a>
+        <a href="botdiscord.html">🤖 Bot</a>
+        <a href="chattg.html">🌍 Chat</a>
 
-        
-            <div class="admin-dropdown" id="adminContainer" style="display: none;"> <a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
-                <div class="dropdown-content">
-                    <a href="admin.html">📊 Admin Panel</a>
-                    <a href="tatcamember.html">👥 Tất cả Member</a>
-                </div>
+        <div class="admin-dropdown" id="adminContainer" style="display: none;"> 
+            <a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
+            <div class="dropdown-content">
+                <a href="admin.html">📊 Admin Panel</a>
+                <a href="tatcamember.html">👥 Tất cả Member</a>
             </div>
-
-            <a href="dang-nhap.html" id="loginLink">🔑 Đăng nhập</a>
         </div>
+
+        <a href="dang-nhap.html" id="loginLink">🔑 Đăng nhập</a>
     </div>
 </nav>
 
@@ -212,7 +214,7 @@
 </footer>
 
 <script>
-// --- FIREBASE CONFIG (Giữ nguyên của bạn) ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
     authDomain: "kaizenmc-web-ba518.firebaseapp.com",
@@ -222,7 +224,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- GIAO DIỆN & FIREBASE LOGIC ---
+// --- LOGIC MENU & NÚT BẤM CƠ BẢN ---
 function toggleMenu() {
     document.getElementById("navLinks").classList.toggle("active");
     document.getElementById("hamburgerBtn").classList.toggle("open");
@@ -238,38 +240,34 @@ function logout() {
     location.reload();
 }
 
-async function loadUserData() {
+// --- LOGIC KIỂM TRA ĐĂNG NHẬP & ADMIN ---
+const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+
+function checkUserStatus() {
     const username = localStorage.getItem("username");
-    if (!username) return;
+    
+    // Xử lý hiện tên người dùng
+    if (username) {
+        document.getElementById("loginLink").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "block";
+        document.getElementById("userDisplay").innerHTML = `Đang đăng nhập: <b style="color: var(--neon-blue);">${username}</b>`;
+    }
 
-    document.getElementById("loginLink").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "block";
-
-   // 1. Danh sách Admin (Phải khớp với tên lúc đăng ký/đăng nhập)
-const ADMIN_LIST = [
-    "kaizenadmin",
-    "kaizenadmindz",
-    "minhmeodz@!"
-];
-
-// 2. Hàm kiểm tra và hiện Menu Admin
-function checkAdminMenu() {
-    const username = localStorage.getItem("username"); // Lấy tên đã lưu khi đăng nhập
+    // Xử lý tab Admin
     const adminTab = document.getElementById("adminContainer");
-
     if (username && adminTab) {
-        // Kiểm tra nếu tên user nằm trong danh sách Admin
         if (ADMIN_LIST.includes(username.toLowerCase())) {
-            adminTab.style.display = "block"; // Hiện tab Admin
+            adminTab.style.display = "block";
         } else {
-            adminTab.style.display = "none";  // Người thường thì ẩn đi
+            adminTab.style.display = "none";
         }
     }
 }
 
-// Chạy hàm kiểm tra ngay khi trang web vừa load xong
-window.onload = checkAdminMenu;
-    
+// Chạy hàm kiểm tra ngay khi load web
+window.onload = checkUserStatus;
+
+// --- LOGIC AI CHAT (GROQ API) ---
 async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
@@ -277,21 +275,18 @@ async function sendMsg() {
 
     if (!text) return;
 
-    // 1. Hiển thị tin nhắn của người chơi
-    chat.innerHTML += `<div class="msg user-msg" style="margin-bottom:10px; color:#333;"><b>👤 Bạn:</b> ${text}</div>`;
+    // 1. Hiển thị câu hỏi của người dùng
+    chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
     input.value = "";
     chat.scrollTop = chat.scrollHeight;
 
-    // 2. Tạo hiệu ứng đang chờ
+    // 2. Hiển thị "Kaizen AI đang suy nghĩ..."
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
-    aiDiv.style.marginBottom = "10px";
-    aiDiv.style.color = "#007bff";
     aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
-    // 3. Cấu hình Groq API (Key bạn vừa đưa)
     const GROQ_API_KEY = "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";
 
     try {
@@ -306,14 +301,14 @@ async function sendMsg() {
                 messages: [
                     {
                         role: "system",
-                        content: "Bạn là trợ lý ảo thông minh của server Minecraft KaizenMC. Nhiệm vụ: Trả lời ngắn gọn, thân thiện bằng tiếng Việt. Nếu người chơi hỏi về lệnh, hãy nhắc đến các tab  như nạp xu, đăng ký, shop, luật. Luôn thể hiện tinh thần hỗ trợ cộng đồng KaizenMC."
+                        content: "Bạn là trợ lý ảo thông minh của server Minecraft KaizenMC. Nhiệm vụ: Trả lời ngắn gọn, thân thiện bằng tiếng Việt. Nếu người chơi hỏi về lệnh, hãy nhắc đến các tab như nạp xu, đăng ký, shop, luật. Luôn thể hiện tinh thần hỗ trợ cộng đồng KaizenMC."
                     },
                     {
                         role: "user",
                         content: text
                     }
                 ],
-                temperature: 0.7 // Giúp câu trả lời tự nhiên hơn
+                temperature: 0.7
             })
         });
 
@@ -321,21 +316,19 @@ async function sendMsg() {
 
         if (data.choices && data.choices[0].message) {
             const botReply = data.choices[0].message.content;
-            // Hiển thị kết quả (thay đổi xuống dòng thành <br>)
-            aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b> ${botReply.replace(/\n/g, "<br>")}`;
+            aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
         } else if (data.error) {
             aiDiv.innerHTML = `❌ Lỗi Groq: ${data.error.message}`;
         } else {
-            aiDiv.innerHTML = `❌ Lỗi: Không thể kết nối AI.`;
+            aiDiv.innerHTML = `❌ Lỗi: Không thể nhận tín hiệu.`;
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối. Vui lòng kiểm tra mạng.`;
+        aiDiv.innerHTML = `❌ Lỗi kết nối. Vui lòng kiểm tra đường truyền mạng.`;
         console.error(e);
     }
     
     chat.scrollTop = chat.scrollHeight;
 }
-    
 </script>
 
 </body>
