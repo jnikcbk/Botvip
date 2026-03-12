@@ -11,6 +11,57 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Style cho Bầu Cua */
+.baucua-selection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.baucua-selection .item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+    font-size: 13px;
+}
+.baucua-selection .item.selected {
+    border-color: var(--neon-blue);
+    background: rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+.dice-area {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+.dice {
+    width: 60px;
+    height: 60px;
+    background: white;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    animation: none;
+}
+@keyframes shake {
+    0% { transform: translate(2px, 1px) rotate(0deg); }
+    20% { transform: translate(-3px, -2px) rotate(-5deg); }
+    40% { transform: translate(3px, 2px) rotate(5deg); }
+    60% { transform: translate(-3px, 1px) rotate(-5deg); }
+    80% { transform: translate(3px, -1px) rotate(5deg); }
+    100% { transform: translate(1px, -2px) rotate(0deg); }
+}
+.shaking { animation: shake 0.2s infinite; }
+        
         :root {
             --neon-blue: #00f0ff;
             --neon-purple: #c300ff;
@@ -129,6 +180,29 @@
     </div>
 </nav>
 
+    <div class="game-card">
+    <h3>🎲 BẦU CUA MAY MẮN</h3>
+    <p>Chọn 1 linh vật. Nếu lắc ra <b>3 con giống hệt nhau</b> và trùng với con bạn chọn, nhận ngay <b>200 Xu</b>! Thời gian chờ: 5 phút.</p>
+    
+    <div class="baucua-selection">
+        <div class="item" onclick="selectIcon('bau', this)">🍐<br>Bầu</div>
+        <div class="item" onclick="selectIcon('cua', this)">🦀<br>Cua</div>
+        <div class="item" onclick="selectIcon('tom', this)">🦞<br>Tôm</div>
+        <div class="item" onclick="selectIcon('ca', this)">🐟<br>Cá</div>
+        <div class="item" onclick="selectIcon('ga', this)">🐓<br>Gà</div>
+        <div class="item" onclick="selectIcon('nai', this)">🦌<br>Nai</div>
+    </div>
+
+    <div class="dice-area" id="diceArea">
+        <div class="dice">?</div>
+        <div class="dice">?</div>
+        <div class="dice">?</div>
+    </div>
+
+    <button class="btn-play" id="btnBaucua" onclick="playBaucua()">Lắc Bầu Cua</button>
+    <div class="log-msg" id="logBaucua"></div>
+</div>
+    
 <div class="container">
     <h1 class="header-title">CASINO NHÂN PHẨM</h1>
     <div class="user-status" id="xuDisplay">Đang tải dữ liệu...</div>
@@ -275,6 +349,69 @@
             log.innerHTML = `<span class="text-lose">💀 Trượt rồi! Của bạn là ${inputVal}, hệ thống quay ra số ${luckyNumber}.</span>`;
         }
     }
+    let selectedBaucua = "";
+const icons = {
+    'bau': '🍐', 'cua': '🦀', 'tom': '🦞', 
+    'ca': '🐟', 'ga': '🐓', 'nai': '🦌'
+};
+
+function selectIcon(id, el) {
+    document.querySelectorAll('.baucua-selection .item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedBaucua = id;
+}
+
+function playBaucua() {
+    if (!selectedBaucua) {
+        alert("Vui lòng chọn 1 linh vật trước!");
+        return;
+    }
+
+    const lastBaucua = localStorage.getItem(`baucua_${username}`) || 0;
+    const now = Date.now();
+    const cooldown = 5 * 60 * 1000; // 5 phút
+
+    if (now - lastBaucua < cooldown) {
+        const timeLeft = Math.ceil((cooldown - (now - lastBaucua)) / 1000);
+        document.getElementById("logBaucua").innerHTML = `<span class="text-wait">⏳ Chờ ${timeLeft} giây nữa mới được lắc tiếp!</span>`;
+        return;
+    }
+
+    const diceElements = document.querySelectorAll('.dice');
+    const log = document.getElementById("logBaucua");
+    
+    // Hiệu ứng lắc
+    diceElements.forEach(d => d.classList.add('shaking'));
+    log.innerHTML = "Đang lắc...";
+
+    setTimeout(() => {
+        localStorage.setItem(`baucua_${username}`, Date.now());
+        diceElements.forEach(d => d.classList.remove('shaking'));
+        
+        const results = [];
+        const keys = Object.keys(icons);
+        
+        for (let i = 0; i < 3; i++) {
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            results.push(randomKey);
+            diceElements[i].innerHTML = icons[randomKey];
+        }
+
+        // Kiểm tra thắng: 3 con phải giống nhau và trùng với con đã chọn
+        const allSame = results.every(val => val === results[0]);
+        
+        if (allSame && results[0] === selectedBaucua) {
+            addXu(200);
+            log.innerHTML = `<span class="text-win">🔥 ĐỈNH CAO! 3 con ${icons[selectedBaucua]}! Bạn nhận 200 Xu!</span>`;
+        } else if (results.includes(selectedBaucua)) {
+            // Có trúng nhưng không đủ 3 con
+            log.innerHTML = `<span class="text-wait">🧧 Có ${icons[selectedBaucua]} nhưng chưa đủ bộ 3. Chúc may mắn lần sau!</span>`;
+        } else {
+            log.innerHTML = `<span class="text-lose">💀 Đen quá! Không có con ${icons[selectedBaucua]} nào cả.</span>`;
+        }
+    }, 1500); // Lắc trong 1.5 giây
+}
+    
 </script>
 
 </body>
