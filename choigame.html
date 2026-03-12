@@ -11,89 +11,79 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
-        /* --- VÒNG QUAY FULL CSS --- */
+/* --- VÒNG QUAY SIÊU CẤP KAIZEN --- */
 .wheel-container {
     position: relative;
-    width: 280px; /* Tăng kích thước một chút cho đẹp */
+    width: 280px;
     height: 280px;
     margin: 30px auto;
-    background: #1e293b;
     border-radius: 50%;
-    padding: 10px;
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    border: 10px solid #1e293b;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
 }
 
-/* Kim chỉ số */
 .pointer {
     position: absolute;
-    top: -15px;
+    top: -20px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 20;
+    z-index: 100;
     color: #ff00aa;
-    font-size: 35px;
-    filter: drop-shadow(0 0 10px #ff00aa);
+    font-size: 40px;
+    filter: drop-shadow(0 0 5px #000);
 }
 
-/* Thân vòng quay */
 .wheel {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 8px solid #334155;
     position: relative;
     overflow: hidden;
-    /* Hoạt ảnh xoay: 4 giây, chậm dần đều */
     transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    background: #0f172a;
+    /* Vẽ 8 ô trực tiếp bằng Background */
+    background: conic-gradient(
+        #334155 0deg 45deg, 
+        #1e293b 45deg 90deg,
+        #334155 90deg 135deg,
+        #f59e0b 135deg 180deg,
+        #334155 180deg 225deg,
+        #1e293b 225deg 270deg,
+        #334155 270deg 315deg,
+        #ff00aa 315deg 360deg
+    );
 }
 
-/* Các nan quạt (ô chia) */
+/* Căn chỉnh chữ 8 ô */
 .segment {
     position: absolute;
-    width: 50%;
-    height: 50%;
-    background: var(--bg);
-    transform-origin: 100% 100%;
-    /* Công thức chia 8 ô: mỗi ô 45 độ */
-    transform: rotate(calc(45deg * var(--i))) skewY(-45deg);
+    width: 100%;
+    height: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    transform: rotate(calc(var(--i) * 45deg + 22.5deg));
 }
 
-/* Chữ bên trong mỗi ô */
 .segment span {
-    transform: skewY(45deg) rotate(22.5deg);
-    position: absolute;
-    left: 15px;
-    top: 45px;
-    font-size: 11px;
+    margin-top: 20px;
     font-weight: 800;
-    color: var(--color, #fff);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    text-align: center;
-    width: 70px;
-    white-space: nowrap;
+    color: #fff;
+    font-size: 12px;
+    text-shadow: 1px 1px 3px #000;
+    text-transform: uppercase;
 }
 
-/* Trục giữa vòng quay */
+/* Trục giữa */
 .wheel-container::after {
     content: "";
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
+    width: 45px; height: 45px;
     background: radial-gradient(circle, #fff, #94a3b8);
-    border: 4px solid #334155;
+    border: 4px solid #1e293b;
     border-radius: 50%;
-    z-index: 15;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    z-index: 50;
 }
-
 /* Đèn Led trang trí viền (Tùy chọn cho sang) */
 .wheel-container::before {
     content: "";
@@ -345,18 +335,18 @@
     <p>Mỗi 15 phút một lượt quay. Cơ hội nhận tới <b>300 Xu</b> nếu trúng ô Độc Đắc!</p>
     
     <div class="wheel-container">
-        <div class="pointer">▼</div>
-        <div class="wheel" id="wheel">
-            <div class="segment" style="--i:1;--bg:#334155;"><span>0 Xu</span></div>
-            <div class="segment" style="--i:2;--bg:#1e293b;"><span>5 Xu</span></div>
-            <div class="segment" style="--i:3;--bg:#334155;"><span>0 Xu</span></div>
-            <div class="segment" style="--i:4;--bg:#f59e0b;--color:#000;"><span>50 Xu</span></div>
-            <div class="segment" style="--i:5;--bg:#334155;"><span>0 Xu</span></div>
-            <div class="segment" style="--i:6;--bg:#1e293b;"><span>10 Xu</span></div>
-            <div class="segment" style="--i:7;--bg:#334155;"><span>0 Xu</span></div>
-            <div class="segment" style="--i:8;--bg:#ff00aa;"><span>300 Xu</span></div>
-        </div>
+    <div class="pointer">▼</div>
+    <div class="wheel" id="wheel">
+        <div class="segment" style="--i:0;"><span>0 Xu</span></div>
+        <div class="segment" style="--i:1;"><span>5 Xu</span></div>
+        <div class="segment" style="--i:2;"><span>0 Xu</span></div>
+        <div class="segment" style="--i:3;"><span>50 Xu</span></div>
+        <div class="segment" style="--i:4;"><span>0 Xu</span></div>
+        <div class="segment" style="--i:5;"><span>10 Xu</span></div>
+        <div class="segment" style="--i:6;"><span>0 Xu</span></div>
+        <div class="segment" style="--i:7;"><span>300 Xu</span></div>
     </div>
+</div>
 
     <button class="btn-play" id="btnWheel" onclick="spinWheel()" style="margin-top: 20px; background: var(--neon-purple);">THỬ VẬN MAY</button>
     <div class="log-msg" id="logWheel"></div>
