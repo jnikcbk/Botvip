@@ -11,6 +11,76 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Style cho Xổ Số */
+.lottery-input {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+.lottery-input input {
+    width: 200px;
+    height: 50px;
+    background: #0f172a;
+    border: 2px solid var(--neon-blue);
+    border-radius: 12px;
+    color: var(--neon-blue);
+    font-size: 24px;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    letter-spacing: 5px;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2);
+}
+.lottery-input input::placeholder {
+    font-size: 14px;
+    letter-spacing: 0;
+    opacity: 0.5;
+}
+        /* Style cho Dò Mìn */
+.mine-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+.mine-cell {
+    aspect-ratio: 1/1;
+    background: #334155;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+.mine-cell:hover {
+    background: #475569;
+}
+
+.mine-cell.revealed {
+    background: #1e293b;
+    cursor: default;
+}
+
+.mine-cell.bomb {
+    background: #ef4444;
+    animation: shake 0.3s;
+}
+
+.mine-cell.coin {
+    background: #f59e0b;
+    color: black;
+}
+
+.mine-controls {
+    text-align: center;
+    margin-top: 15px;
+}
 /* --- VÒNG QUAY SIÊU CẤP KAIZEN --- */
 .wheel-container {
     position: relative;
@@ -351,6 +421,30 @@
     <button class="btn-play" id="btnWheel" onclick="spinWheel()" style="margin-top: 20px; background: var(--neon-purple);">THỬ VẬN MAY</button>
     <div class="log-msg" id="logWheel"></div>
 </div>
+    <div class="game-card">
+    <h3>💣 DÒ MÌN MAY MẮN</h3>
+    <p>Có 3 quả bom ẩn giấu. Mỗi ô đất trống có thể chứa <b>5-10 Xu</b>. Nếu lật trúng Bom, bạn mất trắng lượt đó! Nhấn "Rút tiền" để chốt lời.</p>
+    
+    <div id="mine-board" class="mine-board">
+        </div>
+
+    <div class="mine-controls">
+        <div id="mine-status" class="text-wait">Đang chờ bắt đầu...</div>
+        <button class="btn-play" id="btnStartMine" onclick="startMineGame()">BẮT ĐẦU DÒ MÌN</button>
+        <button class="btn-play" id="btnCashout" onclick="cashoutMine()" style="background: #22c55e; margin-top: 10px; display: none;">RÚT TIỀN NGAY</button>
+    </div>
+</div>
+    <div class="game-card">
+    <h3>🎟️ XỔ SỐ TỨ QUÝ KAIZEN</h3>
+    <p>Chọn 4 con số từ **0000 đến 9999**. Nếu trùng khớp hoàn toàn với kết quả hệ thống, nhận ngay **2,000 Xu**! <br>Thời gian chờ: 30 phút/lần thử.</p>
+    
+    <div class="lottery-input">
+        <input type="number" id="lotteryNum" placeholder="Nhập 4 số (VD: 8888)" max="9999" min="0">
+    </div>
+
+    <button class="btn-play" id="btnLottery" onclick="playLottery()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;">DÒ VẬN MAY</button>
+    <div class="log-msg" id="logLottery"></div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -589,6 +683,136 @@ function spinWheel() {
         setTimeout(() => { wheel.style.transition = "transform 4s cubic-bezier(0.1, 0.7, 0.1, 1)"; }, 50);
 
     }, 4000);
+}
+    let mineBombs = [];
+let accumulatedXu = 0;
+let gameActive = false;
+
+function startMineGame() {
+    const lastMine = localStorage.getItem(`mine_${username}`) || 0;
+    const now = Date.now();
+    const cooldown = 10 * 60 * 1000; // 10 phút
+
+    if (now - lastMine < cooldown) {
+        const timeLeft = Math.ceil((cooldown - (now - lastMine)) / 60000);
+        document.getElementById("mine-status").innerHTML = `<span class="text-lose">⏳ Chờ ${timeLeft} phút để đào hầm mới!</span>`;
+        return;
+    }
+
+    // Reset game
+    gameActive = true;
+    accumulatedXu = 0;
+    mineBombs = [];
+    const board = document.getElementById("mine-board");
+    board.innerHTML = "";
+    document.getElementById("btnStartMine").style.display = "none";
+    document.getElementById("btnCashout").style.display = "block";
+    document.getElementById("mine-status").innerText = "Đang đào: 0 Xu";
+
+    // Tạo 3 quả bom ngẫu nhiên
+    while(mineBombs.length < 3) {
+        let r = Math.floor(Math.random() * 16);
+        if(!mineBombs.includes(r)) mineBombs.push(r);
+    }
+
+    // Tạo 16 ô
+    for(let i=0; i<16; i++) {
+        let cell = document.createElement("div");
+        cell.className = "mine-cell";
+        cell.dataset.id = i;
+        cell.innerText = "❓";
+        cell.onclick = () => revealCell(cell);
+        board.appendChild(cell);
+    }
+}
+
+function revealCell(el) {
+    if(!gameActive || el.classList.contains("revealed")) return;
+
+    const id = parseInt(el.dataset.id);
+    el.classList.add("revealed");
+
+    if(mineBombs.includes(id)) {
+        // Trúng bom
+        gameActive = false;
+        el.classList.add("bomb");
+        el.innerText = "💣";
+        document.getElementById("mine-status").innerHTML = `<span class="text-lose">BÙM! Bạn mất trắng số Xu đã đào được!</span>`;
+        setTimeout(() => {
+            alert("Bạn dẫm phải mìn rồi! Chúc may mắn lần sau.");
+            resetMineUI();
+        }, 1000);
+        localStorage.setItem(`mine_${username}`, Date.now());
+    } else {
+        // Trúng Xu
+        const win = Math.floor(Math.random() * 6) + 5; // 5-10 xu
+        accumulatedXu += win;
+        el.classList.add("coin");
+        el.innerText = "💰";
+        document.getElementById("mine-status").innerText = `Đang có: ${accumulatedXu} Xu (Cẩn thận bom!)`;
+        
+        // Nếu lật hết 13 ô mà không trúng bom (Thắng tuyệt đối)
+        if(document.querySelectorAll(".mine-cell.coin").length === 13) {
+            cashoutMine();
+        }
+    }
+}
+
+function cashoutMine() {
+    if(accumulatedXu > 0) {
+        addXu(accumulatedXu);
+        alert(`Chúc mừng! Bạn đã rút an toàn ${accumulatedXu} Xu.`);
+        localStorage.setItem(`mine_${username}`, Date.now());
+    }
+    resetMineUI();
+}
+
+function resetMineUI() {
+    gameActive = false;
+    document.getElementById("btnStartMine").style.display = "block";
+    document.getElementById("btnCashout").style.display = "none";
+    document.getElementById("mine-board").innerHTML = "";
+    document.getElementById("mine-status").innerText = "Nhấn bắt đầu để đào Xu.";
+}
+    function playLottery() {
+    const lastLottery = localStorage.getItem(`lottery_${username}`) || 0;
+    const now = Date.now();
+    const cooldown = 30 * 60 * 1000; // 30 phút
+
+    if (now - lastLottery < cooldown) {
+        const timeLeft = Math.ceil((cooldown - (now - lastLottery)) / 60000);
+        document.getElementById("logLottery").innerHTML = `<span class="text-wait">⏳ Vé số chưa về! Đợi ${timeLeft} phút nữa nhé.</span>`;
+        return;
+    }
+
+    const inputVal = document.getElementById("lotteryNum").value;
+    if (inputVal === "" || inputVal.length > 4 || inputVal < 0) {
+        alert("Vui lòng nhập đúng 4 chữ số!");
+        return;
+    }
+
+    // Định dạng lại chuỗi thành 4 số (VD: 7 -> 0007)
+    const userChoice = inputVal.toString().padStart(4, '0');
+    
+    // Tạo kết quả ngẫu nhiên
+    const result = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const log = document.getElementById("logLottery");
+
+    log.innerHTML = " đang quay lồng cầu...";
+    
+    setTimeout(() => {
+        localStorage.setItem(`lottery_${username}`, now);
+        
+        if (userChoice === result) {
+            addXu(2000); // Thắng đậm
+            log.innerHTML = `<div style="background:rgba(74,222,128,0.2); padding:10px; border-radius:10px;">
+                <span class="text-win">🎊 TRÚNG ĐỘC ĐẮC! Kết quả là <b>${result}</b>. <br> Bạn nhận được 2,000 Xu!</span>
+            </div>`;
+        } else {
+            log.innerHTML = `<span>Kết quả về: <b style="color:white; font-size:20px;">${result}</b></span><br>
+            <span class="text-lose">Rất tiếc, số của bạn là ${userChoice}. Chúc bạn may mắn lần sau!</span>`;
+        }
+    }, 2000);
 }
 </script>
 
