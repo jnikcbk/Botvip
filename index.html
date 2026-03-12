@@ -276,7 +276,7 @@ async function sendMsg() {
 
     // CẤU HÌNH API (Đã xóa dấu ; thừa)
     const GEMINI_API_KEY = "AIzaSyCpVff-ecNWN546wvO-0HXdIoQc4tx5DA0"; 
-    const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         const response = await fetch(URL, {
