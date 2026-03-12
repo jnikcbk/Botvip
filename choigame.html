@@ -309,8 +309,8 @@
     <div class="game-grid">
         <div class="game-card weekly">
             <h3>🎁 TRỢ CẤP TÂN THỦ (MỖI TUẦN)</h3>
-            <p>Phúc lợi từ Admin! Nhận ngay <b>100 Xu</b> miễn phí. Bạn chỉ có thể nhận lại sau đúng 7 ngày (168 tiếng).</p>
-            <button class="btn-play" id="btnWeekly" style="background: var(--neon-pink); color: white;" onclick="claimWeekly()">Nhận 100 Xu</button>
+            <p>Phúc lợi từ Admin! Nhận ngay <b>1000 Xu</b> miễn phí. Bạn chỉ có thể nhận lại sau đúng 7 ngày (168 tiếng).</p>
+            <button class="btn-play" id="btnWeekly" style="background: var(--neon-pink); color: white;" onclick="claimWeekly()">Nhận 1000 Xu</button>
             <div class="log-msg" id="logWeekly"></div>
         </div>
 
@@ -402,9 +402,9 @@
             return;
         }
 
-        addXu(100);
+        addXu(1000);
         localStorage.setItem(`weekly_${username}`, now);
-        document.getElementById("logWeekly").innerHTML = `<span class="text-win">🎉 Ting ting! Đã cộng 100 Xu vào tài khoản.</span>`;
+        document.getElementById("logWeekly").innerHTML = `<span class="text-win">🎉 Ting ting! Đã cộng 1000 Xu vào tài khoản.</span>`;
     }
 
     // --- GAME 2: MỞ RƯƠNG (Cooldown 5 phút) ---
