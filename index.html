@@ -273,22 +273,43 @@
             <button class="btn-send" onclick="sendMsg()">GỬI</button>
         </div>
     </div>
-    <div class="card" style="border-color: var(--neon-blue)">
-        <div class="card-header" style="color: var(--neon-blue)">🤖 KAIZEN ASSISTANT</div>
-        ...
-    </div> <div class="card roblox-check-card">
-        <div class="card-header" style="color: #f64848">🔍 ROBLOX CHECKER</div>
+
+   <div class="card roblox-check-card" style="border-color: #f64848; background: rgba(20, 10, 10, 0.8);">
+    <div class="card-header" style="color: #f64848; border-bottom: 1px solid rgba(246, 72, 72, 0.3);">
+        <i class="fas fa-search"></i> 🔍 ROBLOX SCANNER
+    </div>
+    
+    <div style="padding: 20px;">
         <div class="check-input-group">
-            <input type="text" id="rbxUsername" placeholder="Nhập tên...">
-            <button onclick="checkRoblox()">CHECK</button>
+            <input type="text" id="rbxUsername" placeholder="Nhập tên tài khoản...">
+            <button onclick="checkRoblox()" style="box-shadow: 0 0 15px rgba(246, 72, 72, 0.4);">CHECK</button>
         </div>
-        <div id="rbxResult" class="rbx-result" style="display: none;">
-            <img id="rbxAvatar" src="">
-            <h4 id="rbxDisplayName"></h4>
-            <p id="rbxID"></p>
-            <p>📅 <span id="rbxJoinDate"></span></p>
+
+        <div id="rbxResult" class="rbx-result" style="display: none; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);">
+            <div class="rbx-header">
+                <div style="position: relative;">
+                    <img id="rbxAvatar" src="" alt="Avatar">
+                    <div style="position: absolute; bottom: 0; right: 0; width: 15px; height: 15px; background: #00ff00; border-radius: 50%; border: 2px solid #1a1a1a;"></div>
+                </div>
+                <div class="rbx-meta">
+                    <h4 id="rbxDisplayName" style="color: #fff; font-family: 'Orbitron'; letter-spacing: 1px;">---</h4>
+                    <p id="rbxID" style="color: #f64848; font-weight: bold;"></p>
+                </div>
+            </div>
+            
+            <div class="rbx-details" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px;">
+                    <span style="color: #aaa;">📅 Ngày gia nhập:</span> 
+                    <span id="rbxJoinDate" style="color: #fff; float: right;">--/--/----</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px;">
+                    <span style="color: #aaa;">🛡️ Trạng thái:</span> 
+                    <span style="color: #00f0ff; float: right;">Đã xác minh</span>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 </section>
 
 <footer>
@@ -431,11 +452,17 @@ async function sendMsg() {
 }
     
   
-// --- LOGIC CHECK ROBLOX (BẢN FULL) ---
 async function checkRoblox() {
     const username = document.getElementById("rbxUsername").value.trim();
     const resultDiv = document.getElementById("rbxResult");
+    const btn = document.querySelector(".check-input-group button");
+
     if (!username) return alert("Nhập tên đã ông ơi!");
+
+    // Hiệu ứng đang quét
+    btn.innerText = "SCANNING...";
+    btn.style.opacity = "0.5";
+    btn.disabled = true;
 
     try {
         // 1. Lấy ID từ Username
@@ -447,33 +474,39 @@ async function checkRoblox() {
         const userData = await userRes.json();
 
         if (!userData.data || userData.data.length === 0) {
-            alert("Không tìm thấy user này!");
-            return;
+            throw new Error("Không tìm thấy user!");
         }
 
         const user = userData.data[0];
         const userId = user.id;
 
-        // 2. Lấy Avatar
-        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
-        const thumbData = await thumbRes.json();
+        // 2. Lấy Avatar & Thông tin chi tiết cùng lúc (cho nhanh)
+        const [thumbRes, detailRes] = await Promise.all([
+            fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`),
+            fetch(`https://users.roblox.com/v1/users/${userId}`)
+        ]);
 
-        // 3. Lấy thông tin chi tiết (Ngày tạo)
-        const detailRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+        const thumbData = await thumbRes.json();
         const detailData = await detailRes.json();
 
-        // Đổ dữ liệu vào giao diện
+        // 3. Đổ dữ liệu vào giao diện đẹp
         document.getElementById("rbxAvatar").src = thumbData.data[0].imageUrl;
         document.getElementById("rbxDisplayName").innerText = user.displayName;
-        document.getElementById("rbxID").innerText = "ID: " + userId;
+        document.getElementById("rbxID").innerText = "@" + user.name + " | ID: " + userId;
         document.getElementById("rbxJoinDate").innerText = new Date(detailData.created).toLocaleDateString('vi-VN');
         
+        // Hiện bảng kết quả với hiệu ứng
         resultDiv.style.display = "block";
-        resultDiv.style.animation = "fadeIn 0.5s forwards";
+        
     } catch (error) {
-        // Lỗi này thường do trình duyệt chặn (CORS) khi chạy ở localhost
-        alert("Lỗi kết nối API Roblox. Hãy thử dùng tiện ích 'Allow CORS' trên Chrome!");
+        alert(error.message === "Không tìm thấy user!" ? "User không tồn tại!" : "Lỗi kết nối! Hãy bật extension 'Allow CORS' để lấy dữ liệu Roblox.");
         console.error(error);
+        resultDiv.style.display = "none";
+    } finally {
+        // Reset nút bấm
+        btn.innerText = "CHECK";
+        btn.style.opacity = "1";
+        btn.disabled = false;
     }
 }
 </script>
