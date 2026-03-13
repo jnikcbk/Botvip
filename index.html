@@ -439,6 +439,7 @@ async function sendMsg() {
 </div>
 
 
+// --- LOGIC CHECK ROBLOX (BẢN FULL) ---
 async function checkRoblox() {
     const username = document.getElementById("rbxUsername").value.trim();
     const resultDiv = document.getElementById("rbxResult");
@@ -476,12 +477,13 @@ async function checkRoblox() {
         document.getElementById("rbxJoinDate").innerText = new Date(detailData.created).toLocaleDateString('vi-VN');
         
         resultDiv.style.display = "block";
+        resultDiv.style.animation = "fadeIn 0.5s forwards";
     } catch (error) {
-        alert("Lỗi kết nối API Roblox (Có thể do CORS)");
+        // Lỗi này thường do trình duyệt chặn (CORS) khi chạy ở localhost
+        alert("Lỗi kết nối API Roblox. Hãy thử dùng tiện ích 'Allow CORS' trên Chrome!");
         console.error(error);
     }
 }
-
 </script>
 
 </body>
