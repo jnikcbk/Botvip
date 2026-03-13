@@ -388,7 +388,7 @@ async function sendMsg() {
     chat.scrollTop = chat.scrollHeight;
 
     // --- THÔNG TIN API ---
-    const GEMINI_API_KEY = "AIzaSyA0fSk6DrUMQHnfIGK1s7xdHibx89-YBLI"; 
+    const API_KEY = process.env.GEMINI_KEY;
  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
