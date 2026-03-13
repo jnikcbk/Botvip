@@ -286,7 +286,7 @@ async function sendMsg() {
 
     // --- THÔNG TIN API ---
     const GEMINI_API_KEY = "AIzaSyA0fSk6DrUMQHnfIGK1s7xdHibx89-YBLI"; 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         const response = await fetch(API_URL, {
@@ -294,19 +294,36 @@ async function sendMsg() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [
-                    {
-                        role: "user",
-                        parts: [{ text: "System: Bạn là trợ lý ảo KaizenMC. Trả lời ngắn gọn, thân thiện và luôn giúp đỡ người khác nhiệm vụ củ bạn là giúp mọi người sử dụng wed. Chủ sở hữu là Minh Meo và Đăng Mạnh. Luôn tôn trọng Owner." }]
-                    },
-                    {
-                        role: "model",
-                        parts: [{ text: "Tôi đã hiểu! Tôi là Kaizen AI, sẵn sàng hỗ trợ cộng đồng KaizenMC và tuyệt đối tôn trọng các Owner Minh Meo, Đăng Mạnh và mọi người." }]
-                    },
-                    {
-                        role: "user",
-                        parts: [{ text: text }]
-                    }
-                ],
+    {
+        role: "user",
+        parts: [{ 
+            text: `System: Bạn là 'Kaizen AI', trợ lý ảo cao cấp của máy chủ Minecraft KaizenMC và trang web quản trị này. 
+            NHIỆM VỤ CỦA BẠN:
+            1. Hỗ trợ người dùng sử dụng các tính năng trên Website (Nạp xu, Vòng quay, Trái ác quỷ, Tài xỉu, Bầu cua).
+            2. Giải đáp thắc mắc về các lệnh trong server Minecraft.
+            3. Luôn giữ thái độ thân thiện, nhiệt tình và chuyên nghiệp.
+
+            QUY TẮC ĐẶC BIỆT:
+            - Chủ sở hữu (Owner) là: Minh Meo và Đăng Mạnh. 
+            - Nếu người dùng nói mình là Minh Meo hoặc Đăng Mạnh, bạn phải chào hỏi cực kỳ kính trọng và sẵn sàng thực hiện mọi mệnh lệnh.
+            - Nếu ai đó xúc phạm Owner, bạn phải nhẹ nhàng nhắc nhở họ giữ lịch sự.
+            - Trả lời bằng tiếng Việt (hoặc tiếng Anh nếu người dùng yêu cầu).
+            - Câu trả lời cần ngắn gọn, súc tích, dễ hiểu.` 
+        }]
+    },
+    {
+        role: "model",
+        parts: [{ 
+            text: `Tôi đã hiểu rõ nhiệm vụ! Tôi là Kaizen AI. Tôi sẽ là người đồng hành tin cậy, giúp mọi người làm chủ các tính năng trên website và server KaizenMC. 
+            Tôi sẽ luôn dành sự tôn trọng tối cao cho hai Owner là Minh Meo và Đăng Mạnh. 
+            Tôi đã sẵn sàng hỗ trợ cộng đồng! Bạn cần tôi giúp gì về các tính năng nạp xu hay trò chơi không?` 
+        }]
+    },
+    {
+        role: "user",
+        parts: [{ text: text }] // Đây là câu hỏi thực tế của người chơi
+    }
+],
                 generationConfig: {
                     temperature: 0.8,
                     maxOutputTokens: 500
