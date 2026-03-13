@@ -11,6 +11,58 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Card chính */
+.fruit-card {
+    background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
+    border: 3px solid #6366f1 !important;
+    border-radius: 25px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Khung hiển thị trái */
+#fruit-display {
+    width: 140px;
+    height: 140px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 4px solid #a855f7;
+    border-radius: 30px;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    transition: 0.3s;
+}
+
+/* Hiệu ứng đang quay */
+.spinning {
+    animation: shake 0.1s infinite;
+    filter: blur(1px);
+    border-color: #ff00aa !important;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    50% { transform: translate(-1px, -2px) rotate(-1deg); }
+    100% { transform: translate(1px, 1px) rotate(0deg); }
+}
+
+/* Hiệu ứng trúng đồ xịn */
+.epic-win {
+    animation: jackpot 0.5s infinite alternate;
+}
+
+@keyframes jackpot {
+    from { box-shadow: 0 0 20px #f59e0b; transform: scale(1.1); }
+    to { box-shadow: 0 0 50px #ff4d00; transform: scale(1.15); }
+}
+
+.text-win { color: #22c55e; font-weight: bold; animation: bounce 0.5s; }
+.text-lose { color: #cbd5e1; }
         /* Container chính cho vòng quay */
 .fruit-card {
     background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
@@ -514,19 +566,18 @@
     <button class="btn-play" id="btnLottery" onclick="playLottery()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;">DÒ VẬN MAY</button>
     <div class="log-msg" id="logLottery"></div>
 </div>
-    <div class="game-card" style="border-color: var(--neon-blue); background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));">
-    <h3 style="color: #a855f7;">🔮 VÒNG QUAY TRÁI ÁC QUỶ</h3>
-    <p>Chi phí: <b style="color: var(--gold);">500 Xu</b> / 1 lượt quay. <br> Quay để nhận các loại Trái Ác Quỷ cực xịn vào kho đồ!</p>
+   <div class="game-card fruit-card">
+    <h3 style="color: #a855f7; margin-bottom: 5px;">🔮 KHO 100 TRÁI ÁC QUỶ</h3>
+    <p style="font-size: 0.9em;">Phí: <b style="color: #f59e0b;">500 Xu</b> | Cơ hội trúng <b>Kitsune & Leopard</b></p>
     
-    <div style="text-align: center; margin: 20px 0;">
-        <div id="fruit-display" style="width: 120px; height: 120px; background: rgba(0,0,0,0.3); border: 2px dashed #a855f7; border-radius: 20px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 50px; transition: 0.3s;">
-            ❓
-        </div>
-        <h4 id="fruit-name" style="margin-top: 10px; color: #cbd5e1;">Sẵn sàng quay?</h4>
-    </div>
+    <div id="fruit-display">❓</div>
+    <h4 id="fruit-name" style="color: #94a3b8; min-height: 25px;">SẴN SÀNG QUAY?</h4>
 
-    <button class="btn-play" id="btnSpinFruit" onclick="spinBloxFruit()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: white;">QUAY NGAY (-500 XU)</button>
-    <div class="log-msg" id="logFruit"></div>
+    <button class="btn-play" id="btnSpinFruit" onclick="spinBloxFruit()" 
+            style="background: linear-gradient(135deg, #a855f7, #6366f1); width: 100%; font-weight: bold; margin-top: 15px;">
+        NHẤN ĐỂ QUAY (-500 XU)
+    </button>
+    <div class="log-msg" id="logFruit" style="margin-top: 15px; min-height: 40px;"></div>
 </div>
 <script>
     const firebaseConfig = {
@@ -897,14 +948,29 @@ function resetMineUI() {
         }
     }, 2000);
 }
-   const bloxFruits = [
-    { name: "TRÁI ROCKET", icon: "🚀", rate: 30, color: "#94a3b8", bonus: 10 },    // Giảm xuống 25
-    { name: "TRÁI SPIN", icon: "🌀", rate:30, color: "#94a3b8", bonus: 20 },      // Giảm xuống 25
-    { name: "TRÁI ICE", icon: "❄️", rate:20, color: "#38bdf8", bonus: 100 },     // Tăng lên 20
-    { name: "TRÁI LIGHT", icon: "✨", rate: 10, color: "#fbbf24", bonus: 200 },    // Tăng lên 15
-    { name: "TRÁI BUDDHA", icon: "🧘", rate: 8, color: "#f59e0b", bonus: 500 },  // Tăng lên 10
-    { name: "TRÁI LEOPARD", icon: "🐆", rate: 2, color: "#ff00aa", bonus: 1000 }   // Tăng lên 5
+   // Cấu trúc dữ liệu
+const commonPool = [
+    { name: "TRÁI ROCKET", icon: "🚀", bonus: 10, color: "#94a3b8" },
+    { name: "TRÁI SPIN", icon: "🌀", bonus: 20, color: "#94a3b8" },
+    { name: "TRÁI SPRING", icon: "➰", bonus: 30, color: "#94a3b8" },
+    { name: "TRÁI BOMB", icon: "💣", bonus: 40, color: "#94a3b8" },
+    { name: "TRÁI ICE", icon: "❄️", bonus: 100, color: "#38bdf8" }
 ];
+
+const mythicalPool = [
+    { name: "TRÁI KITSUNE", icon: "🦊", bonus: 15000, color: "#00f0ff" },
+    { name: "TRÁI LEOPARD", icon: "🐆", bonus: 8000, color: "#ff00aa" },
+    { name: "TRÁI DRAGON", icon: "🐲", bonus: 6000, color: "#ef4444" },
+    { name: "TRÁI BUDDHA", icon: "🧘", bonus: 2000, color: "#f59e0b" },
+    { name: "TRÁI LIGHT", icon: "✨", bonus: 500, color: "#fbbf24" }
+];
+
+// TỰ ĐỘNG TẠO DANH SÁCH 100 TRÁI
+let bloxFruits = [];
+for(let i=0; i<90; i++) bloxFruits.push({...commonPool[Math.floor(Math.random()*commonPool.length)]});
+for(let i=0; i<10; i++) bloxFruits.push({...mythicalPool[Math.floor(Math.random()*mythicalPool.length)]});
+// Trộn ngẫu nhiên vị trí
+bloxFruits = bloxFruits.sort(() => Math.random() - 0.5);
 
 function spinBloxFruit() {
     const display = document.getElementById("fruit-display");
@@ -913,58 +979,44 @@ function spinBloxFruit() {
     const btn = document.getElementById("btnSpinFruit");
 
     if (currentXu < 500) {
-        log.innerHTML = `<span class="text-lose">❌ Cần 500 Xu để quay!</span>`;
+        log.innerHTML = `<span style="color: #ef4444;">❌ Bạn không đủ 500 Xu!</span>`;
         return;
     }
 
-    // Reset & Bắt đầu quay
+    // Khởi động quay
     btn.disabled = true;
+    addXu(-500);
     display.classList.remove("epic-win");
     display.classList.add("spinning");
-    addXu(-500); // Trừ phí vào cửa
-    
-    log.innerHTML = `<span class="text-wait">Đang tìm kiếm nhân phẩm...</span>`;
+    log.innerHTML = `Đang kiểm tra nhân phẩm...`;
 
     let duration = 3000;
-    let startTime = Date.now();
+    let start = Date.now();
 
-    const roll = setInterval(() => {
-        let randomFruit = bloxFruits[Math.floor(Math.random() * bloxFruits.length)];
-        display.innerHTML = randomFruit.icon;
-        nameTxt.innerText = randomFruit.name;
+    const interval = setInterval(() => {
+        let temp = bloxFruits[Math.floor(Math.random() * bloxFruits.length)];
+        display.innerHTML = temp.icon;
+        nameTxt.innerText = temp.name;
 
-        if (Date.now() - startTime >= duration) {
-            clearInterval(roll);
+        if (Date.now() - start >= duration) {
+            clearInterval(interval);
             
-            // Tính kết quả theo tỉ lệ
-            const rand = Math.random() * 100;
-            let cumulative = 0;
-            let result = bloxFruits[0];
-            for (let f of bloxFruits) {
-                cumulative += f.rate;
-                if (rand <= cumulative) { result = f; break; }
-            }
+            // Chốt kết quả (bốc 1 trong 100)
+            const idx = Math.floor(Math.random() * bloxFruits.length);
+            const result = bloxFruits[idx];
 
-            // Hiển thị kết quả & Cộng Xu thưởng
             display.classList.remove("spinning");
             display.innerHTML = result.icon;
             nameTxt.innerText = result.name;
             nameTxt.style.color = result.color;
 
-            // Cộng xu thưởng ngược lại
             addXu(result.bonus);
 
-            if (result.rate <= 5) {
+            if (result.bonus >= 1000) {
                 display.classList.add("epic-win");
-                log.innerHTML = `<div class="text-win" style="font-size:16px;">
-                    🔥 QUÁ ĐỈNH! Nhận ${result.name}<br>
-                    💰 Thưởng thêm: +${result.bonus.toLocaleString()} Xu
-                </div>`;
+                log.innerHTML = `<div class="text-win">🌟 SIÊU PHẨM (Mục ${idx+1}/100) 🌟<br>+${result.bonus.toLocaleString()} Xu</div>`;
             } else {
-                log.innerHTML = `<div class="text-lose">
-                    Nhận ${result.name}<br>
-                    🎁 Bạn được hoàn lại: +${result.bonus} Xu
-                </div>`;
+                log.innerHTML = `<div class="text-lose">Trái thứ ${idx+1}/100: ${result.name}<br>Hoàn lại: +${result.bonus} Xu</div>`;
             }
             btn.disabled = false;
         }
