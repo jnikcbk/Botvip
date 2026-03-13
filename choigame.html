@@ -898,75 +898,77 @@ function resetMineUI() {
     }, 2000);
 }
     const bloxFruits = [
-    { name: "TRÁI ROCKET (RÁC)", icon: "🚀", rate: 40 },
-    { name: "TRÁI SPIN (RÁC)", icon: "🌀", rate: 30 },
-    { name: "TRÁI ICE (HIẾM)", icon: "❄️", rate: 15 },
-    { name: "TRÁI LIGHT (XỊN)", icon: "✨", rate: 10 },
-    { name: "TRÁI BUDDHA (SIÊU PHẨM)", icon: "🧘", rate: 4 },
-    { name: "TRÁI TIGER (HUYỀN THOẠI)", icon: "🐆", rate: 1 }
+    { name: "TRÁI ROCKET", icon: "🚀", rate: 40, color: "#94a3b8", bonus: 10 },    // Trái lỏ + 10 Xu
+    { name: "TRÁI SPIN", icon: "🌀", rate: 30, color: "#94a3b8", bonus: 20 },      // Trái lỏ + 20 Xu
+    { name: "TRÁI ICE", icon: "❄️", rate: 15, color: "#38bdf8", bonus: 100 },     // Trái hiếm + 100 Xu
+    { name: "TRÁI LIGHT", icon: "✨", rate: 10, color: "#fbbf24", bonus: 200 },    // Trái xịn + 200 Xu
+    { name: "TRÁI BUDDHA", icon: "🧘", rate: 4, color: "#f59e0b", bonus: 1000 },   // Siêu phẩm + 1000 Xu
+    { name: "TRÁI LEOPARD", icon: "🐆", rate: 1, color: "#ff00aa", bonus: 5000 }   // Huyền thoại + 5000 Xu
 ];
 
 function spinBloxFruit() {
-    const log = document.getElementById("logFruit");
     const display = document.getElementById("fruit-display");
     const nameTxt = document.getElementById("fruit-name");
+    const log = document.getElementById("logFruit");
     const btn = document.getElementById("btnSpinFruit");
 
     if (currentXu < 500) {
-        log.innerHTML = `<span class="text-lose">❌ Nghèo quá! Cần 500 Xu để quay cơ mà.</span>`;
+        log.innerHTML = `<span class="text-lose">❌ Cần 500 Xu để quay!</span>`;
         return;
     }
 
-    // Khóa nút và trừ tiền
+    // Reset & Bắt đầu quay
     btn.disabled = true;
-    addXu(-500); // Dùng hàm addXu có sẵn của bạn nhưng truyền số âm
-    log.innerHTML = `<span class="text-wait">Đang lắc trái cây...</span>`;
-    display.classList.add("rolling");
+    display.classList.remove("epic-win");
+    display.classList.add("spinning");
+    addXu(-500); // Trừ phí vào cửa
+    
+    log.innerHTML = `<span class="text-wait">Đang tìm kiếm nhân phẩm...</span>`;
 
-    // Hiệu ứng chạy random
-    let count = 0;
-    let timer = setInterval(() => {
-        let randomItem = bloxFruits[Math.floor(Math.random() * bloxFruits.length)];
-        display.innerHTML = randomItem.icon;
-        nameTxt.innerText = randomItem.name;
-        count++;
+    let duration = 3000;
+    let startTime = Date.now();
 
-        if (count > 25) {
-            clearInterval(timer);
-            stopAndGetResult();
+    const roll = setInterval(() => {
+        let randomFruit = bloxFruits[Math.floor(Math.random() * bloxFruits.length)];
+        display.innerHTML = randomFruit.icon;
+        nameTxt.innerText = randomFruit.name;
+
+        if (Date.now() - startTime >= duration) {
+            clearInterval(roll);
+            
+            // Tính kết quả theo tỉ lệ
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            let result = bloxFruits[0];
+            for (let f of bloxFruits) {
+                cumulative += f.rate;
+                if (rand <= cumulative) { result = f; break; }
+            }
+
+            // Hiển thị kết quả & Cộng Xu thưởng
+            display.classList.remove("spinning");
+            display.innerHTML = result.icon;
+            nameTxt.innerText = result.name;
+            nameTxt.style.color = result.color;
+
+            // Cộng xu thưởng ngược lại
+            addXu(result.bonus);
+
+            if (result.rate <= 5) {
+                display.classList.add("epic-win");
+                log.innerHTML = `<div class="text-win" style="font-size:16px;">
+                    🔥 QUÁ ĐỈNH! Nhận ${result.name}<br>
+                    💰 Thưởng thêm: +${result.bonus.toLocaleString()} Xu
+                </div>`;
+            } else {
+                log.innerHTML = `<div class="text-lose">
+                    Nhận ${result.name}<br>
+                    🎁 Bạn được hoàn lại: +${result.bonus} Xu
+                </div>`;
+            }
+            btn.disabled = false;
         }
     }, 100);
-
-    function stopAndGetResult() {
-        display.classList.remove("rolling");
-        
-        // Tính toán kết quả theo tỉ lệ %
-        const rand = Math.random() * 100;
-        let cumulativeRate = 0;
-        let finalResult = bloxFruits[0];
-
-        for (let fruit of bloxFruits) {
-            cumulativeRate += fruit.rate;
-            if (rand <= cumulativeRate) {
-                finalResult = fruit;
-                break;
-            }
-        }
-
-        // Hiển thị kết quả cuối
-        display.innerHTML = finalResult.icon;
-        nameTxt.innerText = finalResult.name;
-        
-        if (finalResult.rate <= 5) {
-            log.innerHTML = `<span class="text-win">🔥 ĐỈNH CAO! Bạn nhận được ${finalResult.name}!</span>`;
-            nameTxt.style.color = "#ff00aa"; // Màu tím hồng cho đồ xịn
-        } else {
-            log.innerHTML = `<span class="text-lose">Tiếc quá, trúng trái ${finalResult.name} rồi.</span>`;
-            nameTxt.style.color = "#cbd5e1";
-        }
-
-        btn.disabled = false;
-    }
 }
 </script>
 
