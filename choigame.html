@@ -11,76 +11,41 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
-        .dice-card {
-    background: linear-gradient(145deg, #1e293b, #0f172a) !important;
-    border: 3px solid #f59e0b !important; /* Màu vàng Gold */
-    border-radius: 25px;
-    padding: 25px;
-    margin-top: 20px;
-    text-align: center;
+     .dice-card {
+    background: linear-gradient(160deg, #1e293b 0%, #020617 100%) !important;
+    border: 2px solid #fbbf24 !important;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
 }
 
 #dice-display {
-    font-size: 80px;
+    font-size: 100px;
+    height: 120px;
+    line-height: 120px;
     margin: 20px 0;
-    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
-    transition: 0.5s;
+    color: #fbbf24;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* Hiệu ứng rung lắc mạnh khi đổ */
 .dice-rolling {
-    animation: diceShake 0.1s infinite;
+    animation: proDice 0.1s infinite;
+    filter: blur(1px);
+    opacity: 0.8;
 }
 
-@keyframes diceShake {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(10deg); }
-    75% { transform: rotate(-10deg); }
-    100% { transform: rotate(0deg); }
+@keyframes proDice {
+    0% { transform: scale(1.1) rotate(0deg) translate(2px, 2px); }
+    33% { transform: scale(1.1) rotate(5deg) translate(-2px, -1px); }
+    66% { transform: scale(1.1) rotate(-5deg) translate(1px, -2px); }
+    100% { transform: scale(1.1) rotate(0deg) translate(2px, 2px); }
 }
 
-.bet-group {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    margin-bottom: 15px;
+.bet-stat {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 5px;
 }
-
-.btn-bet {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
-    transition: 0.2s;
-}
-
-.btn-tai { background: #ef4444; } /* Đỏ */
-.btn-xiu { background: #3b82f6; } /* Xanh */
-.btn-bet:hover { transform: scale(1.05); filter: brightness(1.2); }
-    /* Card chính với hiệu ứng chiều sâu */
-.fruit-card {
-    background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
-    border: 3px solid #6366f1 !important;
-    border-radius: 25px;
-    padding: 30px;
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* Hiệu ứng hào quang nền (Radial Glow) */
-.fruit-card::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-    z-index: 0;
-    pointer-events: none;
-}
-
 /* Khung hiển thị Trái Ác Quỷ */
 #fruit-display {
     position: relative;
@@ -1080,47 +1045,78 @@ function spinBloxFruit() {
         }
     }, 100);
 }
-    function playDice(choice) {
+   function playDice(choice) {
     const betInput = document.getElementById("betAmount");
     const amount = parseInt(betInput.value);
     const log = document.getElementById("logDice");
     const display = document.getElementById("dice-display");
+    const buttons = document.querySelectorAll(".btn-bet");
 
-    // Kiểm tra đầu vào
-    if (isNaN(amount) || amount <= 0) {
-        log.innerHTML = `<span style="color: #ff4d4d;">❌ Nhập số tiền cược hợp lệ!</span>`;
+    if (isNaN(amount) || amount < 100) {
+        log.innerHTML = `<span style="color: #f87171;">⚠️ Tối thiểu cược 100 Xu!</span>`;
         return;
     }
     if (amount > currentXu) {
-        log.innerHTML = `<span style="color: #ff4d4d;">❌ Bạn không đủ xu!</span>`;
+        log.innerHTML = `<span style="color: #f87171;">⚠️ Bạn không đủ vốn!</span>`;
         return;
     }
 
-    // Bắt đầu chơi
+    // Khóa nút và trừ tiền
+    buttons.forEach(b => b.disabled = true);
     addXu(-amount);
-    log.innerHTML = `Đang lắc xúc xắc...`;
+    
     display.classList.add("dice-rolling");
-    
-    const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-    
+    log.innerHTML = `<span style="color: #fbbf24;">🎲 Đang lắc hũ...</span>`;
+
+    // Hiệu ứng nhảy số ảo
+    let rollFast = setInterval(() => {
+        const icons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        display.innerHTML = icons[Math.floor(Math.random() * 6)];
+    }, 80);
+
     setTimeout(() => {
+        clearInterval(rollFast);
         display.classList.remove("dice-rolling");
         
-        // Random từ 1 đến 6
-        const resultNum = Math.floor(Math.random() * 6) + 1;
-        display.innerHTML = diceIcons[resultNum - 1];
-        
-        const isTai = resultNum >= 4;
-        const resultText = isTai ? "TAI" : "XIU";
-        
-        if (choice === resultText) {
-            const winAmount = amount * 2;
-            addXu(winAmount);
-            log.innerHTML = `<b style="color: #22c55e;">THẮNG! 🎉 Xúc xắc ra ${resultNum} (${resultText}). <br> Nhận +${winAmount} Xu</b>`;
+        // --- THUẬT TOÁN TỈ LỆ KHÓ ---
+        // Tạo một số từ 1-100. 
+        // Nếu chọn TÀI: chỉ cho ra TÀI nếu số > 58 (42% cơ hội thắng)
+        // Nếu chọn XỈU: chỉ cho ra XỈU nếu số > 58 (42% cơ hội thắng)
+        let winChance = Math.random() * 100;
+        let finalNum;
+        let isWin = winChance > 58; // Tỷ lệ thắng thực tế ~42%
+
+        if (choice === "TAI") {
+            finalNum = isWin ? (Math.floor(Math.random() * 3) + 4) : (Math.floor(Math.random() * 3) + 1);
         } else {
-            log.innerHTML = `<span style="color: #cbd5e1;">THUA! 💀 Xúc xắc ra ${resultNum} (${resultText}). <br> Mất ${amount} Xu</span>`;
+            finalNum = isWin ? (Math.floor(Math.random() * 3) + 1) : (Math.floor(Math.random() * 3) + 4);
         }
-    }, 1500); // Lắc trong 1.5 giây
+
+        const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        display.innerHTML = diceIcons[finalNum - 1];
+        
+        const resultText = finalNum >= 4 ? "TAI" : "XIU";
+        
+        if (isWin) {
+            // Thắng chỉ ăn x1.9 (Nhà cái thu phí 5%)
+            const winAmount = Math.floor(amount * 1.9);
+            addXu(winAmount);
+            log.innerHTML = `<b style="color: #4ade80; font-size: 16px;">+ ${winAmount} XU</b><br>
+                             <small>Kết quả: ${finalNum} (${resultText}) - ĐỈNH!</small>`;
+            display.style.color = "#4ade80";
+        } else {
+            log.innerHTML = `<b style="color: #94a3b8;">- ${amount} XU</b><br>
+                             <small>Kết quả: ${finalNum} (${resultText}) - Hụt rồi!</small>`;
+            display.style.color = "#f87171";
+        }
+
+        // Mở khóa nút sau 1s
+        setTimeout(() => {
+            buttons.forEach(b => b.disabled = false);
+            display.style.color = "#fbbf24";
+        }, 1000);
+
+    }, 2000); // Lắc lâu hơn (2s) để tăng kịch tính
 }
 </script>
 
