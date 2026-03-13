@@ -11,126 +11,118 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
-        /* Card chính */
+    /* Card chính với hiệu ứng chiều sâu */
 .fruit-card {
     background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
     border: 3px solid #6366f1 !important;
     border-radius: 25px;
-    padding: 25px;
+    padding: 30px;
     position: relative;
     overflow: hidden;
     text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Khung hiển thị trái */
-#fruit-display {
-    width: 140px;
-    height: 140px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 4px solid #a855f7;
-    border-radius: 30px;
-    margin: 20px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 70px;
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-    transition: 0.3s;
-}
-
-/* Hiệu ứng đang quay */
-.spinning {
-    animation: shake 0.1s infinite;
-    filter: blur(1px);
-    border-color: #ff00aa !important;
-}
-
-@keyframes shake {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    50% { transform: translate(-1px, -2px) rotate(-1deg); }
-    100% { transform: translate(1px, 1px) rotate(0deg); }
-}
-
-/* Hiệu ứng trúng đồ xịn */
-.epic-win {
-    animation: jackpot 0.5s infinite alternate;
-}
-
-@keyframes jackpot {
-    from { box-shadow: 0 0 20px #f59e0b; transform: scale(1.1); }
-    to { box-shadow: 0 0 50px #ff4d00; transform: scale(1.15); }
-}
-
-.text-win { color: #22c55e; font-weight: bold; animation: bounce 0.5s; }
-.text-lose { color: #cbd5e1; }
-        /* Container chính cho vòng quay */
-.fruit-card {
-    background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
-    border: 2px solid #6366f1 !important;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Hiệu ứng hào quang phía sau */
+/* Hiệu ứng hào quang nền (Radial Glow) */
 .fruit-card::before {
     content: '';
     position: absolute;
     top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
     z-index: 0;
+    pointer-events: none;
 }
 
-/* Khung hiển thị trái ác quỷ */
+/* Khung hiển thị Trái Ác Quỷ */
 #fruit-display {
     position: relative;
     z-index: 1;
-    width: 140px;
-    height: 140px;
-    background: rgba(2, 6, 23, 0.8);
-    border: 4px solid #818cf8;
-    border-radius: 30px;
+    width: 150px;
+    height: 150px;
+    background: rgba(2, 6, 23, 0.85);
+    border: 5px solid #818cf8;
+    border-radius: 35px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 70px;
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 80px;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Animation khi đang quay */
+/* Hiệu ứng quay: Kết hợp Rung + Blur + Nhảy */
 .spinning {
-    animation: fruitRoll 0.15s infinite linear;
-    filter: blur(2px); /* Làm mờ tạo cảm giác quay cực nhanh */
-    transform: scale(0.9);
+    animation: advancedRoll 0.15s infinite linear;
+    filter: blur(2px) brightness(1.2);
+    transform: scale(0.95);
     border-color: #c084fc !important;
 }
 
-@keyframes fruitRoll {
-    0% { transform: scale(0.9) translateY(0); opacity: 0.8; }
-    50% { transform: scale(0.9) translateY(-10px); opacity: 1; }
-    100% { transform: scale(0.9) translateY(0); opacity: 0.8; }
+@keyframes advancedRoll {
+    0% { transform: scale(0.95) translateY(0); }
+    50% { transform: scale(0.95) translateY(-8px) rotate(2deg); }
+    100% { transform: scale(0.95) translateY(0); }
 }
 
-/* Hiệu ứng khi trúng đồ xịn */
+/* Hiệu ứng trúng đồ xịn (Jackpot) */
 .epic-win {
-    animation: epicGlow 0.8s infinite alternate;
+    animation: epicGlow 0.6s infinite alternate;
     border-color: #f59e0b !important;
+    z-index: 2;
 }
 
 @keyframes epicGlow {
-    from { box-shadow: 0 0 20px #f59e0b; transform: scale(1.1); }
-    to { box-shadow: 0 0 40px #ff4d00; transform: scale(1.15); }
+    from { 
+        box-shadow: 0 0 20px #f59e0b, inset 0 0 15px #f59e0b; 
+        transform: scale(1.1) rotate(-2deg); 
+    }
+    to { 
+        box-shadow: 0 0 50px #ff4d00, inset 0 0 25px #ff4d00; 
+        transform: scale(1.15) rotate(2deg); 
+    }
 }
 
+/* Tên trái ác quỷ */
 #fruit-name {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 18px;
+    font-family: 'Orbitron', sans-serif; /* Đảm bảo bạn đã link font Orbitron, nếu không nó sẽ dùng font mặc định */
+    font-size: 20px;
     font-weight: 900;
     margin-top: 20px;
-    min-height: 24px;
+    color: #e2e8f0;
     text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Thông báo kết quả */
+.text-win { 
+    color: #4ade80; 
+    font-weight: bold; 
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    animation: bounce 0.5s ease-out;
+}
+
+.text-lose { color: #94a3b8; font-style: italic; }
+
+@keyframes bounce {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+        #btnSpinFruit {
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+#btnSpinFruit:hover:not(:disabled) {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+}
+#btnSpinFruit:disabled {
+    filter: grayscale(1);
+    cursor: not-allowed;
 }
         /* Style cho Xổ Số */
 .lottery-input {
