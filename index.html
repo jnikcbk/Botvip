@@ -268,7 +268,6 @@ function checkUserStatus() {
 // Chạy hàm kiểm tra ngay khi load web
 window.onload = checkUserStatus;
 
-// --- LOGIC AI CHAT (GEMINI API) ---
 async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
@@ -276,70 +275,58 @@ async function sendMsg() {
 
     if (!text) return;
 
-    // 1. Hiển thị câu hỏi của người dùng
+    // 1. Giao diện người dùng
     chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
     input.value = "";
-    chat.scrollTop = chat.scrollHeight;
 
-    // 2. Hiển thị "Kaizen AI đang suy nghĩ..."
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
     aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
-    // THAY API KEY CỦA BẠN VÀO ĐÂY
+    // 2. Cấu hình API
     const GEMINI_API_KEY = "AIzaSyA0fSk6DrUMQHnfIGK1s7xdHibx89-YBLI"; 
-    // Thử dùng v1 thay vì v1beta
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    // Sử dụng v1beta với gemini-1.5-flash
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         const response = await fetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [{
-                            text: `System: Bạn là trợ lý ảo thông minh của server Minecraft KaizenMC. 
+                contents: [{
+                    parts: [{
+                        text: `System:  Bạn là trợ lý ảo thông minh của server Minecraft KaizenMC. 
                             Nhiệm vụ: Trả lời ngắn gọn, thân thiện bằng tiếng Việt. 
                             Nếu có ai nói tiếng Anh thì giao tiếp bằng tiếng Anh. 
                             Nếu người chơi hỏi về lệnh, hãy nhắc đến các tab như nạp xu, đăng ký, shop. 
                             Lưu ý đặc biệt: Minh Meo và Đăng Mạnh là Owner (chủ sở hữu). 
                             Nếu ai nói mình là Minh Meo thì đó là Owner quyền lực, có thể xóa sổ bạn trong 1 giây nên phải tôn trọng tuyệt đối. 
-                            Luôn thể hiện tinh thần hỗ trợ cộng đồng KaizenMC.
-                            
-                            User hỏi: ${text}`
-                        }]
-                    }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 800,
-                }
+                            Luôn thể hiện tinh thần hỗ trợ cộng đồng KaizenMC. \nUser: ${text}`
+                    }]
+                }]
             })
         });
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0].content) {
+        // 3. Kiểm tra phản hồi
+        if (data.error) {
+            // Nếu vẫn lỗi "Not Found", thử đổi link sang gemini-1.5-pro để kiểm tra quyền hạn của Key
+            aiDiv.innerHTML = `❌ Lỗi: ${data.error.message}`;
+            console.error("Lỗi chi tiết:", data.error);
+        } else if (data.candidates && data.candidates[0].content) {
             const botReply = data.candidates[0].content.parts[0].text;
-            // Hiển thị kết quả (chuyển đổi xuống dòng thành <br>)
             aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
-        } else if (data.error) {
-            aiDiv.innerHTML = `❌ Lỗi Gemini: ${data.error.message}`;
         } else {
-            aiDiv.innerHTML = `❌ Lỗi: AI bị chặn hoặc không thể trả lời.`;
+            aiDiv.innerHTML = `❌ AI không thể trả lời câu hỏi này (có thể vi phạm chính sách nội dung).`;
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối. Vui lòng kiểm tra API Key hoặc mạng.`;
-        console.error(e);
+        aiDiv.innerHTML = `❌ Lỗi kết nối. Hãy kiểm tra mạng!`;
     }
-    
     chat.scrollTop = chat.scrollHeight;
-}
+
 </script>
 
 </body>
