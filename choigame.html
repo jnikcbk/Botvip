@@ -11,6 +11,54 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        .dice-card {
+    background: linear-gradient(145deg, #1e293b, #0f172a) !important;
+    border: 3px solid #f59e0b !important; /* Màu vàng Gold */
+    border-radius: 25px;
+    padding: 25px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#dice-display {
+    font-size: 80px;
+    margin: 20px 0;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
+    transition: 0.5s;
+}
+
+.dice-rolling {
+    animation: diceShake 0.1s infinite;
+}
+
+@keyframes diceShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.bet-group {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-bet {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+}
+
+.btn-tai { background: #ef4444; } /* Đỏ */
+.btn-xiu { background: #3b82f6; } /* Xanh */
+.btn-bet:hover { transform: scale(1.05); filter: brightness(1.2); }
     /* Card chính với hiệu ứng chiều sâu */
 .fruit-card {
     background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
@@ -571,6 +619,24 @@
     </button>
     <div class="log-msg" id="logFruit" style="margin-top: 15px; min-height: 40px;"></div>
 </div>
+    <div class="game-card dice-card">
+    <h3 style="color: #f59e0b;">🎲 TÀI XỈU NHÂN PHẨM</h3>
+    <p>Chọn cửa và đặt cược số tiền bạn muốn!</p>
+    
+    <div id="dice-display">🎲</div>
+    
+    <div style="margin-bottom: 15px;">
+        <input type="number" id="betAmount" placeholder="Nhập số xu cược..." 
+               style="width: 80%; padding: 10px; border-radius: 8px; border: none; text-align: center;">
+    </div>
+
+    <div class="bet-group">
+        <button class="btn-bet btn-tai" onclick="playDice('TAI')">TÀI (4-6)</button>
+        <button class="btn-bet btn-xiu" onclick="playDice('XIU')">XỈU (1-3)</button>
+    </div>
+    
+    <div class="log-msg" id="logDice"></div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -1013,6 +1079,48 @@ function spinBloxFruit() {
             btn.disabled = false;
         }
     }, 100);
+}
+    function playDice(choice) {
+    const betInput = document.getElementById("betAmount");
+    const amount = parseInt(betInput.value);
+    const log = document.getElementById("logDice");
+    const display = document.getElementById("dice-display");
+
+    // Kiểm tra đầu vào
+    if (isNaN(amount) || amount <= 0) {
+        log.innerHTML = `<span style="color: #ff4d4d;">❌ Nhập số tiền cược hợp lệ!</span>`;
+        return;
+    }
+    if (amount > currentXu) {
+        log.innerHTML = `<span style="color: #ff4d4d;">❌ Bạn không đủ xu!</span>`;
+        return;
+    }
+
+    // Bắt đầu chơi
+    addXu(-amount);
+    log.innerHTML = `Đang lắc xúc xắc...`;
+    display.classList.add("dice-rolling");
+    
+    const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+    
+    setTimeout(() => {
+        display.classList.remove("dice-rolling");
+        
+        // Random từ 1 đến 6
+        const resultNum = Math.floor(Math.random() * 6) + 1;
+        display.innerHTML = diceIcons[resultNum - 1];
+        
+        const isTai = resultNum >= 4;
+        const resultText = isTai ? "TAI" : "XIU";
+        
+        if (choice === resultText) {
+            const winAmount = amount * 2;
+            addXu(winAmount);
+            log.innerHTML = `<b style="color: #22c55e;">THẮNG! 🎉 Xúc xắc ra ${resultNum} (${resultText}). <br> Nhận +${winAmount} Xu</b>`;
+        } else {
+            log.innerHTML = `<span style="color: #cbd5e1;">THUA! 💀 Xúc xắc ra ${resultNum} (${resultText}). <br> Mất ${amount} Xu</span>`;
+        }
+    }, 1500); // Lắc trong 1.5 giây
 }
 </script>
 
