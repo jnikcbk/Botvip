@@ -11,6 +11,75 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Container chính cho vòng quay */
+.fruit-card {
+    background: linear-gradient(145deg, #0f172a, #1e1b4b) !important;
+    border: 2px solid #6366f1 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hiệu ứng hào quang phía sau */
+.fruit-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    z-index: 0;
+}
+
+/* Khung hiển thị trái ác quỷ */
+#fruit-display {
+    position: relative;
+    z-index: 1;
+    width: 140px;
+    height: 140px;
+    background: rgba(2, 6, 23, 0.8);
+    border: 4px solid #818cf8;
+    border-radius: 30px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animation khi đang quay */
+.spinning {
+    animation: fruitRoll 0.15s infinite linear;
+    filter: blur(2px); /* Làm mờ tạo cảm giác quay cực nhanh */
+    transform: scale(0.9);
+    border-color: #c084fc !important;
+}
+
+@keyframes fruitRoll {
+    0% { transform: scale(0.9) translateY(0); opacity: 0.8; }
+    50% { transform: scale(0.9) translateY(-10px); opacity: 1; }
+    100% { transform: scale(0.9) translateY(0); opacity: 0.8; }
+}
+
+/* Hiệu ứng khi trúng đồ xịn */
+.epic-win {
+    animation: epicGlow 0.8s infinite alternate;
+    border-color: #f59e0b !important;
+}
+
+@keyframes epicGlow {
+    from { box-shadow: 0 0 20px #f59e0b; transform: scale(1.1); }
+    to { box-shadow: 0 0 40px #ff4d00; transform: scale(1.15); }
+}
+
+#fruit-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    margin-top: 20px;
+    min-height: 24px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
         /* Style cho Xổ Số */
 .lottery-input {
     display: flex;
@@ -445,6 +514,20 @@
     <button class="btn-play" id="btnLottery" onclick="playLottery()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;">DÒ VẬN MAY</button>
     <div class="log-msg" id="logLottery"></div>
 </div>
+    <div class="game-card" style="border-color: var(--neon-blue); background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));">
+    <h3 style="color: #a855f7;">🔮 VÒNG QUAY TRÁI ÁC QUỶ</h3>
+    <p>Chi phí: <b style="color: var(--gold);">500 Xu</b> / 1 lượt quay. <br> Quay để nhận các loại Trái Ác Quỷ cực xịn vào kho đồ!</p>
+    
+    <div style="text-align: center; margin: 20px 0;">
+        <div id="fruit-display" style="width: 120px; height: 120px; background: rgba(0,0,0,0.3); border: 2px dashed #a855f7; border-radius: 20px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 50px; transition: 0.3s;">
+            ❓
+        </div>
+        <h4 id="fruit-name" style="margin-top: 10px; color: #cbd5e1;">Sẵn sàng quay?</h4>
+    </div>
+
+    <button class="btn-play" id="btnSpinFruit" onclick="spinBloxFruit()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: white;">QUAY NGAY (-500 XU)</button>
+    <div class="log-msg" id="logFruit"></div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -813,6 +896,77 @@ function resetMineUI() {
             <span class="text-lose">Rất tiếc, số của bạn là ${userChoice}. Chúc bạn may mắn lần sau!</span>`;
         }
     }, 2000);
+}
+    const bloxFruits = [
+    { name: "TRÁI ROCKET (RÁC)", icon: "🚀", rate: 40 },
+    { name: "TRÁI SPIN (RÁC)", icon: "🌀", rate: 30 },
+    { name: "TRÁI ICE (HIẾM)", icon: "❄️", rate: 15 },
+    { name: "TRÁI LIGHT (XỊN)", icon: "✨", rate: 10 },
+    { name: "TRÁI BUDDHA (SIÊU PHẨM)", icon: "🧘", rate: 4 },
+    { name: "TRÁI TIGER (HUYỀN THOẠI)", icon: "🐆", rate: 1 }
+];
+
+function spinBloxFruit() {
+    const log = document.getElementById("logFruit");
+    const display = document.getElementById("fruit-display");
+    const nameTxt = document.getElementById("fruit-name");
+    const btn = document.getElementById("btnSpinFruit");
+
+    if (currentXu < 500) {
+        log.innerHTML = `<span class="text-lose">❌ Nghèo quá! Cần 500 Xu để quay cơ mà.</span>`;
+        return;
+    }
+
+    // Khóa nút và trừ tiền
+    btn.disabled = true;
+    addXu(-500); // Dùng hàm addXu có sẵn của bạn nhưng truyền số âm
+    log.innerHTML = `<span class="text-wait">Đang lắc trái cây...</span>`;
+    display.classList.add("rolling");
+
+    // Hiệu ứng chạy random
+    let count = 0;
+    let timer = setInterval(() => {
+        let randomItem = bloxFruits[Math.floor(Math.random() * bloxFruits.length)];
+        display.innerHTML = randomItem.icon;
+        nameTxt.innerText = randomItem.name;
+        count++;
+
+        if (count > 25) {
+            clearInterval(timer);
+            stopAndGetResult();
+        }
+    }, 100);
+
+    function stopAndGetResult() {
+        display.classList.remove("rolling");
+        
+        // Tính toán kết quả theo tỉ lệ %
+        const rand = Math.random() * 100;
+        let cumulativeRate = 0;
+        let finalResult = bloxFruits[0];
+
+        for (let fruit of bloxFruits) {
+            cumulativeRate += fruit.rate;
+            if (rand <= cumulativeRate) {
+                finalResult = fruit;
+                break;
+            }
+        }
+
+        // Hiển thị kết quả cuối
+        display.innerHTML = finalResult.icon;
+        nameTxt.innerText = finalResult.name;
+        
+        if (finalResult.rate <= 5) {
+            log.innerHTML = `<span class="text-win">🔥 ĐỈNH CAO! Bạn nhận được ${finalResult.name}!</span>`;
+            nameTxt.style.color = "#ff00aa"; // Màu tím hồng cho đồ xịn
+        } else {
+            log.innerHTML = `<span class="text-lose">Tiếc quá, trúng trái ${finalResult.name} rồi.</span>`;
+            nameTxt.style.color = "#cbd5e1";
+        }
+
+        btn.disabled = false;
+    }
 }
 </script>
 
