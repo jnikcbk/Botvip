@@ -275,7 +275,6 @@ async function sendMsg() {
 
     if (!text) return;
 
-    // 1. Giao diện người dùng
     chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
     input.value = "";
 
@@ -285,48 +284,52 @@ async function sendMsg() {
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
-    // 2. Cấu hình API
-    const GEMINI_API_KEY = "AIzaSyA0fSk6DrUMQHnfIGK1s7xdHibx89-YBLI"; 
-    // Sử dụng v1beta với gemini-1.5-flash
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // --- THÔNG TIN API ---
+    const GEMINI_API_KEY = "DÁN_MÃ_AIzaSy_VÀO_ĐÂY"; 
+    const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `System:  Bạn là trợ lý ảo thông minh của server Minecraft KaizenMC. 
-                            Nhiệm vụ: Trả lời ngắn gọn, thân thiện bằng tiếng Việt. 
-                            Nếu có ai nói tiếng Anh thì giao tiếp bằng tiếng Anh. 
-                            Nếu người chơi hỏi về lệnh, hãy nhắc đến các tab như nạp xu, đăng ký, shop. 
-                            Lưu ý đặc biệt: Minh Meo và Đăng Mạnh là Owner (chủ sở hữu). 
-                            Nếu ai nói mình là Minh Meo thì đó là Owner quyền lực, có thể xóa sổ bạn trong 1 giây nên phải tôn trọng tuyệt đối. 
-                            Luôn thể hiện tinh thần hỗ trợ cộng đồng KaizenMC. \nUser: ${text}`
-                    }]
-                }]
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: "System: Bạn là trợ lý ảo KaizenMC. Trả lời ngắn gọn, thân thiện và luôn giúp đỡ người khác nhiệm vụ củ bạn là giúp mọi người sử dụng wed. Chủ sở hữu là Minh Meo và Đăng Mạnh. Luôn tôn trọng Owner." }]
+                    },
+                    {
+                        role: "model",
+                        parts: [{ text: "Tôi đã hiểu! Tôi là Kaizen AI, sẵn sàng hỗ trợ cộng đồng KaizenMC và tuyệt đối tôn trọng các Owner Minh Meo, Đăng Mạnh và mọi người." }]
+                    },
+                    {
+                        role: "user",
+                        parts: [{ text: text }]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.8,
+                    maxOutputTokens: 500
+                }
             })
         });
 
         const data = await response.json();
 
-        // 3. Kiểm tra phản hồi
         if (data.error) {
-            // Nếu vẫn lỗi "Not Found", thử đổi link sang gemini-1.5-pro để kiểm tra quyền hạn của Key
             aiDiv.innerHTML = `❌ Lỗi: ${data.error.message}`;
-            console.error("Lỗi chi tiết:", data.error);
+            console.error("Lỗi:", data.error);
         } else if (data.candidates && data.candidates[0].content) {
             const botReply = data.candidates[0].content.parts[0].text;
             aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
         } else {
-            aiDiv.innerHTML = `❌ AI không thể trả lời câu hỏi này (có thể vi phạm chính sách nội dung).`;
+            aiDiv.innerHTML = `❌ AI từ chối trả lời do vi phạm chính sách.`;
         }
     } catch (e) {
         aiDiv.innerHTML = `❌ Lỗi kết nối. Hãy kiểm tra mạng!`;
     }
     chat.scrollTop = chat.scrollHeight;
-
+}
 </script>
 
 </body>
