@@ -273,6 +273,22 @@
             <button class="btn-send" onclick="sendMsg()">GỬI</button>
         </div>
     </div>
+    <div class="card" style="border-color: var(--neon-blue)">
+        <div class="card-header" style="color: var(--neon-blue)">🤖 KAIZEN ASSISTANT</div>
+        ...
+    </div> <div class="card roblox-check-card">
+        <div class="card-header" style="color: #f64848">🔍 ROBLOX CHECKER</div>
+        <div class="check-input-group">
+            <input type="text" id="rbxUsername" placeholder="Nhập tên...">
+            <button onclick="checkRoblox()">CHECK</button>
+        </div>
+        <div id="rbxResult" class="rbx-result" style="display: none;">
+            <img id="rbxAvatar" src="">
+            <h4 id="rbxDisplayName"></h4>
+            <p id="rbxID"></p>
+            <p>📅 <span id="rbxJoinDate"></span></p>
+        </div>
+    </div>
 </section>
 
 <footer>
@@ -413,32 +429,8 @@ async function sendMsg() {
     }
     chat.scrollTop = chat.scrollHeight;
 }
-    <div class="game-card roblox-check-card">
-    <div class="card-header">
-        <h3 style="color: #f64848; margin: 0; font-size: 16px;">🔍 CHECK ROBLOX USER</h3>
-    </div>
-
-    <div class="check-input-group">
-        <input type="text" id="rbxUsername" placeholder="Nhập tên tài khoản...">
-        <button onclick="checkRoblox()">CHECK</button>
-    </div>
-
-    <div id="rbxResult" class="rbx-result" style="display: none;">
-        <div class="rbx-header">
-            <img id="rbxAvatar" src="" alt="Avatar">
-            <div class="rbx-meta">
-                <h4 id="rbxDisplayName">---</h4>
-                <p id="rbxID">ID: 000000</p>
-            </div>
-        </div>
-        <div class="rbx-details">
-            <p>📅 Tham gia: <span id="rbxJoinDate">--/--/----</span></p>
-            <p>💬 Trạng thái: <span id="rbxStatus">---</span></p>
-        </div>
-    </div>
-</div>
-
-
+    
+  
 // --- LOGIC CHECK ROBLOX (BẢN FULL) ---
 async function checkRoblox() {
     const username = document.getElementById("rbxUsername").value.trim();
