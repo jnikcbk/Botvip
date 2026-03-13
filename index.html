@@ -11,6 +11,72 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        .roblox-check-card {
+    background: #1a1a1a !important;
+    border: 1px solid #f64848 !important;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.check-input-group {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.check-input-group input {
+    flex: 1;
+    background: #2d3436;
+    border: 1px solid #444;
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    outline: none;
+}
+
+.check-input-group button {
+    background: #f64848;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.rbx-result {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 10px;
+    animation: fadeIn 0.5s;
+}
+
+.rbx-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#rbxAvatar {
+    width: 60px;
+    height: 60px;
+    background: #333;
+    border-radius: 50%;
+    border: 2px solid #f64848;
+}
+
+.rbx-meta h4 { margin: 0; color: #fff; }
+.rbx-meta p { margin: 0; font-size: 12px; color: #aaa; }
+
+.rbx-details {
+    font-size: 13px;
+    color: #ddd;
+    border-top: 1px solid #444;
+    padding-top: 8px;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         :root {
             --neon-blue: #00f0ff;
             --neon-purple: #c300ff;
@@ -347,6 +413,75 @@ async function sendMsg() {
     }
     chat.scrollTop = chat.scrollHeight;
 }
+    <div class="game-card roblox-check-card">
+    <div class="card-header">
+        <h3 style="color: #f64848; margin: 0; font-size: 16px;">🔍 CHECK ROBLOX USER</h3>
+    </div>
+
+    <div class="check-input-group">
+        <input type="text" id="rbxUsername" placeholder="Nhập tên tài khoản...">
+        <button onclick="checkRoblox()">CHECK</button>
+    </div>
+
+    <div id="rbxResult" class="rbx-result" style="display: none;">
+        <div class="rbx-header">
+            <img id="rbxAvatar" src="" alt="Avatar">
+            <div class="rbx-meta">
+                <h4 id="rbxDisplayName">---</h4>
+                <p id="rbxID">ID: 000000</p>
+            </div>
+        </div>
+        <div class="rbx-details">
+            <p>📅 Tham gia: <span id="rbxJoinDate">--/--/----</span></p>
+            <p>💬 Trạng thái: <span id="rbxStatus">---</span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function checkRoblox() {
+    const username = document.getElementById("rbxUsername").value.trim();
+    const resultDiv = document.getElementById("rbxResult");
+    if (!username) return alert("Nhập tên đã ông ơi!");
+
+    try {
+        // 1. Lấy ID từ Username
+        const userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+            method: 'POST',
+            body: JSON.stringify({ usernames: [username] }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const userData = await userRes.json();
+
+        if (!userData.data || userData.data.length === 0) {
+            alert("Không tìm thấy user này!");
+            return;
+        }
+
+        const user = userData.data[0];
+        const userId = user.id;
+
+        // 2. Lấy Avatar
+        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
+        const thumbData = await thumbRes.json();
+
+        // 3. Lấy thông tin chi tiết (Ngày tạo)
+        const detailRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+        const detailData = await detailRes.json();
+
+        // Đổ dữ liệu vào giao diện
+        document.getElementById("rbxAvatar").src = thumbData.data[0].imageUrl;
+        document.getElementById("rbxDisplayName").innerText = user.displayName;
+        document.getElementById("rbxID").innerText = "ID: " + userId;
+        document.getElementById("rbxJoinDate").innerText = new Date(detailData.created).toLocaleDateString('vi-VN');
+        
+        resultDiv.style.display = "block";
+    } catch (error) {
+        alert("Lỗi kết nối API Roblox (Có thể do CORS)");
+        console.error(error);
+    }
+}
+
 </script>
 
 </body>
