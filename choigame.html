@@ -11,40 +11,87 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
-     .dice-card {
-    background: linear-gradient(160deg, #1e293b 0%, #020617 100%) !important;
+    /* Card chính - Thêm bo góc và padding chuẩn */
+.dice-card {
+    background: linear-gradient(160deg, #0f172a 0%, #020617 100%) !important;
     border: 2px solid #fbbf24 !important;
-    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.15);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Xúc xắc - Căn giữa chuẩn, không bị nhảy lung tung */
 #dice-display {
-    font-size: 100px;
-    height: 120px;
-    line-height: 120px;
-    margin: 20px 0;
+    font-size: 110px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
     color: #fbbf24;
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Hiệu ứng rung lắc mạnh khi đổ */
+/* SỬA Ô INPUT (Cái ô trắng trong ảnh) */
+#betAmount {
+    width: 90%;
+    background: rgba(255, 255, 255, 0.05); /* Trong suốt nhẹ */
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    color: #fbbf24; /* Chữ vàng cùng màu xúc xắc */
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    font-size: 18px;
+    outline: none;
+    margin: 15px 0;
+    transition: 0.3s;
+}
+
+#betAmount:focus {
+    border-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+}
+
+/* Sửa nút bấm TÀI / XỈU */
+.bet-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-bet {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-tai { background: #ef4444; color: white; }
+.btn-xiu { background: #3b82f6; color: white; }
+
+.btn-bet:hover { transform: scale(1.05); filter: brightness(1.2); }
+.btn-bet:disabled { opacity: 0.5; cursor: not-allowed; transform: scale(1); }
+
+/* Hiệu ứng lắc chuyên nghiệp */
 .dice-rolling {
     animation: proDice 0.1s infinite;
-    filter: blur(1px);
-    opacity: 0.8;
+    filter: blur(2px);
 }
 
 @keyframes proDice {
-    0% { transform: scale(1.1) rotate(0deg) translate(2px, 2px); }
-    33% { transform: scale(1.1) rotate(5deg) translate(-2px, -1px); }
-    66% { transform: scale(1.1) rotate(-5deg) translate(1px, -2px); }
-    100% { transform: scale(1.1) rotate(0deg) translate(2px, 2px); }
-}
-
-.bet-stat {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 5px;
+    0% { transform: rotate(0deg) scale(1.1); }
+    25% { transform: rotate(5deg) translate(2px, -2px); }
+    75% { transform: rotate(-5deg) translate(-2px, 2px); }
+    100% { transform: rotate(0deg) scale(1.1); }
 }
 /* Khung hiển thị Trái Ác Quỷ */
 #fruit-display {
@@ -585,22 +632,19 @@
     <div class="log-msg" id="logFruit" style="margin-top: 15px; min-height: 40px;"></div>
 </div>
     <div class="game-card dice-card">
-    <h3 style="color: #f59e0b;">🎲 TÀI XỈU NHÂN PHẨM</h3>
-    <p>Chọn cửa và đặt cược số tiền bạn muốn!</p>
+    <h3 style="color: #fbbf24; margin: 0;">🎲 TÀI XỈU NHÂN PHẨM</h3>
+    <p style="color: #94a3b8; font-size: 13px;">Chọn cửa và đặt cược số xu bạn muốn</p>
     
     <div id="dice-display">🎲</div>
     
-    <div style="margin-bottom: 15px;">
-        <input type="number" id="betAmount" placeholder="Nhập số xu cược..." 
-               style="width: 80%; padding: 10px; border-radius: 8px; border: none; text-align: center;">
-    </div>
+    <input type="number" id="betAmount" placeholder="Nhập số xu cược...">
 
     <div class="bet-group">
         <button class="btn-bet btn-tai" onclick="playDice('TAI')">TÀI (4-6)</button>
         <button class="btn-bet btn-xiu" onclick="playDice('XIU')">XỈU (1-3)</button>
     </div>
     
-    <div class="log-msg" id="logDice"></div>
+    <div id="logDice" class="log-msg" style="margin-top: 15px; min-height: 40px;"></div>
 </div>
 <script>
     const firebaseConfig = {
