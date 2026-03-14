@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Thế Giới • Minh</title>
+  <title>Chat Thế Giới • Kaizen</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -55,7 +55,6 @@
       border-radius: 18px;
       line-height: 1.4;
       font-size: 15px;
-      position: relative;
       word-wrap: break-word;
     }
     .message.sent {
@@ -74,6 +73,7 @@
       font-size: 12px;
       opacity: 0.8;
       margin-bottom: 4px;
+      font-weight: bold;
     }
     .time {
       font-size: 11px;
@@ -123,63 +123,85 @@
   <div class="header">
     <div class="avatar">🌍</div>
     <div class="info">
-      <h2>Chat Thế Giới</h2>
-      <p>Realtime • Mọi người đang chat...</p>
+      <h2>Chat Thế Giới Kaizen</h2>
+      <p>Realtime • Mọi người đang online...</p>
     </div>
   </div>
 
-  <div class="chat-container" id="chatContainer"></div>
+  <div class="chat-container" id="chatContainer">
+    <!-- Tin nhắn sẽ load realtime -->
+  </div>
 
   <div class="input-area">
-    <input type="text" id="nameInput" placeholder="Tên của bạn..." style="width:120px;" value="Khách"/>
+    <input type="text" id="nameInput" placeholder="Tên bạn..." style="width:140px; margin-right:8px;" value="Khách"/>
     <input type="text" id="messageInput" placeholder="Nhập tin nhắn..."/>
     <button class="send-btn" id="sendBtn" disabled>➤</button>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK v10 compat (ổn định cho web HTML/JS) -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
   <script>
-    // Config của bạn
+    // Config dự án của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
       databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "kaizenmc-web-ba518"
     };
 
+    let db, messagesRef;
+
     // Khởi tạo Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const messagesRef = db.ref('messages');
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      messagesRef = db.ref('messages'); // đường dẫn lưu tin nhắn
+      console.log("✅ Firebase kết nối thành công!");
+    } catch (error) {
+      console.error("❌ LỖI KẾT NỐI FIREBASE:", error);
+      alert("Không kết nối được Firebase. Kiểm tra Console (F12) và config.");
+    }
 
     const chatContainer = document.getElementById('chatContainer');
     const nameInput = document.getElementById('nameInput');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
 
+    // Kích hoạt nút gửi khi có text
     messageInput.addEventListener('input', () => {
       sendBtn.disabled = !messageInput.value.trim();
     });
 
-    // Gửi tin nhắn
+    // Hàm gửi tin nhắn
     function sendMessage() {
+      if (!messagesRef) {
+        alert("Chưa kết nối Firebase!");
+        return;
+      }
+
       const name = nameInput.value.trim() || "Khách";
       const text = messageInput.value.trim();
       if (!text) return;
+
+      console.log("Gửi tin:", { name, text });
 
       messagesRef.push({
         name: name,
         text: text,
         timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        console.log("Gửi OK!");
+        messageInput.value = '';
+        sendBtn.disabled = true;
+      }).catch(err => {
+        console.error("Lỗi gửi:", err);
+        alert("Gửi thất bại: " + (err.message || "Permission denied? Kiểm tra Rules!"));
       });
-
-      messageInput.value = '';
-      sendBtn.disabled = true;
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
+    messageInput.addEventListener('keypress', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
         sendMessage();
@@ -187,31 +209,38 @@
     });
 
     // Lắng nghe tin nhắn mới (realtime)
-    messagesRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
-      const data = snapshot.val();
-      const isSent = data.name === (nameInput.value.trim() || "Khách");
+    if (messagesRef) {
+      messagesRef.orderByChild('timestamp').limitToLast(150).on('child_added', snapshot => {
+        const data = snapshot.val();
+        if (!data || !data.text) return;
 
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-      msgDiv.innerHTML = `
-        <div class="sender">${data.name}</div>
-        ${data.text}
-        <div class="time">${formatTime(data.timestamp)}</div>
-      `;
+        const isSent = data.name === (nameInput.value.trim() || "Khách");
 
-      chatContainer.appendChild(msgDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    });
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+        msgDiv.innerHTML = `
+          <div class="sender">${data.name || 'Ẩn danh'}</div>
+          ${data.text}
+          <div class="time">${formatTime(data.timestamp)}</div>
+        `;
 
-    function formatTime(timestamp) {
-      if (!timestamp) return '';
-      const date = new Date(timestamp);
-      return date.getHours().toString().padStart(2,'0') + ':' +
-             date.getMinutes().toString().padStart(2,'0');
+        chatContainer.appendChild(msgDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, err => {
+        console.error("Lỗi lắng nghe realtime:", err);
+        alert("Lỗi realtime: " + err.message);
+      });
     }
 
-    // Focus input
+    function formatTime(ts) {
+      if (!ts) return '--:--';
+      const d = new Date(ts);
+      return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+    }
+
+    // Focus input khi load
     messageInput.focus();
+    console.log("Chat app loaded! Thử gửi tin nhắn xem...");
   </script>
 
 </body>
