@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Lỗi: GEMINI_KEY chưa được thiết lập trên Vercel Environment Variables.' });
     }
 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${API_KEY}`;
 
     const systemInstruction = `
         Bạn là 'Kaizen AI', trợ lý ảo cao cấp của máy chủ Minecraft KaizenMC.
