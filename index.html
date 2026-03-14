@@ -768,6 +768,34 @@
     <div class="radar-line"></div>
     <img src="logo-kaizen.png" alt="KaizenMC Logo" class="main-avatar">
 </div>
+    <div class="glass p-6 rounded-[30px] border border-cyan-500/30 mb-8">
+    <h3 class="text-xs font-bold text-cyan-400 mb-3 uppercase tracking-tighter">🔍 Trình soi liên kết (Chỉ mình bạn thấy)</h3>
+    <div class="flex gap-2">
+        <input type="text" id="previewInput" placeholder="Dán link web cần soi..." 
+               class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white outline-none focus:border-cyan-500">
+        <button onclick="inspectLink()" id="btnInspect" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 rounded-xl text-[10px] font-bold transition-all">
+            SOI WEB
+        </button>
+    </div>
+
+    <div id="previewResult" class="mt-4 hidden animate-fade-in">
+        <div class="bg-black/40 p-2 rounded-2xl border border-white/5">
+            <div class="flex justify-between items-center mb-2 px-2">
+                <span class="text-[10px] text-gray-400 italic">Cửa sổ xem trước của bạn:</span>
+                <button onclick="closePreview()" class="text-red-400 text-[10px] hover:underline">Đóng X</button>
+            </div>
+            <div class="relative rounded-xl overflow-hidden shadow-2xl">
+                <img id="previewImg" src="" class="w-full h-auto object-cover min-h-[200px]" alt="Web Preview">
+                <div class="absolute inset-0 pointer-events-none border border-white/10 rounded-xl"></div>
+            </div>
+            <div class="mt-3 text-center">
+                <a id="previewUrl" href="#" target="_blank" class="inline-block bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-[10px] transition-all">
+                    Bấm để truy cập trang này →
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 </section>
 
 <footer>
@@ -1171,6 +1199,53 @@ allPokeCards.forEach(card => {
         glare.style.background = `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
     });
 });
+    async function inspectLink() {
+    const input = document.getElementById('previewInput');
+    const result = document.getElementById('previewResult');
+    const img = document.getElementById('previewImg');
+    const link = document.getElementById('previewUrl');
+    const btn = document.getElementById('btnInspect');
+    
+    const url = input.value.trim();
+
+    // 1. Kiểm tra link có hợp lệ không
+    if (!url.startsWith('http')) {
+        return alert("Bruh! Link phải bắt đầu bằng http:// hoặc https://");
+    }
+
+    // 2. Trạng thái chờ
+    btn.innerText = "ĐANG SOI...";
+    btn.disabled = true;
+    
+    // 3. Sử dụng Microlink API để chụp ảnh màn hình (screenshot)
+    // API này sẽ trả về ảnh chụp của trang web bạn dán vào
+    const screenshotApi = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`;
+
+    // 4. Hiển thị ảnh
+    img.src = screenshotApi;
+    link.href = url;
+
+    // Khi ảnh đã tải xong từ API
+    img.onload = () => {
+        result.classList.remove('hidden');
+        btn.innerText = "SOI WEB";
+        btn.disabled = false;
+        // Cuộn xuống để xem ảnh cho rõ
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    // Trường hợp lỗi (web chết hoặc API lỗi)
+    img.onerror = () => {
+        alert("Không thể soi web này. Có thể link bị lỗi hoặc trang web chặn robot!");
+        btn.innerText = "SOI WEB";
+        btn.disabled = false;
+    };
+}
+
+function closePreview() {
+    document.getElementById('previewResult').classList.add('hidden');
+    document.getElementById('previewImg').src = "";
+}
 </script>
 
 </body>
