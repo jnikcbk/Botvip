@@ -983,6 +983,15 @@
     <div id="loader">
     <div class="pokeball-loader"></div>
 </div>
+    <div class="music-container">
+    <button id="music-toggle" class="music-btn">
+        <span class="music-icon">🎵</span>
+        <span class="music-text">BGM: Kỷ Nguyên Pokémon</span>
+    </button>
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+</div>
 </footer>
 
 <script>
@@ -1413,26 +1422,37 @@ async function updateFooterIP() {
     }
 }
 
-// Chạy ngay khi web load
-window.addEventListener('DOMContentLoaded', updateFooterIP);
+window.addEventListener('DOMContentLoaded', () => {
+    updateFooterIP(); // Gọi hàm IP của bạn
+    
     const musicBtn = document.getElementById('music-toggle');
-const bgMusic = document.getElementById('bg-music');
-let isPlaying = false;
+    const bgMusic = document.getElementById('bg-music');
+    let isPlaying = false;
 
-// Thiết lập âm lượng vừa phải (30%)
-bgMusic.volume = 0.3;
-
-musicBtn.addEventListener('click', () => {
-    if (isPlaying) {
-        bgMusic.pause();
-        musicBtn.classList.remove('playing');
-        musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
-    } else {
-        bgMusic.play();
-        musicBtn.classList.add('playing');
-        musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
+    if (!musicBtn || !bgMusic) {
+        console.error("Lỗi: Không tìm thấy nút nhạc hoặc thẻ audio trong HTML!");
+        return;
     }
-    isPlaying = !isPlaying;
+
+    bgMusic.volume = 0.3;
+
+    musicBtn.addEventListener('click', () => {
+        if (isPlaying) {
+            bgMusic.pause();
+            musicBtn.classList.remove('playing');
+            musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
+        } else {
+            // Dùng Promise để bắt lỗi nếu link nhạc hỏng
+            bgMusic.play().then(() => {
+                musicBtn.classList.add('playing');
+                musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
+            }).catch(error => {
+                console.error("Không thể phát nhạc:", error);
+                alert("Link nhạc bị lỗi hoặc chưa load kịp, hãy thử lại!");
+            });
+        }
+        isPlaying = !isPlaying;
+    });
 });
 </script>
 
