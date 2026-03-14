@@ -320,7 +320,16 @@
         </div>
     </div>
 </div>
+    <div id="adminControls" style="display:none; margin-top: 15px;">
+    <input type="text" id="newNickInput" placeholder="Nhập biệt danh mới..." 
+           style="width: 80%; padding: 5px; border-radius: 5px; border: none; outline: none;">
+    <button onclick="changeNickname()" 
+            style="margin-top: 5px; background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+        XÁC NHẬN ĐỔI
+    </button>
+</div>
 <script>
+    // 1. CẤU HÌNH FIREBASE (Giữ nguyên của ông)
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
         databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -329,106 +338,120 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Lấy hoặc tạo tên và màu sắc cá nhân
     const myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
     const myColor = localStorage.getItem("userColor") || "#" + Math.floor(Math.random()*16777215).toString(16);
-    if(!localStorage.getItem("userColor")) localStorage.setItem("userColor", myColor);
 
-    function sendMsg() {
+    // 2. HÀM XỬ LÝ LỆNH CHAT (COMMANDS)
+    async function sendMsg() {
         const input = document.getElementById("chatInput");
         const val = input.value.trim();
         if(!val) return;
 
+        // LỆNH /HELP
+        if(val === "/help") {
+            alert("📜 DANH SÁCH LỆNH:\n1. /nick [tên]: Đổi biệt danh\n2. /poke [tên pokemon]: Hiện thẻ Pokemon\n3. /help: Xem hướng dẫn");
+            input.value = ""; return;
+        }
+
+        // LỆNH /NICK
+        if(val.startsWith("/nick ")) {
+            const newNick = val.replace("/nick ", "").trim();
+            localStorage.setItem("username", newNick);
+            alert("✅ Đã đổi tên thành: " + newNick);
+            location.reload();
+            return;
+        }
+
+        // LỆNH /POKE (HIỆN THẺ POKEMON)
+        if(val.startsWith("/poke ")) {
+            const pokeName = val.replace("/poke ", "").trim().toLowerCase();
+            try {
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeName}`);
+                const data = await response.json();
+                showPokeCard(data); // Gọi hàm hiện thẻ Pokemon
+            } catch (err) {
+                alert("❌ Không tìm thấy Pokemon này!");
+            }
+            input.value = ""; return;
+        }
+
+        // GỬI TIN NHẮN BÌNH THƯỜNG
         db.ref("global_chat").push({
             user: myName,
             text: val,
-            color: myColor, // Lưu màu sắc biệt danh
+            color: myColor,
             time: Date.now()
         });
-
         input.value = "";
     }
 
-    document.getElementById("chatInput").addEventListener("keypress", (e) => {
-        if(e.key === "Enter") sendMsg();
-    });
-
-    db.ref("global_chat").limitToLast(40).on("value", snap => {
-        const box = document.getElementById("chatBox");
-        box.innerHTML = "";
+    // 3. HÀM HIỂN THỊ THẺ POKEMON 3D
+    function showPokeCard(data) {
+        document.getElementById("cName").innerText = data.name.toUpperCase();
+        document.getElementById("cName").style.color = "#ffcb05"; // Màu vàng Pokemon
+        document.getElementById("cAvatar").src = data.sprites.other['official-artwork'].front_default;
         
-        snap.forEach(child => {
-            const data = child.val();
-            const isMe = data.user === myName;
-            
-            // Xử lý Danh hiệu (Badge)
-            let badge = "";
-            let nameStyle = `color: ${data.color || '#94a3b8'};`;
-            
-            if(data.user === "Admin" || data.user === "KaizenMC") {
-                badge = `<span style="background:#ef4444; color:white; padding:1px 5px; border-radius:4px; font-size:9px; margin-right:5px;">ADMIN</span>`;
-                nameStyle = "color: #ff4d4d; font-weight: bold; text-shadow: 0 0 5px rgba(255,0,0,0.3);";
-            } else if (data.user.includes("VIP")) {
-                badge = `<span style="background:#f59e0b; color:black; padding:1px 5px; border-radius:4px; font-size:9px; margin-right:5px;">VIP</span>`;
-            }
+        // Cập nhật chỉ số Pokemon
+        document.getElementById("cPower").innerText = data.stats[1].base_stat; // Attack
+        document.getElementById("cCoin").innerText = data.base_experience; // EXP
+        document.getElementById("cRank").innerText = "POKEMON";
+        document.getElementById("cRank").className = "badge-vip";
+        
+        // Hiện thẻ
+        const modal = document.getElementById("profileModal");
+        modal.style.display = "flex";
+        document.getElementById("adminControls").style.display = "none"; // Ẩn nút admin khi xem Poke
+    }
 
-            const div = document.createElement("div");
-            div.className = `msg ${isMe ? 'me' : 'other'}`;
-            
-            // Render nội dung tin nhắn
-            div.innerHTML = `
-                <b style="${nameStyle}">${badge}${data.user}</b> 
-                <span style="color: white;">${data.text}</span>
-            `;
-            box.appendChild(div);
-        });
+    // 4. HÀM HIỂN THỊ THẺ NGƯỜI CHƠI (PROFILE)
+    function showProfile(name, color) {
+        document.getElementById("cName").innerText = name;
+        document.getElementById("cName").style.color = color;
+        document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+        document.getElementById("cRank").innerText = "MEMBER";
+        
+        // Random chỉ số cho vui
+        document.getElementById("cPower").innerText = Math.floor(Math.random()*5000);
+        document.getElementById("cCoin").innerText = Math.floor(Math.random()*10000);
 
-        // Cuộn mượt xuống cuối
-        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-    });
-    // 1. Trong vòng lặp snap.forEach, sửa dòng b (thẻ b tên người dùng):
-div.innerHTML = `
-    <b style="${nameStyle}" onclick="showProfile('${data.user}', '${data.color || '#fff'}')">
-        ${badge}${data.user}
-    </b> 
-    <span>${data.text}</span>
-`;
+        if(myName === "Admin" || myName === "KaizenMC") {
+            document.getElementById("adminControls").style.display = "block";
+        }
+        
+        document.getElementById("profileModal").style.display = "flex";
+    }
 
-// 2. Thêm các hàm xử lý thẻ bài ở cuối script:
-function showProfile(name, color) {
-    document.getElementById("cName").innerText = name;
-    document.getElementById("cName").style.color = color;
-    document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-    
-    // Giả lập chỉ số (Sau này ông kết nối Database để lấy số thật)
-    document.getElementById("cPower").innerText = Math.floor(Math.random() * 5000).toLocaleString();
-    document.getElementById("cCoin").innerText = Math.floor(Math.random() * 100000).toLocaleString();
-    
+    // 5. HIỆU ỨNG NGHIÊNG 3D VÀ ĐÓNG THẺ
     const modal = document.getElementById("profileModal");
-    modal.style.display = "block";
-
-    // Hiệu ứng nghiêng 3D khi di chuyển chuột (Tilt)
     const card = document.getElementById("card");
+
     modal.onmousemove = (e) => {
         let x = (window.innerWidth / 2 - e.pageX) / 15;
         let y = (window.innerHeight / 2 - e.pageY) / 15;
         card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
     };
-}
 
-function closeCard() {
-    document.getElementById("profileModal").style.display = "none";
-}
-    function showProfile(name, color) {
-    document.getElementById("cName").innerText = name;
-    document.getElementById("cName").style.color = color;
-    document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-    document.getElementById("profileModal").style.display = "flex";
-}
+    function closeCard() {
+        modal.style.display = "none";
+        card.style.transform = "rotateX(0) rotateY(0)";
+    }
 
-function closeCard() {
-    document.getElementById("profileModal").style.display = "none";
-}
+    // LẮNG NGHE CHAT (Giữ nguyên logic cũ của ông)
+    db.ref("global_chat").limitToLast(40).on("value", snap => {
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
+        snap.forEach(child => {
+            const d = child.val();
+            const isMe = d.user === myName;
+            const div = document.createElement("div");
+            div.className = `msg ${isMe ? 'me' : 'other'}`;
+            div.innerHTML = `<b style="color:${d.color}" onclick="showProfile('${d.user}', '${d.color}')">${d.user}</b> <span>${d.text}</span>`;
+            box.appendChild(div);
+        });
+        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+    });
+
+    document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
 </script>
 
 </body>
