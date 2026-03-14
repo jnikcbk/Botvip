@@ -1,1 +1,1329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KaizenMC - Vũ Trụ Pokémon Minecraft</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    
+    <style>
+        /* Style cho bảng thông báo ngừng hoạt động */
+.status-offline {
+    color: #ff4d4d !important; /* Màu đỏ cảnh báo */
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; /* Hiệu ứng Neon đỏ */
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 0, 0, 0.1);
+    display: inline-block;
+    margin-top: 10px;
+    animation: alert-pulse 1.5s infinite; /* Hiệu ứng nhịp đập */
+}
+
+/* Chấm đỏ nhấp nháy */
+.blink-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 0 0 10px #ff0000;
+}
+
+/* Animation nhấp nháy cảnh báo */
+@keyframes alert-pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Đổi màu tiêu đề Kaizen khi offline (tùy chọn) */
+.kaizen-title.offline {
+    filter: grayscale(1) brightness(0.8);
+}
+        img[src*="poke-api"] {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+    image-rendering: pixelated; /* Giữ độ sắc nét cho ảnh gif pokemon pixel */
+}
+        h1 {
+    text-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4, 0 0 30px #06b6d4; /* Hiệu ứng Neon xanh */
+    /* Hoặc dùng Gradient màu */
+    background: linear-gradient(to right, #38bdf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+        .logo-wrapper {
+    width: 160px; /* Thu nhỏ lại một chút cho vừa mắt */
+    height: 160px;
+    margin: 0 auto 20px;
+    position: relative;
+    z-index: 10;
+}
+.main-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--neon-blue);
+    object-fit: cover;
+}
+        .main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid var(--neon-blue);
+}
+
+.nav-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-logo-img {
+    height: 45px; /* Thu nhỏ logo trên thanh menu */
+    border-radius: 50%;
+    filter: drop-shadow(0 0 8px var(--neon-blue));
+}
+
+.nav-logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: 2px;
+}
+
+.text-highlight {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.btn-login-small {
+    background: var(--neon-blue);
+    color: #000 !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+}
+        .logo-wrapper {
+    position: relative;
+    width: 200px; /* Chỉnh kích thước tùy ý */
+    height: 200px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    padding: 10px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.2) 0%, transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--neon-blue);
+    box-shadow: 0 0 20px var(--neon-blue);
+}
+
+.main-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: 2;
+}
+
+/* Hiệu ứng đường quét Radar */
+.radar-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, 
+        transparent 45%, 
+        var(--neon-blue) 50%, 
+        transparent 55%);
+    background-size: 100% 200%;
+    z-index: 3;
+    pointer-events: none;
+    animation: scan 4s infinite linear;
+    opacity: 0.5;
+}
+
+@keyframes scan {
+    0% { background-position: 0% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* Hiệu ứng thở (Breathing) cho Logo */
+.logo-wrapper {
+    animation: glow-pulse 2s infinite ease-in-out;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 15px var(--neon-blue); }
+    50% { box-shadow: 0 0 35px var(--neon-blue); }
+}
+        .pokemon-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 50px 20px;
+    perspective: 1000px; /* Tạo chiều sâu cho không gian 3D */
+}
+
+.poke-card {
+    width: 280px;
+    height: 400px;
+    position: relative;
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    background: var(--glass);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.poke-card img {
+    width: 180px;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    margin-bottom: 15px;
+    z-index: 2;
+}
+
+/* Ánh kim phản chiếu trên thẻ */
+.card-glare {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Màu sắc riêng cho từng hệ */
+.card-fire { --c: #ff4d00; }
+.card-water { --c: #00f0ff; }
+.card-grass { --c: #00ff88; }
+
+.poke-card:hover .card-inner {
+    border-color: var(--c);
+    box-shadow: 0 0 30px var(--c);
+}
+
+.poke-card h3 {
+    color: var(--c);
+    letter-spacing: 2px;
+    margin: 10px 0;
+}
+
+.card-rarity {
+    color: #ffd700;
+    font-size: 20px;
+    margin-top: 10px;
+}
+        /* --- SPACE METEORS --- */
+.meteor {
+    position: fixed;
+    top: -100px;
+    width: 2px;
+    height: 150px; /* Độ dài vệt sáng */
+    background: linear-gradient(to bottom, rgba(255,255,255,0), var(--neon-blue));
+    z-index: -2; /* Nằm dưới nội dung */
+    opacity: 0;
+    pointer-events: none;
+    transform: rotate(45deg); /* Góc rơi chéo */
+}
+
+@keyframes meteor-fall {
+    0% { transform: translate(0, 0) rotate(45deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(-1000px, 1000px) rotate(45deg); opacity: 0; }
+}
+        #welcome-message {
+    line-height: 1.6;
+    font-size: 15px;
+    transition: all 0.5s ease;
+    color: #ffffff !important; /* Ép chữ nội dung chính sang màu trắng */
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.greeting-time {
+    color: var(--neon-blue) !important; /* Luôn lấy màu theo hệ Pokémon đã chọn */
+    font-weight: 800;
+    text-transform: uppercase;
+    font-family: 'Orbitron', sans-serif;
+    display: block;
+    font-size: 13px; /* Tăng nhẹ kích thước */
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px var(--neon-blue); /* Thêm hiệu ứng phát sáng */
+}
+
+.trainer-name {
+    color: var(--neon-pink) !important;
+    text-shadow: 0 0 15px var(--neon-pink);
+    font-weight: 800;
+}
+
+/* Fix lỗi khung chứa bị tối quá */
+.user-box {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    color: white !important;
+}
+        /* --- MOUSE GLOW EFFECT --- */
+#mouse-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 500px; /* Độ rộng của vùng hào quang */
+    height: 500px;
+    background: radial-gradient(
+        circle, 
+        rgba(0, 240, 255, 0.15) 0%,   /* Màu neon blue mờ ở tâm */
+        rgba(0, 240, 255, 0.05) 30%,  /* Nhạt dần */
+        transparent 70%               /* Biến mất hoàn toàn */
+    );
+    border-radius: 50%;
+    pointer-events: none; /* Quan trọng: Không cản trở việc click chuột vào các nút */
+    z-index: -1; /* Nằm dưới nội dung nhưng trên hình nền */
+    transform: translate(-50%, -50%); /* Căn giữa tâm hào quang vào đầu chuột */
+    transition: background 0.5s ease; /* Để đổi màu mượt khi bạn đổi theme */
+}
+
+/* Tự động đổi màu hào quang theo Theme bạn đã làm */
+[data-theme="fire"] #mouse-glow { background: radial-gradient(circle, rgba(255, 77, 0, 0.2) 0%, transparent 70%); }
+[data-theme="grass"] #mouse-glow { background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%); }
+[data-theme="electric"] #mouse-glow { background: radial-gradient(circle, rgba(255, 255, 0, 0.2) 0%, transparent 70%); }
+        .theme-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-left: 10px;
+}
+.theme-toggle-btn:hover {
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: rotate(15deg);
+}
+        /* --- POKEMON FALLING EFFECT --- */
+.pokemon-fallback {
+    position: fixed;
+    top: -50px;
+    z-index: -1; /* Nằm dưới các nút bấm và nội dung */
+    user-select: none;
+    pointer-events: none;
+    animation: fall linear forwards;
+    filter: drop-shadow(0 0 5px var(--neon-blue));
+    opacity: 0.6;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+        .btn-platform {
+    flex: 1;
+    padding: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--border);
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.btn-platform.active {
+    background: var(--neon-pink);
+    border-color: var(--neon-pink);
+    color: white;
+}
+#media-url-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 8px;
+}
+        .music-panel {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    width: 320px;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    border-radius: 16px;
+    padding: 15px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    animation: slideUp 0.3s ease;
+    z-index: 1000;
+}
+
+.panel-header {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--neon-blue);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+#sc-url-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    margin-bottom: 8px;
+    outline: none;
+}
+
+#sc-url-input:focus {
+    border-color: var(--neon-pink);
+}
+
+.btn-change {
+    width: 100%;
+    padding: 8px;
+    background: var(--neon-blue);
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+.btn-change:hover {
+    background: white;
+}
+
+/* Giữ nguyên các class music-player-container và music-toggle-btn từ câu trả lời trước */
+        /* --- FLOATING MUSIC PLAYER --- */
+.music-player-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#sc-iframe-wrapper {
+    display: none; /* Mặc định ẩn */
+    width: 300px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid var(--neon-blue);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.music-toggle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.music-toggle-btn:hover {
+    transform: scale(1.1);
+    background: var(--neon-blue);
+    color: #000;
+}
+
+.music-toggle-btn.playing {
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(0, 240, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
+        
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      :root {
+    /* 1. Mặc định (Hệ Nước/Băng) */
+    --neon-blue: #00f0ff; --neon-purple: #c300ff; --neon-pink: #ff00aa;
+    --border: rgba(255, 255, 255, 0.12); --glass: rgba(15, 23, 42, 0.82);
+    --bg-dark: #020617; transition: 0.5s;
+}
+
+/* 2. Hệ Lửa (Fire) */
+[data-theme="fire"] { --neon-blue: #ff4d00; --neon-purple: #ffb700; --neon-pink: #ff0000; --glass: rgba(30, 10, 5, 0.85); }
+
+/* 3. Hệ Cỏ (Grass) */
+[data-theme="grass"] { --neon-blue: #00ff88; --neon-purple: #9dff00; --neon-pink: #32a852; --glass: rgba(10, 30, 15, 0.85); }
+
+/* 4. Hệ Điện (Electric) */
+[data-theme="electric"] { --neon-blue: #ffff00; --neon-purple: #ffea00; --neon-pink: #ffaa00; --glass: rgba(30, 30, 5, 0.85); }
+
+/* 5. Hệ Ma (Ghost) */
+[data-theme="ghost"] { --neon-blue: #a370f7; --neon-purple: #4e1a8e; --neon-pink: #91369b; --glass: rgba(20, 10, 35, 0.85); }
+
+/* 6. Hệ Tiên (Fairy) */
+[data-theme="fairy"] { --neon-blue: #ff99cc; --neon-purple: #ff66aa; --neon-pink: #f8bbd0; --glass: rgba(40, 15, 30, 0.85); }
+
+/* 7. Hệ Rồng (Dragon) */
+[data-theme="dragon"] { --neon-blue: #7038f8; --neon-purple: #b088ff; --neon-pink: #ff44aa; --glass: rgba(15, 10, 40, 0.85); }
+
+/* 8. Hệ Siêu Linh (Psychic) */
+[data-theme="psychic"] { --neon-blue: #f85888; --neon-purple: #da1e5b; --neon-pink: #ff80ab; --glass: rgba(35, 10, 25, 0.85); }
+
+/* 9. Hệ Độc (Poison) */
+[data-theme="poison"] { --neon-blue: #a040a0; --neon-purple: #e060e0; --neon-pink: #c080c0; --glass: rgba(25, 10, 25, 0.85); }
+
+/* 10. Hệ Bóng Tối (Dark) */
+[data-theme="dark"] { --neon-blue: #705848; --neon-purple: #483c32; --neon-pink: #a48a7b; --glass: rgba(15, 15, 15, 0.9); }
+
+/* 11. Hệ Thép (Steel) */
+[data-theme="steel"] { --neon-blue: #b8b8d0; --neon-purple: #808090; --neon-pink: #ffffff; --glass: rgba(30, 30, 40, 0.85); }
+
+/* 12. Hệ Đá (Rock) */
+[data-theme="rock"] { --neon-blue: #b8a038; --neon-purple: #e0c068; --neon-pink: #8b7355; --glass: rgba(25, 20, 10, 0.85); }
+
+/* 13. Hệ Đất (Ground) */
+[data-theme="ground"] { --neon-blue: #e0c068; --neon-purple: #8b7355; --neon-pink: #ffcc66; --glass: rgba(35, 25, 15, 0.85); }
+
+/* 14. Hệ Côn Trùng (Bug) */
+[data-theme="bug"] { --neon-blue: #a8b820; --neon-purple: #6d7815; --neon-pink: #c6d16e; --glass: rgba(25, 30, 10, 0.85); }
+
+/* 15. Hệ Chiến Đấu (Fighting) */
+[data-theme="fighting"] { --neon-blue: #c03028; --neon-purple: #7d1f1a; --neon-pink: #ff4444; --glass: rgba(40, 10, 10, 0.85); }
+
+/* 16. Hệ Bay (Flying) */
+[data-theme="flying"] { --neon-blue: #a890f0; --neon-purple: #7058f8; --neon-pink: #c6b7f5; --glass: rgba(20, 20, 45, 0.85); }
+
+/* 17. Gold Edition (Vàng Hoàng Gia) */
+[data-theme="gold"] { --neon-blue: #ffd700; --neon-purple: #ff8c00; --neon-pink: #ffffff; --glass: rgba(30, 25, 0, 0.85); }
+
+/* 18. Matrix (Lục Bảo) */
+[data-theme="matrix"] { --neon-blue: #00ff41; --neon-purple: #008f11; --neon-pink: #003b00; --glass: rgba(0, 15, 0, 0.9); }
+
+/* 19. Blood Moon (Trăng Máu) */
+[data-theme="blood"] { --neon-blue: #880808; --neon-purple: #450a0a; --neon-pink: #ff0000; --glass: rgba(20, 0, 0, 0.9); }
+
+/* 20. Vaporwave (Tím Mộng Mơ) */
+[data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+   body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: white;
+    overflow-x: hidden;
+    /* Dự phòng nếu video không load được */
+    background: #020617; 
+}
+
+/* Container Video toàn màn hình */
+.video-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.bg-video {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    filter: brightness(0.6) saturate(1.2); /* Làm video đậm chất điện ảnh hơn */
+}
+
+/* Lớp phủ chuyển màu (Gradient) để tạo chiều sâu */
+.video-overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(2,6,23,0.8) 100%);
+    z-index: -1;
+}
+
+/* Làm các box nội dung trở nên lung linh hơn trên nền động */
+.server-box, .stat-card, .music-panel {
+    background: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(15px) saturate(150%);
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+        /* --- NAVIGATION --- */
+        .main-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 72px;
+            background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(25px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; border-bottom: 1px solid var(--border); z-index: 999;
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 900;
+            text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;
+        }
+
+        .nav-logo img { height: 42px; border-radius: 50%; box-shadow: 0 0 20px var(--neon-blue); }
+
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links a {
+            color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 14px;
+            padding: 10px 14px; border-radius: 10px; transition: .25s;
+        }
+
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.08); color: var(--neon-blue); }
+
+        /* Admin Dropdown */
+        .admin-dropdown { display: none; position: relative; }
+        .admin-btn { color: #f87171 !important; font-weight: 700 !important; }
+        .dropdown-content {
+            display: none; position: absolute; top: 40px; right: 0;
+            background: #020617; border: 1px solid var(--border);
+            border-radius: 10px; min-width: 180px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .dropdown-content a { display: block; padding: 10px 14px; font-size: 14px; color: #cbd5e1; }
+        .dropdown-content a:hover { background: rgba(255, 255, 255, 0.08); color: var(--neon-blue); }
+        .admin-dropdown:hover .dropdown-content { display: block; }
+
+        .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; }
+        .hamburger span { width: 26px; height: 3px; background: white; border-radius: 3px; transition: .3s; }
+
+        @media(max-width: 900px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 72px; right: -300px; width: 260px; height: calc(100vh - 72px);
+                background: #020617; flex-direction: column; padding: 30px 20px; transition: .35s;
+                overflow-y: auto;
+            }
+            .nav-links.active { right: 0; }
+            .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .hamburger.open span:nth-child(2) { opacity: 0; }
+            .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+        }
+
+        /* --- HERO SECTION --- */
+        .container { padding: 150px 20px 80px; display: flex; justify-content: center; align-items: center; }
+        .server-box {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 60px 40px; border-radius: 24px; max-width: 650px; width: 100%;
+            text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+        .main-logo { width: 150px; border-radius: 50%; margin-bottom: 25px; box-shadow: 0 0 40px var(--neon-blue); }
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 36px; margin-bottom: 15px;
+            background: linear-gradient(90deg, #fff, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .desc { color: #94a3b8; line-height: 1.6; margin-bottom: 35px; }
+        .user-box { background: rgba(0,0,0,0.5); border: 1px solid var(--border); padding: 16px; border-radius: 14px; margin-bottom: 30px; }
+
+        .btn-group { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 25px; }
+        .btn { padding: 14px 26px; border-radius: 12px; font-weight: 700; text-decoration: none; cursor: pointer; transition: .25s; border: none; color: white; }
+        .btn-play { background: linear-gradient(135deg, var(--neon-blue), #3b82f6); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .btn-shop { background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+        .logout-btn { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--admin-red); color: #f87171; display: none; width: 100%; }
+
+        /* --- DISCORD & AI AREA --- */
+        .community-section {
+            display: flex; justify-content: center; gap: 30px; padding: 0 20px 100px; flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden; width: 100%; max-width: 420px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+        }
+
+        .card-header {
+            font-family: 'Orbitron', sans-serif; padding: 20px; text-align: center;
+            font-size: 16px; font-weight: 900; background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* AI Chat cụ thể */
+        #chatArea { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2); }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .user-msg { align-self: flex-end; background: var(--neon-blue); color: #020617; font-weight: 700; border-bottom-right-radius: 2px;}
+        .ai-msg { align-self: flex-start; background: rgba(255,255,255,0.1); border-left: 3px solid var(--neon-pink); color: #f1f5f9; border-bottom-left-radius: 2px;}
+
+        .input-group { display: flex; padding: 15px; background: rgba(0,0,0,0.3); gap: 10px; border-top: 1px solid var(--border); }
+        #msgInput {
+            flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; color: white; outline: none; font-size: 16px;
+        }
+        .btn-send { background: var(--neon-blue); color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-send:hover { transform: scale(1.05); }
+
+        footer { text-align: center; padding: 50px; border-top: 1px solid var(--border); color: #64748b; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <img src="https://media.rawg.io/media/screenshots/030/03064669f5b6b158869c3a647d95394b.jpg" class="absolute top-20 left-10 w-16 opacity-50 floating" alt="decor">
+    
+    <div id="scroll-progress-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 10002; background: rgba(255,255,255,0.05);">
+    <div id="scroll-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink)); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.1s ease-out;"></div>
+</div>
+<div id="mouse-glow"></div>
+
+
+    
+<nav class="main-nav">
+    <a href="index.html" class="nav-logo-container">
+        <img src="logo-kaizen.png" alt="KaizenMC" class="nav-logo-img">
+        <span class="nav-logo-text">KAIZEN<span class="text-highlight">MC</span></span>
+    </a>
+
+   <div class="nav-links" id="navLinks">
+    <a href="dang-ky.html">🏠 Đăng ký</a>
+    <a href="shop.html">🛒 Shop</a>
+    <a href="nap-xu.html">💎 Nạp Xu</a>
+    <a href="top-nap-thang.html">🏆 Top nạp</a>
+    <a href="luat.html">⚖️ Luật</a>
+    <a href="botdiscord.html">🤖 Bot</a>
+    <a href="choigame.html">🎮 Chơi Game</a>
+    <a href="chattg.html">🌍 Chat</a>
+
+    <div class="admin-dropdown" id="adminContainer" style="display: none;"> 
+        <a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
+        <div class="dropdown-content">
+            <a href="admin.html">📊 Admin Panel</a>
+            <a href="tatcamember.html">👥 Tất cả Member</a>
+        </div>
+    </div>
+
+    <a href="dang-nhap.html" id="loginLink" class="btn-login-small">🔑 Đăng nhập</a>
+</div>
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="server-box">
+        <img src="logo-kaizen.png" class="main-logo">
+        <h1>VŨ TRỤ POKÉMON</h1>
+        <p class="desc">Cộng đồng huấn luyện viên Pokémon lớn nhất Việt Nam.<br>Tham gia ngay để bắt đầu hành trình của bạn.</p>
+        
+        <div id="userDisplay" class="user-box">Vui lòng đăng nhập để xem thông tin</div>
+
+        <div class="btn-group">
+            <button class="btn btn-play" onclick="copyIP()">🎮 Copy IP: 180.93.103.140:26666</button>
+            <a href="shop.html" class="btn btn-shop">🛒 Vào Shop</a>
+            <a href="lichsudamua.html" class="btn btn-shop">🛍️ Lịch sử mua</a>
+        </div>
+
+        <button id="logoutBtn" class="btn logout-btn" onclick="logout()">🚪 Đăng xuất</button>
+    </div>
+</div>
+
+<section class="community-section">
+    <div class="card">
+        <div class="card-header" style="color: var(--neon-purple)">🌐 DISCORD COMMUNITY</div>
+        <iframe src="https://discord.com/widget?id=1471080386770636835&theme=dark" width="100%" height="420" frameborder="0"></iframe>
+    </div>
+
+    <div class="card" style="border-color: var(--neon-blue)">
+        <div class="card-header" style="color: var(--neon-blue)">🤖 KAIZEN ASSISTANT</div>
+        <div id="chatArea">
+            <div class="msg ai-msg">Chào Huấn luyện viên! Bạn cần giúp gì về Pokémon hôm nay?</div>
+        </div>
+        <div class="input-group">
+            <input id="msgInput" placeholder="Hỏi AI..." onkeypress="if(event.key==='Enter') sendMsg()">
+            <button class="btn-send" onclick="sendMsg()">GỬI</button>
+        </div>
+    </div>
+
+  <div class="music-player-container">
+    <button class="music-toggle-btn" id="musicBtn" onclick="toggleMusicPanel()" title="Cài đặt nhạc">🎵</button>
+
+    <div id="music-panel" class="music-panel">
+        <div class="panel-header">KAIZEN MEDIA PLAYER</div>
+        
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <button onclick="setPlatform('sc')" class="btn-platform" id="btn-sc">SoundCloud</button>
+            <button onclick="setPlatform('yt')" class="btn-platform" id="btn-yt">YouTube</button>
+            <button onclick="setPlatform('sp')" class="btn-platform" id="btn-sp">Spotify</button>
+        </div>
+
+        <input type="text" id="media-url-input" placeholder="Dán link vào đây...">
+        <button onclick="playMedia()" class="btn-change">PHÁT NGAY</button>
+        <button class="theme-toggle-btn" onclick="nextTheme()" title="Đổi Hệ Màu">
+    🎨
+</button>
+        <div id="media-wrapper" style="display: none; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-pink);">
+            <div id="player-container"></div>
+        </div>
+    </div>
+</div>
+    <div id="userDisplay" class="user-box">
+    <div id="welcome-message">Đang kết nối với vệ tinh Pokémon...</div>
+</div>
+    <div class="pokemon-cards-container">
+    <div class="poke-card card-fire">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard">
+            <h3>CHARIZARD</h3>
+            <p>Sức mạnh rực cháy từ KaizenMC</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
+
+    <div class="poke-card card-water">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png" alt="Blastoise">
+            <h3>BLASTOISE</h3>
+            <p>Pháo đài đại dương kiên cố</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
+
+    <div class="poke-card card-grass">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png" alt="Venusaur">
+            <h3>VENUSAUR</h3>
+            <p>Sức sống mãnh liệt của thiên nhiên</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
+</div>
+    <div class="logo-wrapper">
+    <div class="radar-line"></div>
+    <img src="logo-kaizen.png" alt="KaizenMC Logo" class="main-avatar">
+</div>
+    <div class="server-status-box">
+    <h2 class="kaizen-title">KAIZENMC</h2>
+    <div class="status-offline">
+        <span class="blink-dot"></span> 
+        SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
+    </div>
+</div>
+   <div class="video-bg-container">
+    <video autoplay muted loop playsinline class="bg-video">
+        <source src="https://assets.pokemon.com/video/us/watch-pokemon-tv-trailer.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay-layer"></div>
+</div>
+</section>
+
+<footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
+    <div class="footer-decor" style="margin-bottom: 15px; color: var(--neon-blue); opacity: 0.5;">
+        ✨ ——— 🌌 ——— ✨
+    </div>
+    
+    <div style="margin-bottom: 10px;">
+        <span style="color: #fff; font-weight: bold;">© 2026 KaizenMC</span> • 
+        <span style="color: var(--neon-pink);">Minhmeo & Đăng Mạnh</span>
+    </div>
+
+    <div id="user-ip-container" style="color: #cbd5e1; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">
+        HÀNH TRÌNH CỦA BẠN TỪ: <span id="user-ip-footer" style="color: var(--neon-blue); font-weight: 800;">Đang dò tìm tọa độ...</span>
+    </div>
+
+    <div class="status-offline" style="margin-top: 15px; font-size: 11px; padding: 5px 15px;">
+        <span class="blink-dot"></span> KAIZENMC HIỆN ĐANG ĐÓNG CỬA PHÙ PHÉP
+    </div>
+</footer>
+
+<script>
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+    authDomain: "kaizenmc-web-ba518.firebaseapp.com",
+    databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kaizenmc-web-ba518"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// --- LOGIC MENU & NÚT BẤM CƠ BẢN ---
+function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("active");
+    document.getElementById("hamburgerBtn").classList.toggle("open");
+}
+
+function copyIP() {
+    navigator.clipboard.writeText("180.93.103.140:26666");
+    alert("Đã copy IP server!");
+}
+
+function logout() {
+    localStorage.clear();
+    location.reload();
+}
+
+// --- LOGIC KIỂM TRA ĐĂNG NHẬP & ADMIN ---
+const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeodz@!"];
+
+function checkUserStatus() {
+    const username = localStorage.getItem("username");
+    
+    // Xử lý hiện tên người dùng
+    if (username) {
+        document.getElementById("loginLink").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "block";
+        document.getElementById("userDisplay").innerHTML = `Đang đăng nhập: <b style="color: var(--neon-blue);">${username}</b>`;
+    }
+
+    // Xử lý tab Admin
+    const adminTab = document.getElementById("adminContainer");
+    if (username && adminTab) {
+        if (ADMIN_LIST.includes(username.toLowerCase())) {
+            adminTab.style.display = "block";
+        } else {
+            adminTab.style.display = "none";
+        }
+    }
+}
+
+// Chạy hàm kiểm tra ngay khi load web
+window.onload = checkUserStatus;
+
+async function sendMsg() {
+    const input = document.getElementById("msgInput");
+    const chat = document.getElementById("chatArea");
+    const text = input.value.trim();
+    if (!text) return;
+
+    chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
+    input.value = "";
+
+    const aiDiv = document.createElement("div");
+    aiDiv.className = "msg ai-msg";
+    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
+    chat.appendChild(aiDiv);
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+
+        // Đọc dữ liệu từ server
+        const data = await response.json();
+        console.log("Dữ liệu từ Vercel:", data); // F12 để xem cái này nếu lỗi
+
+        // Kiểm tra xem có lỗi từ file chat.js trả về không
+        if (data.error) {
+            aiDiv.innerHTML = `❌ Lỗi: ${data.error}`;
+            return;
+        }
+
+        // Kiểm tra cấu trúc dữ liệu của Gemini
+        if (data.candidates && data.candidates[0].content) {
+            const botReply = data.candidates[0].content.parts[0].text;
+            aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
+        } else {
+            // Trường hợp này thường là do Key bị lỗi nhưng server vẫn trả về 200
+            aiDiv.innerHTML = `❌ Lỗi: Cấu trúc dữ liệu AI không khớp. Check Console!`;
+            console.error("Cấu trúc lạ:", data);
+        }
+    } catch (e) {
+        console.error("Lỗi Fetch:", e);
+        aiDiv.innerHTML = `❌ Lỗi kết nối server! Hãy chắc chắn đã Deploy lên Vercel.`;
+    }
+    chat.scrollTop = chat.scrollHeight;
+}
+    
+ let currentPlatform = 'sc'; // Mặc định là SoundCloud
+
+function setPlatform(pf) {
+    currentPlatform = pf;
+    // Cập nhật giao diện nút
+    document.querySelectorAll('.btn-platform').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + pf).classList.add('active');
+    
+    // Đổi placeholder cho dễ hiểu
+    const input = document.getElementById('media-url-input');
+    if(pf === 'yt') input.placeholder = "Dán link YouTube (Ví dụ: watch?v=...)";
+    else if(pf === 'sp') input.placeholder = "Dán link Spotify (Bài hát/Playlist)";
+    else input.placeholder = "Dán link SoundCloud...";
+}
+
+function toggleMusicPanel() {
+    const panel = document.getElementById("music-panel");
+    const btn = document.getElementById("musicBtn");
+    if (panel.style.display === "none" || panel.style.display === "") {
+        panel.style.display = "block";
+        btn.innerHTML = "✖";
+    } else {
+        panel.style.display = "none";
+        btn.innerHTML = "🎵";
+    }
+}
+
+function playMedia() {
+    const url = document.getElementById("media-url-input").value.trim();
+    const container = document.getElementById("player-container");
+    const wrapper = document.getElementById("media-wrapper");
+    
+    if (!url) return alert("Vui lòng dán link!");
+
+    let iframeHtml = "";
+
+    if (currentPlatform === 'yt') {
+        // Xử lý link YouTube để lấy ID
+        let videoId = "";
+        if(url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
+        else if(url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
+        
+        if(videoId) {
+            iframeHtml = `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        }
+    } 
+    else if (currentPlatform === 'sp') {
+        // Xử lý link Spotify (đổi link thường thành link embed)
+        let spUrl = url.replace("open.spotify.com/", "open.spotify.com/embed/");
+        iframeHtml = `<iframe src="${spUrl}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+    } 
+    else {
+        // SoundCloud
+        iframeHtml = `<iframe width="100%" height="120" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%2300f0ff&auto_play=true"></iframe>`;
+    }
+
+    if (iframeHtml) {
+        container.innerHTML = iframeHtml;
+        wrapper.style.display = "block";
+    } else {
+        alert("Link không đúng định dạng!");
+    }
+}
+
+// Mặc định chọn SoundCloud khi load
+window.addEventListener('DOMContentLoaded', () => {
+    setPlatform('sc');
+});
+    
+const POKEMON_ICONS = [
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif', 
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif',  
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif',  
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/150.gif', // Mewtwo
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/149.gif', // Dragonite
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/131.gif'  // Lapras
+];
+
+function createFallingPokemon() {
+    const container = document.body;
+    const pokemon = document.createElement('img');
+    
+    // Chọn ngẫu nhiên icon
+    const randomIcon = POKEMON_ICONS[Math.floor(Math.random() * POKEMON_ICONS.length)];
+    pokemon.src = randomIcon;
+    
+    // Thuộc tính CSS cho vật phẩm rơi
+    pokemon.style.position = 'fixed';
+    pokemon.style.top = '-50px';
+    pokemon.style.left = Math.random() * 100 + 'vw';
+    pokemon.style.width = (Math.random() * 20 + 20) + 'px'; // Kích thước từ 20px - 40px
+    pokemon.style.opacity = Math.random() * 0.5 + 0.5;
+    pokemon.style.zIndex = '0'; // Để hiện sau các bảng nội dung
+    pokemon.style.pointerEvents = 'none'; // Không cản trở việc click web
+    
+    // Tạo hiệu ứng rơi bằng Animation
+    const duration = Math.random() * 3 + 4; // Rơi trong 4s - 7s
+    pokemon.style.transition = `transform ${duration}s linear, opacity ${duration}s ease-in`;
+    
+    container.appendChild(pokemon);
+
+    // Bắt đầu rơi
+    setTimeout(() => {
+        pokemon.style.transform = `translateY(110vh) rotate(${Math.random() * 360}deg)`;
+        pokemon.style.opacity = '0';
+    }, 100);
+
+    // Xóa sau khi rơi xong để tránh lag máy
+    setTimeout(() => {
+        pokemon.remove();
+    }, duration * 1000);
+}
+
+// CHỈNH Ở ĐÂY: Cứ mỗi 300ms (0.3 giây) lại tạo ra 1 con mới -> Rơi cực nhiều
+setInterval(createFallingPokemon, 700);
+   // Danh sách 20 hệ màu (phải khớp với các [data-theme] trong CSS)
+const themes = [
+    "default", "fire", "grass", "electric", "ghost", 
+    "fairy", "dragon", "psychic", "poison", "dark", 
+    "steel", "rock", "ground", "bug", "fighting", 
+    "flying", "gold", "matrix", "blood", "vaporwave"
+];
+
+let currentThemeIndex = 0;
+
+function nextTheme() {
+    // 1. Tăng chỉ số và quay vòng mảng
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    const newTheme = themes[currentThemeIndex];
+    
+    // 2. Cập nhật thuộc tính trên thẻ <html>
+    if (newTheme === "default") {
+        document.documentElement.removeAttribute("data-theme");
+    } else {
+        document.documentElement.setAttribute("data-theme", newTheme);
+    }
+    
+    // 3. Lưu vào máy người dùng
+    localStorage.setItem("selectedTheme", newTheme);
+    
+    // 4. Hiển thị thông báo nhỏ (Tùy chọn - giúp người dùng biết họ đang chọn hệ gì)
+    showThemeToast(newTheme);
+    
+    console.log("Đã đổi sang hệ: " + newTheme.toUpperCase());
+}
+
+// Hàm hiển thị thông báo tên hệ màu vừa đổi
+function showThemeToast(themeName) {
+    let toast = document.getElementById("theme-toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "theme-toast";
+        toast.style.cssText = `
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid var(--neon-blue);
+            color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 12px; font-weight: bold; z-index: 10000;
+            text-transform: uppercase; letter-spacing: 2px;
+            pointer-events: none; transition: 0.3s; opacity: 0;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerText = "Hệ màu: " + themeName;
+    toast.style.opacity = "1";
+    
+    // Ẩn thông báo sau 1.5 giây
+    setTimeout(() => { toast.style.opacity = "0"; }, 1500);
+}
+
+// Khi load trang
+window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem("selectedTheme");
+    if (savedTheme && themes.includes(savedTheme)) {
+        if (savedTheme !== "default") {
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+        currentThemeIndex = themes.indexOf(savedTheme);
+    }
+});
+    const glow = document.getElementById('mouse-glow');
+
+window.addEventListener('mousemove', (e) => {
+    // Cập nhật vị trí theo tọa độ chuột
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+});
+
+// Hiệu ứng ẩn đi khi chuột rời khỏi trình duyệt và hiện lại khi vào
+window.addEventListener('mouseout', () => {
+    glow.style.opacity = '0';
+});
+window.addEventListener('mouseover', () => {
+    glow.style.opacity = '1';
+});
+   function getSincereGreeting() {
+    const hour = new Date().getHours();
+    const username = localStorage.getItem("username");
+    const display = document.getElementById("welcome-message");
+    
+    if (!display) return; // Bảo vệ nếu không tìm thấy element
+
+    let timeText = "";
+    let quote = "";
+    
+    if (hour >= 5 && hour < 11) {
+        timeText = "🌅 Bình Minh Trên Đỉnh Mt. Silver";
+        quote = "Ánh sáng rực rỡ đang xua tan bóng tối. Hãy cùng Pidgeot sải cánh bắt đầu cuộc hành trình mới, hỡi Nhà Lữ Hành!";
+    } else if (hour >= 11 && hour < 14) {
+        timeText = "☀️ Ánh Dương Rực Lửa Moltres";
+        quote = "Sức nóng của huyền thoại đang lan tỏa. Hãy tìm bóng râm của cây Oddish để nghỉ ngơi và hồi phục năng lượng cho đội hình nhé!";
+    } else if (hour >= 14 && hour < 18) {
+        timeText = "🌇 Vũ Điệu Hoàng Hôn Của Ho-Oh";
+        quote = "Bầu trời rực sắc cam huyền bí. Những bóng ma Gengar bắt đầu thức giấc... Bạn đã chuẩn bị sẵn Ultra Ball chưa?";
+    } else if (hour >= 18 && hour < 22) {
+        timeText = "🌌 Dạ Khúc Lunala Huyền Diệu";
+        quote = "Ánh trăng đang soi sáng những bí mật của KaizenMC. Cùng thư giãn bên đống lửa và kể về những chiến tích trong ngày nào.";
+    } else {
+        timeText = "✨ Lời Chúc Từ Thần Rừng Celebi";
+        quote = "Vạn vật đang chìm vào giấc ngủ sâu dưới sự bảo vệ của Jirachi. Hãy nghỉ ngơi để chuẩn bị cho huyền thoại ngày mai.";
+    }
+
+    // Ép kiểu hiển thị: màu chữ trắng, căn lề mượt mà
+    display.style.color = "#ffffff"; 
+
+    if (username) {
+        display.innerHTML = `
+            <span class="greeting-time" style="color: var(--neon-blue); font-weight: 800; display: block; margin-bottom: 5px; text-shadow: 0 0 10px var(--neon-blue);">${timeText}</span>
+            <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">
+                Chào mừng quay trở lại, <span class="trainer-name" style="color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-weight: bold;">${username}</span>!
+            </div>
+            <small style="font-style: italic; opacity: 0.9; color: #cbd5e1; display: block; line-height: 1.4;">"${quote}"</small>
+        `;
+    } else {
+        display.innerHTML = `
+            <span class="greeting-time" style="color: var(--neon-blue); font-weight: 800; display: block; margin-bottom: 5px; text-shadow: 0 0 10px var(--neon-blue);">${timeText}</span>
+            <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">Chào bạn, lữ khách xa lạ!</div>
+            <small style="font-style: italic; opacity: 0.9; color: #cbd5e1; display: block; line-height: 1.4;">"Hành trình vạn dặm luôn bắt đầu bằng việc <b>Đăng Nhập</b>. Tham gia cùng chúng mình nhé!"</small>
+        `;
+    }
+}
+
+// Chạy hàm ngay khi load trang
+window.addEventListener('DOMContentLoaded', getSincereGreeting);
+    window.onscroll = function() {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById("scroll-progress-bar").style.width = scrolled + "%";
+};
+    function createSpaceMeteor() {
+    const meteor = document.createElement('div');
+    meteor.className = 'meteor';
+    
+    // Xuất hiện ngẫu nhiên bên phải màn hình
+    meteor.style.left = Math.random() * 100 + 50 + "vw"; 
+    
+    // Tốc độ bay ngẫu nhiên (từ 1s đến 3s)
+    const duration = Math.random() * 2 + 1;
+    meteor.style.animation = `meteor-fall ${duration}s linear`;
+    
+    // Đổi màu theo theme hiện tại
+    meteor.style.background = `linear-gradient(to bottom, rgba(255,255,255,0), var(--neon-blue))`;
+
+    document.body.appendChild(meteor);
+
+    // Xóa bỏ sau khi bay xong
+    setTimeout(() => {
+        meteor.remove();
+    }, duration * 1000);
+}
+
+// Cứ 4 giây lại có một ngôi sao rơi
+setInterval(createSpaceMeteor, 4000);
+    const allPokeCards = document.querySelectorAll('.poke-card');
+
+allPokeCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = (y - centerY) / 10;
+        const rotateY = (centerX - x) / 9;
+        
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        
+        // Di chuyển ánh sáng theo chuột
+        const glare = card.querySelector('.card-glare');
+        glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.4) 0%, transparent 80%)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        const glare = card.querySelector('.card-glare');
+        glare.style.background = `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
+    });
+}); 
+
+async function updateFooterIP() {
+    const ipFooter = document.getElementById('user-ip-footer');
+    try {
+        // Gọi API lấy IP người dùng
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        
+        // Hiển thị IP người dùng vào footer
+        if(ipFooter) {
+            ipFooter.innerText = data.ip;
+        }
+    } catch (error) {
+        // Nếu lỗi (do chặn quảng cáo...) thì hiện IP Server làm dự phòng
+        if(ipFooter) {
+            ipFooter.innerText = "180.93.103.140";
+        }
+        console.log("Không thể lấy IP người dùng.");
+    }
+}
+
+// Chạy ngay khi web load
+window.addEventListener('DOMContentLoaded', updateFooterIP);
+</script>
+
+</body>
+</html>
