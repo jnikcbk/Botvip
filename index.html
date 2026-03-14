@@ -220,30 +220,37 @@
     90% { opacity: 1; }
     100% { transform: translate(-1000px, 1000px) rotate(45deg); opacity: 0; }
 }
-        .theme-toggle-btn {
-    /* Nút sẽ luôn có viền và màu chữ theo hệ màu đang chọn */
-    border-color: var(--neon-blue) !important;
-    color: var(--neon-blue) !important;
-}
         #welcome-message {
     line-height: 1.6;
     font-size: 15px;
     transition: all 0.5s ease;
+    color: #ffffff !important; /* Ép chữ nội dung chính sang màu trắng */
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .greeting-time {
-    color: var(--neon-blue);
+    color: var(--neon-blue) !important; /* Luôn lấy màu theo hệ Pokémon đã chọn */
     font-weight: 800;
     text-transform: uppercase;
     font-family: 'Orbitron', sans-serif;
     display: block;
-    font-size: 12px;
-    margin-bottom: 5px;
+    font-size: 13px; /* Tăng nhẹ kích thước */
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px var(--neon-blue); /* Thêm hiệu ứng phát sáng */
 }
 
 .trainer-name {
-    color: var(--neon-pink);
-    text-shadow: 0 0 10px var(--neon-pink);
+    color: var(--neon-pink) !important;
+    text-shadow: 0 0 15px var(--neon-pink);
+    font-weight: 800;
+}
+
+/* Fix lỗi khung chứa bị tối quá */
+.user-box {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    color: white !important;
 }
         /* --- MOUSE GLOW EFFECT --- */
 #mouse-glow {
@@ -1058,44 +1065,49 @@ window.addEventListener('mouseout', () => {
 window.addEventListener('mouseover', () => {
     glow.style.opacity = '1';
 });
-    function getSincereGreeting() {
+   function getSincereGreeting() {
     const hour = new Date().getHours();
     const username = localStorage.getItem("username");
     const display = document.getElementById("welcome-message");
     
+    if (!display) return; // Bảo vệ nếu không tìm thấy element
+
     let timeText = "";
     let quote = "";
     
-    // Thiết lập lời chào theo giờ
     if (hour >= 5 && hour < 11) {
-        timeText = "🌅 Bình minh tại KaizenMC";
-        quote = "Một ngày mới đầy năng lượng nhé, Huấn luyện viên! Hôm nay chắc chắn bạn sẽ bắt được Shiny đó.";
+        timeText = "🌅 Bình Minh Trên Đỉnh Mt. Silver";
+        quote = "Ánh sáng rực rỡ đang xua tan bóng tối. Hãy cùng Pidgeot sải cánh bắt đầu cuộc hành trình mới, hỡi Nhà Lữ Hành!";
     } else if (hour >= 11 && hour < 14) {
-        timeText = "☀️ Buổi trưa rực rỡ";
-        quote = "Nghỉ ngơi một chút rồi tiếp tục hành trình nhé. Đừng quên nạp năng lượng cho cả mình và Pokémon!";
+        timeText = "☀️ Ánh Dương Rực Lửa Moltres";
+        quote = "Sức nóng của huyền thoại đang lan tỏa. Hãy tìm bóng râm của cây Oddish để nghỉ ngơi và hồi phục năng lượng cho đội hình nhé!";
     } else if (hour >= 14 && hour < 18) {
-        timeText = "🌇 Hoàng hôn buông xuống";
-        quote = "Thời điểm vàng để các Pokémon hệ Ma xuất hiện. Sẵn sàng bóng chưa?";
+        timeText = "🌇 Vũ Điệu Hoàng Hôn Của Ho-Oh";
+        quote = "Bầu trời rực sắc cam huyền bí. Những bóng ma Gengar bắt đầu thức giấc... Bạn đã chuẩn bị sẵn Ultra Ball chưa?";
     } else if (hour >= 18 && hour < 22) {
-        timeText = "🌌 Đêm huyền ảo";
-        quote = "Cảm ơn bạn đã chọn KaizenMC để thư giãn sau một ngày dài. Cùng tạo nên những kỷ niệm đẹp nhé!";
+        timeText = "🌌 Dạ Khúc Lunala Huyền Diệu";
+        quote = "Ánh trăng đang soi sáng những bí mật của KaizenMC. Cùng thư giãn bên đống lửa và kể về những chiến tích trong ngày nào.";
     } else {
-        timeText = "✨ Sao đêm lấp lánh";
-        quote = "Muộn rồi đó, đừng thức quá khuya nhé. KaizenMC chúc bạn có những giấc mơ đẹp về vùng đất Pokémon.";
+        timeText = "✨ Lời Chúc Từ Thần Rừng Celebi";
+        quote = "Vạn vật đang chìm vào giấc ngủ sâu dưới sự bảo vệ của Jirachi. Hãy nghỉ ngơi để chuẩn bị cho huyền thoại ngày mai.";
     }
 
-    // Kiểm tra xem đã đăng nhập chưa để gọi tên
+    // Ép kiểu hiển thị: màu chữ trắng, căn lề mượt mà
+    display.style.color = "#ffffff"; 
+
     if (username) {
         display.innerHTML = `
-            <span class="greeting-time">${timeText}</span>
-            Chào mừng quay trở lại, <span class="trainer-name">${username}</span>!<br>
-            <small style="font-style: italic; opacity: 0.8;">"${quote}"</small>
+            <span class="greeting-time" style="color: var(--neon-blue); font-weight: 800; display: block; margin-bottom: 5px; text-shadow: 0 0 10px var(--neon-blue);">${timeText}</span>
+            <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">
+                Chào mừng quay trở lại, <span class="trainer-name" style="color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-weight: bold;">${username}</span>!
+            </div>
+            <small style="font-style: italic; opacity: 0.9; color: #cbd5e1; display: block; line-height: 1.4;">"${quote}"</small>
         `;
     } else {
         display.innerHTML = `
-            <span class="greeting-time">${timeText}</span>
-            Chào bạn, lữ khách xa lạ!<br>
-            <small style="font-style: italic; opacity: 0.8;">"Hành trình vạn dặm luôn bắt đầu bằng việc <b>Đăng Nhập</b>. Tham gia cùng chúng mình nhé!"</small>
+            <span class="greeting-time" style="color: var(--neon-blue); font-weight: 800; display: block; margin-bottom: 5px; text-shadow: 0 0 10px var(--neon-blue);">${timeText}</span>
+            <div style="font-size: 16px; color: #fff; margin-bottom: 5px;">Chào bạn, lữ khách xa lạ!</div>
+            <small style="font-style: italic; opacity: 0.9; color: #cbd5e1; display: block; line-height: 1.4;">"Hành trình vạn dặm luôn bắt đầu bằng việc <b>Đăng Nhập</b>. Tham gia cùng chúng mình nhé!"</small>
         `;
     }
 }
