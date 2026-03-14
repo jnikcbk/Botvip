@@ -3,73 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Kaizen • Material</title>
+  <title>Chat Thế Giới Kaizen</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
-      --md-primary: #6750a4;          /* Tím Material 3 */
+      --md-primary: #6750a4;
       --md-primary-light: #d0bcff;
-      --md-on-primary: #ffffff;
       --md-surface: #fef7ff;
       --md-surface-dim: #f5efff;
-      --md-outline: #79747e;
-      --md-shadow: rgba(0,0,0,0.08);
-      --md-elevation-1: 0 1px 3px var(--md-shadow), 0 1px 2px var(--md-shadow);
-      --md-elevation-2: 0 3px 6px var(--md-shadow), 0 3px 6px var(--md-shadow);
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Roboto', sans-serif;
       background: var(--md-surface);
       color: #1d1b20;
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: column;
     }
-
-    /* Header */
     header {
       background: linear-gradient(135deg, var(--md-primary), #5e35b1);
-      color: var(--md-on-primary);
+      color: white;
       padding: 16px 20px;
       display: flex;
       align-items: center;
       gap: 16px;
-      box-shadow: var(--md-elevation-2);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--md-primary-light);
-      color: var(--md-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      font-weight: 700;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .header-info h1 {
-      font-size: 22px;
-      font-weight: 500;
-      margin: 0;
-    }
-    .header-info p {
-      font-size: 14px;
-      opacity: 0.9;
-      margin-top: 2px;
-    }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; background: #d0bcff; color: #6750a4; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .header-info h1 { font-size: 22px; font-weight: 500; }
+    .header-info p { font-size: 14px; opacity: 0.9; }
 
-    /* Chat area */
     main {
       flex: 1;
       padding: 20px 16px;
@@ -85,16 +53,11 @@
       border-radius: 24px;
       font-size: 15.5px;
       line-height: 1.45;
-      box-shadow: var(--md-elevation-1);
-      animation: fadeIn 0.3s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .message.sent {
       align-self: flex-end;
-      background: var(--md-primary);
+      background: #6750a4;
       color: white;
       border-bottom-right-radius: 8px;
     }
@@ -104,144 +67,103 @@
       color: #1d1b20;
       border-bottom-left-radius: 8px;
     }
-    .time {
-      font-size: 11px;
-      opacity: 0.75;
-      margin-top: 6px;
-      text-align: right;
-    }
+    .sender { font-size: 13px; font-weight: 500; opacity: 0.85; margin-bottom: 4px; }
+    .time { font-size: 11px; opacity: 0.75; margin-top: 6px; text-align: right; }
 
-    /* Input area */
     .input-area {
       background: white;
       padding: 12px 20px;
       display: flex;
-      align-items: center;
       gap: 12px;
-      border-top: 1px solid var(--md-outline);
-      box-shadow: 0 -3px 10px var(--md-shadow);
+      border-top: 1px solid #79747e;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
     }
-    .input-area input {
-      flex: 1;
-      padding: 14px 20px;
-      border: 1px solid var(--md-outline);
-      border-radius: 28px;
-      font-size: 16px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .input-area input:focus {
-      border-color: var(--md-primary);
-      box-shadow: 0 0 0 3px rgba(103,80,164,0.15);
-    }
+    .input-area input#name { width: 120px; padding: 12px 16px; border-radius: 28px; border: 1px solid #79747e; }
+    .input-area input#message { flex: 1; padding: 12px 20px; border-radius: 28px; border: 1px solid #79747e; font-size: 16px; }
     .send-btn {
-      background: var(--md-primary);
+      background: #6750a4;
       color: white;
       border: none;
-      width: 52px;
-      height: 52px;
+      width: 52px; height: 52px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 26px;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: var(--md-elevation-1);
-    }
-    .send-btn:hover {
-      background: #5e35b1;
-      transform: scale(1.05);
-    }
-    .send-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="avatar">K</div>
+    <div class="avatar">🌍</div>
     <div class="header-info">
-      <h1>Chat Kaizen</h1>
-      <p>đang hoạt động • online</p>
+      <h1>Chat Thế Giới Kaizen</h1>
+      <p>Realtime • Mọi người đang chat chung</p>
     </div>
   </header>
 
-  <main id="chatContainer">
-    <div class="message received">
-      Chào Minh! Có gì vui hôm nay không? 😄
-      <div class="time">19:05</div>
-    </div>
-  </main>
+  <main id="chatContainer"></main>
 
   <div class="input-area">
-    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." autocomplete="off"/>
-    <button class="send-btn" id="sendBtn" disabled>send</button>
+    <input type="text" id="name" placeholder="Tên bạn" value="Khách">
+    <input type="text" id="message" placeholder="Nhập tin nhắn...">
+    <button class="send-btn" id="sendBtn">send</button>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+      databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kaizenmc-web-ba518"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messagesRef = db.ref('messages');
+
     const chatContainer = document.getElementById('chatContainer');
-    const messageInput = document.getElementById('messageInput');
+    const nameInput = document.getElementById('name');
+    const msgInput = document.getElementById('message');
     const sendBtn = document.getElementById('sendBtn');
 
-    messageInput.addEventListener('input', () => {
-      sendBtn.disabled = !messageInput.value.trim();
-    });
-
+    // Gửi tin
     function sendMessage() {
-      const text = messageInput.value.trim();
+      const name = nameInput.value.trim() || "Khách";
+      const text = msgInput.value.trim();
       if (!text) return;
 
-      // Tin nhắn của bạn
-      const msgSent = document.createElement('div');
-      msgSent.className = 'message sent';
-      msgSent.innerHTML = `${text}<div class="time">${getTime()}</div>`;
-      chatContainer.appendChild(msgSent);
+      messagesRef.push({
+        name: name,
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
 
-      // Fake reply sau 0.8–1.5 giây
-      setTimeout(() => {
-        const replies = [
-          "Tuyệt vời luôn! 🔥",
-          "Haha kể tiếp đi Minh ơi!",
-          "Mình đang nghĩ đây...",
-          "Cái này đỉnh thật đấy 😎",
-          "Hôm nay năng lượng cao ghê ha",
-          "Ok, note lại rồi nè!",
-          "Bạn hay thật á!"
-        ];
-        const reply = replies[Math.floor(Math.random() * replies.length)];
-
-        const msgRecv = document.createElement('div');
-        msgRecv.className = 'message received';
-        msgRecv.innerHTML = `${reply}<div class="time">${getTime()}</div>`;
-        chatContainer.appendChild(msgRecv);
-
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, 800 + Math.random() * 700);
-
-      messageInput.value = '';
-      sendBtn.disabled = true;
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      msgInput.value = '';
     }
 
     sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
+    msgInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
     });
 
-    function getTime() {
-      const now = new Date();
-      return now.getHours().toString().padStart(2, '0') + ':' +
-             now.getMinutes().toString().padStart(2, '0');
-    }
+    // Nhận tin realtime
+    messagesRef.orderByChild('timestamp').limitToLast(200).on('child_added', snapshot => {
+      const data = snapshot.val();
+      const isMine = data.name === (nameInput.value.trim() || "Khách");
 
-    messageInput.focus();
+      const div = document.createElement('div');
+      div.className = `message ${isMine ? 'sent' : 'received'}`;
+      div.innerHTML = `
+        <div class="sender">${data.name}</div>
+        ${data.text}
+        <div class="time">${new Date(data.timestamp).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}</div>
+      `;
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
   </script>
 
 </body>
