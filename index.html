@@ -328,25 +328,22 @@
     </div>
 
   <div class="music-player-container">
-    <button class="music-toggle-btn" id="musicBtn" onclick="toggleMusicPanel()" title="Cài đặt nhạc">
-        🎵
-    </button>
+    <button class="music-toggle-btn" id="musicBtn" onclick="toggleMusicPanel()" title="Cài đặt nhạc">🎵</button>
 
     <div id="music-panel" class="music-panel">
-        <div class="panel-header">Cấu hình nhạc SoundCloud</div>
-        <input type="text" id="sc-url-input" placeholder="Dán link bài hát SoundCloud vào đây...">
-        <button onclick="changeTrack()" class="btn-change">Phát nhạc</button>
+        <div class="panel-header">KAIZEN MEDIA PLAYER</div>
         
-        <div id="sc-iframe-wrapper">
-            <iframe 
-                id="sc-player"
-                width="100%" 
-                height="120" 
-                scrolling="no" 
-                frameborder="no" 
-                allow="autoplay" 
-                src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1149959719&color=%2300f0ff">
-            </iframe>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <button onclick="setPlatform('sc')" class="btn-platform" id="btn-sc">SoundCloud</button>
+            <button onclick="setPlatform('yt')" class="btn-platform" id="btn-yt">YouTube</button>
+            <button onclick="setPlatform('sp')" class="btn-platform" id="btn-sp">Spotify</button>
+        </div>
+
+        <input type="text" id="media-url-input" placeholder="Dán link vào đây...">
+        <button onclick="playMedia()" class="btn-change">PHÁT NGAY</button>
+        
+        <div id="media-wrapper" style="display: none; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-pink);">
+            <div id="player-container"></div>
         </div>
     </div>
 </div>
