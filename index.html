@@ -973,13 +973,13 @@
     <div id="loader">
     <div class="pokeball-loader"></div>
 </div>
-    <div class="music-container">
-    <button id="music-toggle" class="music-btn">
+  <div class="music-container" style="position: fixed; bottom: 25px; left: 25px; z-index: 99999;">
+    <button id="music-toggle" class="music-btn" style="background: rgba(15, 23, 42, 0.9); border: 2px solid #00f0ff; color: #00f0ff; padding: 12px 20px; border-radius: 50px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); font-weight: bold;">
         <span class="music-icon">🎵</span>
-        <span class="music-text">BGM: Kỷ Nguyên Pokémon</span>
+        <span id="music-text">BGM: Kỷ Nguyên remix</span>
     </button>
     <audio id="bg-music" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        <source src="https://www.youtube.com/watch?v=X7mf47ghfNc" type="audio/mpeg">
     </audio>
 </div>
 </footer>
@@ -1413,31 +1413,28 @@ async function updateFooterIP() {
 }
 
 
-window.addEventListener('DOMContentLoaded', () => {
-    // Gọi hàm IP hiện tại của bạn
-    if (typeof updateFooterIP === 'function') updateFooterIP();
-
+window.addEventListener('load', () => {
     const musicBtn = document.getElementById('music-toggle');
     const bgMusic = document.getElementById('bg-music');
+    const musicText = document.getElementById('music-text');
     let isPlaying = false;
 
     if (musicBtn && bgMusic) {
         bgMusic.volume = 0.3;
-
         musicBtn.addEventListener('click', () => {
             if (!isPlaying) {
-                bgMusic.play()
-                    .then(() => {
-                        isPlaying = true;
-                        musicBtn.classList.add('playing');
-                        musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
-                    })
-                    .catch(err => alert("Nhấn lại lần nữa để xác nhận phát nhạc nhé!"));
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.style.borderColor = "#00ff88";
+                    musicBtn.style.color = "#00ff88";
+                    musicText.innerText = 'BGM: Đang phát...';
+                }).catch(err => alert("Nhấn lại lần nữa để nghe nhạc nhé!"));
             } else {
                 bgMusic.pause();
                 isPlaying = false;
-                musicBtn.classList.remove('playing');
-                musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
+                musicBtn.style.borderColor = "#00f0ff";
+                musicBtn.style.color = "#00f0ff";
+                musicText.innerText = 'BGM: Tạm dừng';
             }
         });
     }
