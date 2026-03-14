@@ -943,12 +943,9 @@
     <div class="status-offline" style="margin-top: 15px; font-size: 11px; padding: 5px 15px;">
         <span class="blink-dot"></span> KAIZENMC HIỆN ĐANG ĐÓNG CỬA PHÙ PHÉP
     </div>
-    <div id="loader">
+   <div id="loader">
     <div class="pokeball-loader"></div>
-</div>
-  <div id="loader">
-    <div class="pokeball-loader"></div>
-    <p style="color: #00f0ff; margin-top: 20px; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">
+    <p style="color: #00f0ff; margin-top: 20px; font-family: 'Orbitron', sans-serif;">
         ĐANG KHỞI TẠO KỶ NGUYÊN...
     </p>
 </div>
@@ -1385,17 +1382,21 @@ async function updateFooterIP() {
 window.addEventListener('load', () => {
     const loader = document.getElementById('loader');
     
-    // Đặt thời gian chờ là 3000ms (tương đương 3 giây)
-    setTimeout(() => {
-        if (loader) {
-            loader.style.opacity = '0';
-            loader.style.visibility = 'hidden';
-            
-            // Sau khi load xong 3s, tự động phát nhạc nếu muốn
-            const bgMusic = document.getElementById('bg-music');
-            if (bgMusic) { bgMusic.volume = 0.3; }
-        }
-    }, 3000); 
+    // Ép buộc màn hình loading phải biến mất sau 3 giây
+setTimeout(function() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.opacity = '0';
+        // Đợi hiệu ứng mờ dần xong (0.5s) rồi mới ẩn hẳn
+        setTimeout(() => {
+            loader.style.display = 'none';
+        }, 500);
+    }
+}, 3000); // 3000ms = đúng 3 giây
+
+// Vẫn giữ lệnh load chính để đảm bảo web chạy mượt
+window.addEventListener('load', () => {
+    console.log("Web đã tải xong!");
 });
 
 </script>
