@@ -73,7 +73,6 @@
         .item .tag { font-size: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: #94a3b8; display: inline-block; margin-bottom: 12px; }
         
         .price-box { font-size: 22px; font-weight: 800; color: var(--neon-green); margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .price-box img { width: 20px; height: 20px; margin: 0; box-shadow: none; }
 
         .buy-btn {
             width: 100%; padding: 12px; border: none; border-radius: 14px;
@@ -81,7 +80,6 @@
             font-weight: 700; cursor: pointer; transition: 0.3s;
         }
         .buy-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
-        .buy-btn:active { transform: scale(0.98); }
 
         /* NOTIFICATION */
         #msg { position: fixed; bottom: 30px; right: 30px; padding: 15px 25px; border-radius: 12px; z-index: 1000; display: none; animation: slideIn 0.3s ease; }
@@ -96,7 +94,7 @@
 <body>
 
 <nav class="main-nav">
-    <a href="index.html" class="nav-logo"><img src="kaizen.png"> KAIZENMC SHOP</a>
+    <a href="index.html" class="nav-logo"><img src="kaizen.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/188/188918.png'"> KAIZENMC SHOP</a>
     <div class="balance-card">
         💰 <span id="balance">Đang tải...</span>
     </div>
@@ -115,8 +113,7 @@
         <div class="tab">Gói VIP</div>
     </div>
 
-    <div class="grid" id="shopGrid">
-        </div>
+    <div class="grid" id="shopGrid"></div>
 
     <div style="text-align: center; margin-top: 40px;">
         <a href="index.html" style="color: #64748b; text-decoration: none;">⬅ Quay lại trang chủ</a>
@@ -139,7 +136,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- DANH SÁCH ĐỒ (THÊM NHIỀU ĐỒ MỚI) ---
+// --- CẤU HÌNH DISCORD WEBHOOK ---
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1482038118470389780/rraUcrc9ayCoRlCCzSGoWNqbwJiUO0e5kQ5_aPQHn_zoR4qOYCBInZmx3Wu1JitI090C";
+
+// --- DANH SÁCH ĐỒ ---
 const items = [
     { name: "Arceus", price: 1200000, img: "https://img.pokemondb.net/artwork/large/arceus.jpg", tag: "Legendary" },
     { name: "Mewtwo", price: 500000, img: "https://img.pokemondb.net/artwork/large/mewtwo.jpg", tag: "Legendary" },
@@ -200,11 +200,11 @@ async function buyItem(itemName, price) {
             return;
         }
 
-        // Trừ tiền trên Firebase
+        // 1. Trừ tiền trên Firebase
         const newXu = currentXu - price;
         await userRef.update({ xu: newXu });
 
-        // Lưu lịch sử mua hàng
+        // 2. Lưu lịch sử mua hàng
         const historyRef = db.ref('history/' + username).push();
         await historyRef.set({
             item: itemName,
@@ -212,12 +212,43 @@ async function buyItem(itemName, price) {
             time: new Date().toLocaleString('vi-VN')
         });
 
-        showMsg(`✅ Mua thành công ${itemName}! đợi 30 phút để admin add.`, "success");
+        // 3. Gửi thông báo đến Discord
+        sendDiscordNotify(username, itemName, price);
+
+        showMsg(`✅ Mua thành công ${itemName}! Đợi admin xử lý.`, "success");
         updateBalance();
+        
     } catch (error) {
         console.error(error);
         showMsg("🔌 Lỗi kết nối máy chủ!", "error");
     }
+}
+
+// --- HÀM GỬI DISCORD ---
+function sendDiscordNotify(user, item, price) {
+    if(!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("DÁN_URL")) return;
+
+    const params = {
+        username: "KAIZENMC SHOP BOT",
+        avatar_url: "https://cdn-icons-png.flaticon.com/512/188/188918.png",
+        embeds: [{
+            title: "🛒 CÓ ĐƠN HÀNG MỚI!",
+            color: 3066993, // Màu xanh lá
+            description: `Người chơi **${user}** vừa mua một vật phẩm từ cửa hàng.`,
+            fields: [
+                { name: "👤 Tên nhân vật", value: user, inline: true },
+                { name: "🎁 Vật phẩm", value: item, inline: true },
+                { name: "💰 Tổng thanh toán", value: price.toLocaleString() + " Xu", inline: true }
+            ],
+            footer: { text: "Hệ thống tự động KaizenMC • " + new Date().toLocaleString('vi-VN') }
+        }]
+    };
+
+    fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+    }).catch(err => console.error("Lỗi gửi Discord:", err));
 }
 
 // --- CẬP NHẬT SỐ DƯ ---
