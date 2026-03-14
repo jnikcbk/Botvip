@@ -9,6 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     
     <style>
+        #home-list, #news-list {
+    margin-top: 20px;
+}
+#home-list p, #news-list p {
+    white-space: pre-wrap; /* Giữ nguyên xuống dòng khi admin viết */
+}
         :root {
             --primary: #3b82f6;
             --ai-green: #10b981;
@@ -80,21 +86,27 @@
 </head>
 <body>
 
-    <nav>
+   <nav>
         <button class="tab-btn active" onclick="openTab('home')">TRANG CHỦ</button>
         <button class="tab-btn" onclick="openTab('news')">TIN TỨC</button>
         <button class="tab-btn" onclick="openTab('chat')">PHÒNG CHAT</button>
     </nav>
 
     <div id="home" class="page-content active">
-        <h1>Chào mừng tới KaizenMC</h1>
-        <p>Đây là giao diện trang chủ của sếp. Sếp có thể thêm nội dung ở đây.</p>
-    </div>
+        <h1>📢 Thông Báo Chung</h1>
+        <div id="admin-home-area" class="admin-only" style="display:none; margin-bottom:20px;">
+            <textarea id="homeInput" style="width:100%; height:80px; background:#1e293b; color:white; border-radius:8px; padding:10px;" placeholder="Admin viết thông báo vào đây..."></textarea>
+            <button onclick="postAdmin('home')" style="background:#ff4757; color:white; padding:10px; border:none; border-radius:8px; margin-top:5px; cursor:pointer; width:100%;">ĐĂNG THÔNG BÁO</button>
+        </div>
+        <div id="home-list"></div> </div>
 
     <div id="news" class="page-content">
-        <h2>Bản tin Server</h2>
-        <p>Cập nhật các sự kiện mới nhất tại đây...</p>
-    </div>
+        <h2>📰 Bản tin Server</h2>
+        <div id="admin-news-area" class="admin-only" style="display:none; margin-bottom:20px;">
+            <textarea id="newsInput" style="width:100%; height:80px; background:#1e293b; color:white; border-radius:8px; padding:10px;" placeholder="Admin viết tin tức vào đây..."></textarea>
+            <button onclick="postAdmin('news')" style="background:#3b82f6; color:white; padding:10px; border:none; border-radius:8px; margin-top:5px; cursor:pointer; width:100%;">ĐĂNG TIN TỨC</button>
+        </div>
+        <div id="news-list"></div> </div>
 
     <div id="chat" class="page-content">
         <div id="chat-container">
@@ -105,7 +117,6 @@
             </div>
         </div>
     </div>
-
     <div id="profileModal" onclick="closeCard()">
         <div id="card" onclick="event.stopPropagation()">
             <div id="cRank" style="background:var(--primary); padding:4px 12px; border-radius:20px; font-size:12px; margin-bottom:15px; display:inline-block;">THÀNH VIÊN</div>
@@ -117,114 +128,146 @@
             </div>
         </div>
     </div>
-<div id="news" class="page-content">
-    <h2>📰 Tin Tức Server</h2>
-    
-    <div class="admin-input-area" style="gap:10px; margin-bottom:20px;">
-        <input type="text" id="newsInput" placeholder="Chỉ Admin mới đăng được tin tức...">
-        <button onclick="postNews()">ĐĂNG TIN</button>
-    </div>
 
-    <div id="newsList"></div>
-</div>
     <script>
-        // CẤU HÌNH FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-            databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kaizenmc-web-ba518"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    // 1. CẤU HÌNH FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+        databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "kaizenmc-web-ba518"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        // LOGIC CHUYỂN TAB
-        function openTab(tabId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
+    // 2. BIẾN HỆ THỐNG & PHÂN QUYỀN
+    const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
+    let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random() * 999);
+    let myColor = localStorage.getItem("userColor") || "#3b82f6";
+    const isAdmin = ADMIN_LIST.includes(myName);
 
-        // HỆ THỐNG CHAT
-        const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
-        let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
-        let myColor = localStorage.getItem("userColor") || "#3b82f6";
+    if (!localStorage.getItem("username")) localStorage.setItem("username", myName);
 
-        if(!localStorage.getItem("username")) localStorage.setItem("username", myName);
+    // Tự động kiểm tra quyền Admin khi trang load xong
+    document.addEventListener("DOMContentLoaded", () => {
+        const adminElements = document.querySelectorAll(".admin-input-area");
+        adminElements.forEach(el => {
+            el.style.display = isAdmin ? "block" : "none";
+        });
+        // Kích hoạt lắng nghe dữ liệu cho 2 tab thông báo
+        listenToPosts('home');
+        listenToPosts('news');
+    });
 
-        function botSay(text) {
-            const box = document.getElementById("chatBox");
-            const div = document.createElement("div");
-            div.className = "msg other bot-msg";
-            div.innerHTML = `<b style="color:#10b981;cursor:pointer;" onclick="showProfile('KaizenAI','#10b981')"><span class="bot-badge">AI</span> KaizenAI</b><div style="margin-top:5px;color:white;">${text}</div>`;
-            box.appendChild(div);
-            box.scrollTo({top: box.scrollHeight, behavior:'smooth'});
-        }
+    // 3. LOGIC CHUYỂN TAB
+    function openTab(tabId) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if (event) event.currentTarget.classList.add('active');
+    }
 
-        async function sendMsg() {
-            const input = document.getElementById("chatInput");
-            const val = input.value.trim();
-            if(!val) return;
-
-            if(val.startsWith("/")) {
-                input.value = "";
-                if(val === "/help") botSay("Lệnh hiện có: /poke [tên], /dice, /clear, /nick [tên]");
-                else if(val === "/clear") document.getElementById("chatBox").innerHTML = "";
-                else if(val === "/dice") {
-                    const n = Math.floor(Math.random()*6)+1;
-                    db.ref("global_chat").push({user:myName, text:`🎲 Đã đổ: ${n} điểm`, color:myColor, time:Date.now()});
-                }
-                return;
-            }
-
-            db.ref("global_chat").push({user:myName, text:val, color:myColor, time:Date.now()});
+    // 4. HÀM ĐĂNG BÀI DÀNH RIÊNG CHO ADMIN (Cho Tab Trang Chủ & Tin Tức)
+    function postAdmin(type) {
+        if (!isAdmin) return alert("Bạn không có quyền này!");
+        const input = document.getElementById(type + "Input");
+        const val = input.value.trim();
+        
+        if (val) {
+            db.ref("server_posts/" + type).push({
+                author: myName,
+                text: val,
+                time: Date.now()
+            });
             input.value = "";
         }
+    }
 
-        db.ref("global_chat").limitToLast(30).on("value", snap => {
-            const box = document.getElementById("chatBox");
-            box.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val();
-                const isAdmin = ADMIN_LIST.includes(d.user);
+    // Lắng nghe và hiển thị bài đăng Admin
+    function listenToPosts(type) {
+        db.ref("server_posts/" + type).on("value", snap => {
+            const container = document.getElementById(type + "-list"); // Đảm bảo HTML có id: home-list và news-list
+            if (!container) return;
+            container.innerHTML = "";
+            snap.forEach(child => {
+                const d = child.val();
                 const div = document.createElement("div");
-                div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
-                div.innerHTML = `<b style="color:${isAdmin?'#ff4757':d.color};cursor:pointer;" onclick="showProfile('${d.user}','${d.color}')">${isAdmin?'[AD] ':''}${d.user}</b><br>${d.text}`;
-                box.appendChild(div);
+                div.className = "post-card"; // Sếp có thể thêm CSS cho class này
+                div.style = "background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff4757;";
+                div.innerHTML = `<small style="color:#94a3b8;">${new Date(d.time).toLocaleString()}</small><p>${d.text}</p>`;
+                container.prepend(div);
             });
-            box.scrollTo({top: box.scrollHeight});
         });
+    }
 
-        // PROFILE & 3D
-        function showProfile(name, color) {
-            document.getElementById("cName").innerText = name;
-            document.getElementById("cName").style.color = color;
-            document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-            document.getElementById("profileModal").style.display = "flex";
+    // 5. HỆ THỐNG CHAT (CÔNG CỘNG)
+    function botSay(text) {
+        const box = document.getElementById("chatBox");
+        const div = document.createElement("div");
+        div.className = "msg other bot-msg";
+        div.innerHTML = `
+            <b style="color:#10b981;cursor:pointer;" onclick="showProfile('KaizenAI','#10b981')">
+                <span class="bot-badge">AI</span> KaizenAI
+            </b>
+            <div style="margin-top:5px;color:white;">${text}</div>`;
+        box.appendChild(div);
+        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function sendMsg() {
+        const input = document.getElementById("chatInput");
+        const val = input.value.trim();
+        if (!val) return;
+
+        // Xử lý Lệnh
+        if (val.startsWith("/")) {
+            input.value = "";
+            if (val === "/help") botSay("Lệnh hiện có: /poke [tên], /dice, /clear, /nick [tên]");
+            else if (val === "/clear") document.getElementById("chatBox").innerHTML = "";
+            else if (val === "/dice") {
+                const n = Math.floor(Math.random() * 6) + 1;
+                db.ref("global_chat").push({ user: myName, text: `🎲 Đã đổ: ${n} điểm`, color: myColor, time: Date.now() });
+            }
+            return;
         }
-        function closeCard() { document.getElementById("profileModal").style.display = "none"; }
-        
-        const card = document.getElementById("card");
-        document.getElementById("profileModal").onmousemove = (e) => {
-            let x = (window.innerWidth / 2 - e.pageX) / 15;
-            let y = (window.innerHeight / 2 - e.pageY) / 15;
-            card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
-        };
 
-        document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
-        const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
-let myName = localStorage.getItem("username") || "Khách";
+        // Gửi tin thường
+        db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
+        input.value = "";
+    }
 
-// KIỂM TRA QUYỀN: Nếu là Admin thì mới cho hiện khung nhập tin
-const isAdmin = ADMIN_LIST.includes(myName);
-
-// Tự động ẩn khung nhập nếu không phải Admin
-document.addEventListener("DOMContentLoaded", () => {
-    const adminOnlyInputs = document.querySelectorAll(".admin-input-area");
-    adminOnlyInputs.forEach(el => {
-        el.style.display = isAdmin ? "flex" : "none";
+    // Load tin nhắn Chat
+    db.ref("global_chat").limitToLast(30).on("value", snap => {
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
+        snap.forEach(c => {
+            const d = c.val();
+            const isAd = ADMIN_LIST.includes(d.user);
+            const div = document.createElement("div");
+            div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
+            div.innerHTML = `<b style="color:${isAd ? '#ff4757' : d.color};cursor:pointer;" onclick="showProfile('${d.user}','${d.color}')">${isAd ? '[AD] ' : ''}${d.user}</b><br>${d.text}`;
+            box.appendChild(div);
+        });
+        box.scrollTo({ top: box.scrollHeight });
     });
-});
-    </script>
+
+    // 6. PROFILE & HIỆU ỨNG 3D
+    function showProfile(name, color) {
+        document.getElementById("cName").innerText = name;
+        document.getElementById("cName").style.color = color;
+        document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+        document.getElementById("profileModal").style.display = "flex";
+    }
+
+    function closeCard() { document.getElementById("profileModal").style.display = "none"; }
+
+    const card = document.getElementById("card");
+    document.getElementById("profileModal").onmousemove = (e) => {
+        let x = (window.innerWidth / 2 - e.pageX) / 15;
+        let y = (window.innerHeight / 2 - e.pageY) / 15;
+        card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+    };
+
+    document.getElementById("chatInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMsg(); });
+</script>
 </body>
 </html>
