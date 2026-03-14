@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        img[src*="poke-api"] {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+    image-rendering: pixelated; /* Giữ độ sắc nét cho ảnh gif pokemon pixel */
+}
         h1 {
     text-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4, 0 0 30px #06b6d4; /* Hiệu ứng Neon xanh */
     /* Hoặc dùng Gradient màu */
@@ -768,34 +772,7 @@
     <div class="radar-line"></div>
     <img src="logo-kaizen.png" alt="KaizenMC Logo" class="main-avatar">
 </div>
-    <div class="glass p-6 rounded-[30px] border border-cyan-500/30 mb-8">
-    <h3 class="text-xs font-bold text-cyan-400 mb-3 uppercase tracking-tighter">🔍 Trình soi liên kết (Chỉ mình bạn thấy)</h3>
-    <div class="flex gap-2">
-        <input type="text" id="previewInput" placeholder="Dán link web cần soi..." 
-               class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white outline-none focus:border-cyan-500">
-        <button onclick="inspectLink()" id="btnInspect" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 rounded-xl text-[10px] font-bold transition-all">
-            SOI WEB
-        </button>
-    </div>
-
-    <div id="previewResult" class="mt-4 hidden animate-fade-in">
-        <div class="bg-black/40 p-2 rounded-2xl border border-white/5">
-            <div class="flex justify-between items-center mb-2 px-2">
-                <span class="text-[10px] text-gray-400 italic">Cửa sổ xem trước của bạn:</span>
-                <button onclick="closePreview()" class="text-red-400 text-[10px] hover:underline">Đóng X</button>
-            </div>
-            <div class="relative rounded-xl overflow-hidden shadow-2xl">
-                <img id="previewImg" src="" class="w-full h-auto object-cover min-h-[200px]" alt="Web Preview">
-                <div class="absolute inset-0 pointer-events-none border border-white/10 rounded-xl"></div>
-            </div>
-            <div class="mt-3 text-center">
-                <a id="previewUrl" href="#" target="_blank" class="inline-block bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-[10px] transition-all">
-                    Bấm để truy cập trang này →
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+    
 </section>
 
 <footer>
@@ -979,40 +956,52 @@ const POKEMON_ICONS = [
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png',
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png',
-    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif', // Pikachu
-    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif',  // Bulbasaur
-    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif',  // Charmander
-    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif'   // Squirtle
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif', 
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif',  
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif',  
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/150.gif', // Mewtwo
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/149.gif', // Dragonite
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/131.gif'  // Lapras
 ];
 
 function createFallingPokemon() {
+    const container = document.body;
     const pokemon = document.createElement('img');
+    
+    // Chọn ngẫu nhiên icon
     const randomIcon = POKEMON_ICONS[Math.floor(Math.random() * POKEMON_ICONS.length)];
-    
     pokemon.src = randomIcon;
-    pokemon.className = 'pokemon-fallback';
     
-    // Vị trí ngang ngẫu nhiên
-    pokemon.style.left = Math.random() * 100 + "vw";
+    // Thuộc tính CSS cho vật phẩm rơi
+    pokemon.style.position = 'fixed';
+    pokemon.style.top = '-50px';
+    pokemon.style.left = Math.random() * 100 + 'vw';
+    pokemon.style.width = (Math.random() * 20 + 20) + 'px'; // Kích thước từ 20px - 40px
+    pokemon.style.opacity = Math.random() * 0.5 + 0.5;
+    pokemon.style.zIndex = '0'; // Để hiện sau các bảng nội dung
+    pokemon.style.pointerEvents = 'none'; // Không cản trở việc click web
     
-    // Kích thước ngẫu nhiên (từ 20px đến 40px)
-    const size = Math.random() * 20 + 20 + "px";
-    pokemon.style.width = size;
+    // Tạo hiệu ứng rơi bằng Animation
+    const duration = Math.random() * 3 + 4; // Rơi trong 4s - 7s
+    pokemon.style.transition = `transform ${duration}s linear, opacity ${duration}s ease-in`;
     
-    // Tốc độ rơi ngẫu nhiên (từ 5s đến 10s)
-    const duration = Math.random() * 5 + 5 + "s";
-    pokemon.style.animationDuration = duration;
+    container.appendChild(pokemon);
 
-    document.body.appendChild(pokemon);
+    // Bắt đầu rơi
+    setTimeout(() => {
+        pokemon.style.transform = `translateY(110vh) rotate(${Math.random() * 360}deg)`;
+        pokemon.style.opacity = '0';
+    }, 100);
 
-    // Xóa bỏ icon sau khi rơi xong để tránh nặng máy
+    // Xóa sau khi rơi xong để tránh lag máy
     setTimeout(() => {
         pokemon.remove();
-    }, parseFloat(duration) * 1000);
+    }, duration * 1000);
 }
 
-// Cứ mỗi 1 giây (1000ms) tạo 1 con mới
-setInterval(createFallingPokemon, 1000);
+// CHỈNH Ở ĐÂY: Cứ mỗi 300ms (0.3 giây) lại tạo ra 1 con mới -> Rơi cực nhiều
+setInterval(createFallingPokemon, 700);
    // Danh sách 20 hệ màu (phải khớp với các [data-theme] trong CSS)
 const themes = [
     "default", "fire", "grass", "electric", "ghost", 
@@ -1199,53 +1188,7 @@ allPokeCards.forEach(card => {
         glare.style.background = `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
     });
 });
-    async function inspectLink() {
-    const input = document.getElementById('previewInput');
-    const result = document.getElementById('previewResult');
-    const img = document.getElementById('previewImg');
-    const link = document.getElementById('previewUrl');
-    const btn = document.getElementById('btnInspect');
-    
-    const url = input.value.trim();
 
-    // 1. Kiểm tra link có hợp lệ không
-    if (!url.startsWith('http')) {
-        return alert("Bruh! Link phải bắt đầu bằng http:// hoặc https://");
-    }
-
-    // 2. Trạng thái chờ
-    btn.innerText = "ĐANG SOI...";
-    btn.disabled = true;
-    
-    // 3. Sử dụng Microlink API để chụp ảnh màn hình (screenshot)
-    // API này sẽ trả về ảnh chụp của trang web bạn dán vào
-    const screenshotApi = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`;
-
-    // 4. Hiển thị ảnh
-    img.src = screenshotApi;
-    link.href = url;
-
-    // Khi ảnh đã tải xong từ API
-    img.onload = () => {
-        result.classList.remove('hidden');
-        btn.innerText = "SOI WEB";
-        btn.disabled = false;
-        // Cuộn xuống để xem ảnh cho rõ
-        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
-
-    // Trường hợp lỗi (web chết hoặc API lỗi)
-    img.onerror = () => {
-        alert("Không thể soi web này. Có thể link bị lỗi hoặc trang web chặn robot!");
-        btn.innerText = "SOI WEB";
-        btn.disabled = false;
-    };
-}
-
-function closePreview() {
-    document.getElementById('previewResult').classList.add('hidden');
-    document.getElementById('previewImg').src = "";
-}
 </script>
 
 </body>
