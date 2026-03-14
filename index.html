@@ -11,6 +11,96 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        .pokemon-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 50px 20px;
+    perspective: 1000px; /* Tạo chiều sâu cho không gian 3D */
+}
+
+.poke-card {
+    width: 280px;
+    height: 400px;
+    position: relative;
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    background: var(--glass);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.poke-card img {
+    width: 180px;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    margin-bottom: 15px;
+    z-index: 2;
+}
+
+/* Ánh kim phản chiếu trên thẻ */
+.card-glare {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Màu sắc riêng cho từng hệ */
+.card-fire { --c: #ff4d00; }
+.card-water { --c: #00f0ff; }
+.card-grass { --c: #00ff88; }
+
+.poke-card:hover .card-inner {
+    border-color: var(--c);
+    box-shadow: 0 0 30px var(--c);
+}
+
+.poke-card h3 {
+    color: var(--c);
+    letter-spacing: 2px;
+    margin: 10px 0;
+}
+
+.card-rarity {
+    color: #ffd700;
+    font-size: 20px;
+    margin-top: 10px;
+}
+        /* --- SPACE METEORS --- */
+.meteor {
+    position: fixed;
+    top: -100px;
+    width: 2px;
+    height: 150px; /* Độ dài vệt sáng */
+    background: linear-gradient(to bottom, rgba(255,255,255,0), var(--neon-blue));
+    z-index: -2; /* Nằm dưới nội dung */
+    opacity: 0;
+    pointer-events: none;
+    transform: rotate(45deg); /* Góc rơi chéo */
+}
+
+@keyframes meteor-fall {
+    0% { transform: translate(0, 0) rotate(45deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(-1000px, 1000px) rotate(45deg); opacity: 0; }
+}
         .theme-toggle-btn {
     /* Nút sẽ luôn có viền và màu chữ theo hệ màu đang chọn */
     border-color: var(--neon-blue) !important;
@@ -419,6 +509,9 @@
     </style>
 </head>
 <body>
+    <div id="scroll-progress-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 10002; background: rgba(255,255,255,0.05);">
+    <div id="scroll-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink)); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.1s ease-out;"></div>
+</div>
 <div id="mouse-glow"></div>
 <nav class="main-nav">
     <a href="index.html" class="nav-logo">
@@ -510,6 +603,37 @@
 </div>
     <div id="userDisplay" class="user-box">
     <div id="welcome-message">Đang kết nối với vệ tinh Pokémon...</div>
+</div>
+    <div class="pokemon-cards-container">
+    <div class="poke-card card-fire">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard">
+            <h3>CHARIZARD</h3>
+            <p>Sức mạnh rực cháy từ KaizenMC</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
+
+    <div class="poke-card card-water">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png" alt="Blastoise">
+            <h3>BLASTOISE</h3>
+            <p>Pháo đài đại dương kiên cố</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
+
+    <div class="poke-card card-grass">
+        <div class="card-inner">
+            <div class="card-glare"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png" alt="Venusaur">
+            <h3>VENUSAUR</h3>
+            <p>Sức sống mãnh liệt của thiên nhiên</p>
+            <div class="card-rarity">★★★★★</div>
+        </div>
+    </div>
 </div>
 </section>
 
@@ -852,6 +976,63 @@ window.addEventListener('mouseover', () => {
 
 // Chạy hàm ngay khi load trang
 window.addEventListener('DOMContentLoaded', getSincereGreeting);
+    window.onscroll = function() {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById("scroll-progress-bar").style.width = scrolled + "%";
+};
+    function createSpaceMeteor() {
+    const meteor = document.createElement('div');
+    meteor.className = 'meteor';
+    
+    // Xuất hiện ngẫu nhiên bên phải màn hình
+    meteor.style.left = Math.random() * 100 + 50 + "vw"; 
+    
+    // Tốc độ bay ngẫu nhiên (từ 1s đến 3s)
+    const duration = Math.random() * 2 + 1;
+    meteor.style.animation = `meteor-fall ${duration}s linear`;
+    
+    // Đổi màu theo theme hiện tại
+    meteor.style.background = `linear-gradient(to bottom, rgba(255,255,255,0), var(--neon-blue))`;
+
+    document.body.appendChild(meteor);
+
+    // Xóa bỏ sau khi bay xong
+    setTimeout(() => {
+        meteor.remove();
+    }, duration * 1000);
+}
+
+// Cứ 4 giây lại có một ngôi sao rơi
+setInterval(createSpaceMeteor, 4000);
+    const allPokeCards = document.querySelectorAll('.poke-card');
+
+allPokeCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = (y - centerY) / 10;
+        const rotateY = (centerX - x) / 10;
+        
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        
+        // Di chuyển ánh sáng theo chuột
+        const glare = card.querySelector('.card-glare');
+        glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.4) 0%, transparent 80%)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        const glare = card.querySelector('.card-glare');
+        glare.style.background = `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
+    });
+});
 </script>
 
 </body>
