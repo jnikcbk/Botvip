@@ -3,176 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaizenMC - Web Portal</title>
+    <title>KaizenMC Portal</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
-    
     <style>
-        #home-list, #news-list {
-    margin-top: 20px;
-}
-#home-list p, #news-list p {
-    white-space: pre-wrap; /* Giữ nguyên xuống dòng khi admin viết */
-}
-        :root {
-            --primary: #3b82f6;
-            --ai-green: #10b981;
-            --bg-dark: #0f172a;
-        }
+        :root { --primary: #3b82f6; --ai-green: #10b981; --bg-dark: #0f172a; --admin-red: #ff4757; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: white; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Menu Tabs */
+        nav { background: rgba(30, 41, 59, 0.9); padding: 10px; display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .tab-btn { background: none; border: none; color: #94a3b8; padding: 10px 20px; cursor: pointer; font-weight: 600; border-radius: 8px; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        body {
-            margin: 0; font-family: 'Inter', sans-serif;
-            background: var(--bg-dark); color: white;
-            height: 100vh; display: flex; flex-direction: column;
-        }
-
-        /* --- HỆ THỐNG NAVIGATION TABS --- */
-        nav {
-            background: rgba(30, 41, 59, 0.9);
-            padding: 10px; display: flex; justify-content: center;
-            gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .tab-btn {
-            background: none; border: none; color: #94a3b8;
-            padding: 10px 20px; cursor: pointer; font-weight: 600;
-            transition: 0.3s; border-radius: 8px;
-        }
-
-        .tab-btn.active {
-            background: var(--primary); color: white;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-
-        .page-content { display: none; padding: 20px; flex: 1; overflow-y: auto; }
+        .page-content { display: none; padding: 20px; flex: 1; overflow-y: auto; max-width: 700px; margin: 0 auto; width: 100%; }
         .page-content.active { display: block; }
 
-        /* --- GIAO DIỆN CHAT ĐÃ FIX LỖI --- */
-        #chat-container {
-            max-width: 600px; margin: 0 auto; height: 80vh;
-            display: flex; flex-direction: column; background: rgba(0,0,0,0.2);
-            border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        #chatBox {
-            flex: 1; padding: 20px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 12px;
-        }
-
-        .msg { max-width: 85%; padding: 12px 16px; border-radius: 15px; font-size: 14px; line-height: 1.5; animation: pop 0.2s ease; }
-        .msg.me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.1); color: #f1f5f9; border-bottom-left-radius: 2px; }
-
-        /* Style đặc biệt cho Bot AI */
-        .bot-msg {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
-            border-left: 4px solid var(--ai-green) !important;
-            width: 90% !important; height: auto !important; display: block !important;
-        }
-        .bot-badge { background: var(--ai-green); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 900; }
-
-        .input-box { padding: 15px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); }
-        .input-box input { flex: 1; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 10px; color: white; outline: none; }
-        .input-box button { background: var(--primary); border: none; padding: 0 20px; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; }
-
-        /* MODAL 3D */
-        #profileModal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        #card { width: 300px; background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #334155; transition: 0.1s; transform-style: preserve-3d; }
-
-        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* Admin Input Area */
+        .admin-input-area { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed var(--admin-red); }
+        textarea { width: 100%; height: 80px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-sizing: border-box; }
+        
+        /* Post Card */
+        .post-card { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--primary); animation: slideIn 0.3s ease; }
+        .post-card.home-style { border-left-color: var(--admin-red); }
+        
+        /* Chat Style */
+        #chatBox { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; }
+        .msg.me { align-self: flex-end; background: var(--primary); }
+        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.1); }
+        .bot-msg { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), transparent) !important; border-left: 4px solid var(--ai-green) !important; width: 90% !important; height: auto !important; display: block !important; }
+        
+        .input-box { display: flex; gap: 10px; padding: 15px; }
+        .input-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: white; }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-   <nav>
+    <nav>
         <button class="tab-btn active" onclick="openTab('home')">TRANG CHỦ</button>
         <button class="tab-btn" onclick="openTab('news')">TIN TỨC</button>
         <button class="tab-btn" onclick="openTab('chat')">PHÒNG CHAT</button>
     </nav>
 
     <div id="home" class="page-content active">
-        <h1>📢 Thông Báo Chung</h1>
-        <div id="admin-home-area" class="admin-only" style="display:none; margin-bottom:20px;">
-            <textarea id="homeInput" style="width:100%; height:80px; background:#1e293b; color:white; border-radius:8px; padding:10px;" placeholder="Admin viết thông báo vào đây..."></textarea>
-            <button onclick="postAdmin('home')" style="background:#ff4757; color:white; padding:10px; border:none; border-radius:8px; margin-top:5px; cursor:pointer; width:100%;">ĐĂNG THÔNG BÁO</button>
+        <h1>📢 Thông Báo Server</h1>
+        <div class="admin-input-area">
+            <textarea id="homeInput" placeholder="Sếp viết thông báo quan trọng vào đây..."></textarea>
+            <button onclick="postAdmin('home')" style="margin-top:10px; background:var(--admin-red); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">ĐĂNG THÔNG BÁO</button>
         </div>
         <div id="home-list"></div> </div>
 
     <div id="news" class="page-content">
-        <h2>📰 Bản tin Server</h2>
-        <div id="admin-news-area" class="admin-only" style="display:none; margin-bottom:20px;">
-            <textarea id="newsInput" style="width:100%; height:80px; background:#1e293b; color:white; border-radius:8px; padding:10px;" placeholder="Admin viết tin tức vào đây..."></textarea>
-            <button onclick="postAdmin('news')" style="background:#3b82f6; color:white; padding:10px; border:none; border-radius:8px; margin-top:5px; cursor:pointer; width:100%;">ĐĂNG TIN TỨC</button>
+        <h1>📰 Tin Tức Mới</h1>
+        <div class="admin-input-area">
+            <textarea id="newsInput" placeholder="Sếp viết tin tức cập nhật..."></textarea>
+            <button onclick="postAdmin('news')" style="margin-top:10px; background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">ĐĂNG TIN TỨC</button>
         </div>
         <div id="news-list"></div> </div>
 
     <div id="chat" class="page-content">
-        <div id="chat-container">
-            <div id="chatBox"></div>
-            <div class="input-box">
-                <input type="text" id="chatInput" placeholder="Nhập tin nhắn hoặc /help...">
-                <button onclick="sendMsg()">GỬI</button>
-            </div>
-        </div>
-    </div>
-    <div id="profileModal" onclick="closeCard()">
-        <div id="card" onclick="event.stopPropagation()">
-            <div id="cRank" style="background:var(--primary); padding:4px 12px; border-radius:20px; font-size:12px; margin-bottom:15px; display:inline-block;">THÀNH VIÊN</div>
-            <img id="cAvatar" src="" style="width:120px; margin:0 auto 15px; display:block;">
-            <h2 id="cName">Tên User</h2>
-            <div style="display:flex; justify-content:space-around; margin-top:15px;">
-                <span id="cPower">⚡ 0</span>
-                <span id="cCoin">💰 0</span>
-            </div>
+        <div id="chatBox"></div>
+        <div class="input-box">
+            <input type="text" id="chatInput" placeholder="Nhập tin nhắn hoặc /help...">
+            <button onclick="sendMsg()" style="background:var(--primary); color:white; border:none; padding:0 20px; border-radius:10px; cursor:pointer;">GỬI</button>
         </div>
     </div>
 
     <script>
-    // 1. CẤU HÌNH FIREBASE
-    const firebaseConfig = {
-        apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-        databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "kaizenmc-web-ba518"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+            databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kaizenmc-web-ba518"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    // 2. BIẾN HỆ THỐNG & PHÂN QUYỀN
-    const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
-    let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random() * 999);
-    let myColor = localStorage.getItem("userColor") || "#3b82f6";
-    const isAdmin = ADMIN_LIST.includes(myName);
+        const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
+        let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random() * 999);
+        let myColor = localStorage.getItem("userColor") || "#3b82f6";
+        const isAdmin = ADMIN_LIST.includes(myName);
 
-    if (!localStorage.getItem("username")) localStorage.setItem("username", myName);
+        if (!localStorage.getItem("username")) localStorage.setItem("username", myName);
 
-    // Tự động kiểm tra quyền Admin khi trang load xong
-    document.addEventListener("DOMContentLoaded", () => {
-        const adminElements = document.querySelectorAll(".admin-input-area");
-        adminElements.forEach(el => {
-            el.style.display = isAdmin ? "block" : "none";
+        // Chuyển Tab
+        function openTab(tabId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
+        }
+
+        // Kiểm tra quyền Admin khi load trang
+        document.addEventListener("DOMContentLoaded", () => {
+            const adminAreas = document.querySelectorAll(".admin-input-area");
+            adminAreas.forEach(el => el.style.display = isAdmin ? "block" : "none");
+            
+            listenToPosts('home');
+            listenToPosts('news');
         });
-        // Kích hoạt lắng nghe dữ liệu cho 2 tab thông báo
-        listenToPosts('home');
-        listenToPosts('news');
-    });
 
-    // 3. LOGIC CHUYỂN TAB
-    function openTab(tabId) {
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        if (event) event.currentTarget.classList.add('active');
-    }
-
-    // 4. HÀM ĐĂNG BÀI DÀNH RIÊNG CHO ADMIN (Cho Tab Trang Chủ & Tin Tức)
-    function postAdmin(type) {
-        if (!isAdmin) return alert("Bạn không có quyền này!");
-        const input = document.getElementById(type + "Input");
-        const val = input.value.trim();
-        
-        if (val) {
+        // Hàm Admin đăng bài
+        function postAdmin(type) {
+            const input = document.getElementById(type + "Input");
+            const val = input.value.trim();
+            if (!val) return;
             db.ref("server_posts/" + type).push({
                 author: myName,
                 text: val,
@@ -180,94 +117,60 @@
             });
             input.value = "";
         }
-    }
 
-    // Lắng nghe và hiển thị bài đăng Admin
-    function listenToPosts(type) {
-        db.ref("server_posts/" + type).on("value", snap => {
-            const container = document.getElementById(type + "-list"); // Đảm bảo HTML có id: home-list và news-list
-            if (!container) return;
-            container.innerHTML = "";
-            snap.forEach(child => {
-                const d = child.val();
-                const div = document.createElement("div");
-                div.className = "post-card"; // Sếp có thể thêm CSS cho class này
-                div.style = "background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff4757;";
-                div.innerHTML = `<small style="color:#94a3b8;">${new Date(d.time).toLocaleString()}</small><p>${d.text}</p>`;
-                container.prepend(div);
+        // Lấy bài đăng từ Firebase
+        function listenToPosts(type) {
+            db.ref("server_posts/" + type).on("value", snap => {
+                const container = document.getElementById(type + "-list");
+                if (!container) return;
+                container.innerHTML = "";
+                snap.forEach(child => {
+                    const d = child.val();
+                    const div = document.createElement("div");
+                    div.className = `post-card ${type === 'home' ? 'home-style' : ''}`;
+                    div.innerHTML = `
+                        <small style="color:#94a3b8;">${new Date(d.time).toLocaleString()} - bởi Admin ${d.author}</small>
+                        <p style="margin-top:10px; line-height:1.6;">${d.text}</p>
+                    `;
+                    container.prepend(div);
+                });
             });
-        });
-    }
-
-    // 5. HỆ THỐNG CHAT (CÔNG CỘNG)
-    function botSay(text) {
-        const box = document.getElementById("chatBox");
-        const div = document.createElement("div");
-        div.className = "msg other bot-msg";
-        div.innerHTML = `
-            <b style="color:#10b981;cursor:pointer;" onclick="showProfile('KaizenAI','#10b981')">
-                <span class="bot-badge">AI</span> KaizenAI
-            </b>
-            <div style="margin-top:5px;color:white;">${text}</div>`;
-        box.appendChild(div);
-        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-    }
-
-    async function sendMsg() {
-        const input = document.getElementById("chatInput");
-        const val = input.value.trim();
-        if (!val) return;
-
-        // Xử lý Lệnh
-        if (val.startsWith("/")) {
-            input.value = "";
-            if (val === "/help") botSay("Lệnh hiện có: /poke [tên], /dice, /clear, /nick [tên]");
-            else if (val === "/clear") document.getElementById("chatBox").innerHTML = "";
-            else if (val === "/dice") {
-                const n = Math.floor(Math.random() * 6) + 1;
-                db.ref("global_chat").push({ user: myName, text: `🎲 Đã đổ: ${n} điểm`, color: myColor, time: Date.now() });
-            }
-            return;
         }
 
-        // Gửi tin thường
-        db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
-        input.value = "";
-    }
+        // Hệ thống Chat
+        function sendMsg() {
+            const input = document.getElementById("chatInput");
+            const val = input.value.trim();
+            if (!val) return;
+            if (val === "/help") {
+                const box = document.getElementById("chatBox");
+                const div = document.createElement("div");
+                div.className = "msg other bot-msg";
+                div.innerHTML = `<b style="color:#10b981;">[AI] KaizenAI</b><br>Lệnh: /dice, /clear, /poke [tên]`;
+                box.appendChild(div);
+                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+                input.value = "";
+                return;
+            }
+            db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
+            input.value = "";
+        }
 
-    // Load tin nhắn Chat
-    db.ref("global_chat").limitToLast(30).on("value", snap => {
-        const box = document.getElementById("chatBox");
-        box.innerHTML = "";
-        snap.forEach(c => {
-            const d = c.val();
-            const isAd = ADMIN_LIST.includes(d.user);
-            const div = document.createElement("div");
-            div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
-            div.innerHTML = `<b style="color:${isAd ? '#ff4757' : d.color};cursor:pointer;" onclick="showProfile('${d.user}','${d.color}')">${isAd ? '[AD] ' : ''}${d.user}</b><br>${d.text}`;
-            box.appendChild(div);
+        db.ref("global_chat").limitToLast(30).on("value", snap => {
+            const box = document.getElementById("chatBox");
+            box.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                const isAd = ADMIN_LIST.includes(d.user);
+                const div = document.createElement("div");
+                div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
+                div.innerHTML = `<b style="color:${isAd ? '#ff4757' : d.color}">${isAd ? '[AD] ' : ''}${d.user}</b><br>${d.text}`;
+                box.appendChild(div);
+            });
+            box.scrollTo({ top: box.scrollHeight });
         });
-        box.scrollTo({ top: box.scrollHeight });
-    });
 
-    // 6. PROFILE & HIỆU ỨNG 3D
-    function showProfile(name, color) {
-        document.getElementById("cName").innerText = name;
-        document.getElementById("cName").style.color = color;
-        document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-        document.getElementById("profileModal").style.display = "flex";
-    }
-
-    function closeCard() { document.getElementById("profileModal").style.display = "none"; }
-
-    const card = document.getElementById("card");
-    document.getElementById("profileModal").onmousemove = (e) => {
-        let x = (window.innerWidth / 2 - e.pageX) / 15;
-        let y = (window.innerHeight / 2 - e.pageY) / 15;
-        card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
-    };
-
-    document.getElementById("chatInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMsg(); });
-</script>
+        document.getElementById("chatInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMsg(); });
+    </script>
 </body>
 </html>
