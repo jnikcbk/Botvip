@@ -560,16 +560,54 @@
 [data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-     body {
-    /* Lớp phủ màu tối để làm nổi bật nội dung chữ bên trên */
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), 
-                url('https://images8.alphacoders.com/133/1331613.png') no-repeat center center fixed;
-    /* Đảm bảo hình ảnh bao phủ toàn bộ màn hình */
-    background-size: cover;
-    /* Giữ cho hình ảnh không bị vỡ khi kéo dài */
+    body {
+    margin: 0;
+    padding: 0;
     min-height: 100vh;
-    /* Thêm hiệu ứng chuyển cảnh mượt mà khi đổi theme */
-    transition: background 0.5s ease;
+    color: white;
+    overflow-x: hidden;
+}
+
+/* Container chứa video nền */
+.video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; /* Nằm dưới cùng */
+    overflow: hidden;
+}
+
+.video-bg video {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+}
+
+/* Lớp phủ để làm mờ video giúp chữ dễ đọc hơn */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(2,6,23,0.8) 100%);
+    z-index: -1;
+}
+
+/* Hiệu ứng mờ ảo cho Kỷ nguyên Pokemon */
+.server-box {
+    backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid var(--neon-blue) !important;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
 }
         /* --- NAVIGATION --- */
         .main-nav {
@@ -822,6 +860,12 @@
         <span class="blink-dot"></span> 
         SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
     </div>
+</div>
+    <div class="video-bg">
+    <video autoplay muted loop playsinline>
+        <source src="https://assets.pokemon.com/video/us/watch-pokemon-tv-trailer.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
 </div>
 </section>
 
