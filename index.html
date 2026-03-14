@@ -983,8 +983,8 @@
     <div id="loader">
     <div class="pokeball-loader"></div>
 </div>
-    <div class="music-container">
-    <button id="music-toggle" class="music-btn">
+    <div class="music-container" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
+    <button id="music-toggle" class="music-btn" style="background: rgba(0,0,0,0.7); color: #00f0ff; border: 1px solid #00f0ff; padding: 10px; border-radius: 20px; cursor: pointer;">
         <span class="music-icon">🎵</span>
         <span class="music-text">BGM: Kỷ Nguyên Pokémon</span>
     </button>
@@ -1422,38 +1422,45 @@ async function updateFooterIP() {
     }
 }
 
+
 window.addEventListener('DOMContentLoaded', () => {
-    updateFooterIP(); // Gọi hàm IP của bạn
-    
+    // 1. Cập nhật IP Footer
+    updateFooterIP();
+
+    // 2. Xử lý nhạc nền
     const musicBtn = document.getElementById('music-toggle');
     const bgMusic = document.getElementById('bg-music');
     let isPlaying = false;
 
-    if (!musicBtn || !bgMusic) {
-        console.error("Lỗi: Không tìm thấy nút nhạc hoặc thẻ audio trong HTML!");
-        return;
+    if (musicBtn && bgMusic) {
+        bgMusic.volume = 0.3; // Âm lượng 30%
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.classList.remove('playing');
+                musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
+            } else {
+                bgMusic.play().then(() => {
+                    musicBtn.classList.add('playing');
+                    musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
+                }).catch(err => {
+                    console.log("Cần tương tác với web trước khi phát nhạc:", err);
+                    alert("Hãy nhấn lại lần nữa để phát nhạc!");
+                });
+            }
+            isPlaying = !isPlaying;
+        });
     }
-
-    bgMusic.volume = 0.3;
-
-    musicBtn.addEventListener('click', () => {
-        if (isPlaying) {
-            bgMusic.pause();
-            musicBtn.classList.remove('playing');
-            musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
-        } else {
-            // Dùng Promise để bắt lỗi nếu link nhạc hỏng
-            bgMusic.play().then(() => {
-                musicBtn.classList.add('playing');
-                musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
-            }).catch(error => {
-                console.error("Không thể phát nhạc:", error);
-                alert("Link nhạc bị lỗi hoặc chưa load kịp, hãy thử lại!");
-            });
-        }
-        isPlaying = !isPlaying;
-    });
 });
+
+// Hàm cập nhật IP (Đảm bảo có dấu đóng ngoặc ở cuối)
+function updateFooterIP() {
+    const footerIp = document.getElementById('footer-ip');
+    if (footerIp) {
+        footerIp.innerText = 'kaizenmc.net';
+    }
+}
 </script>
 
 </body>
