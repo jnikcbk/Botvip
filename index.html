@@ -384,25 +384,37 @@ async function sendMsg() {
     aiDiv.className = "msg ai-msg";
     aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
     chat.appendChild(aiDiv);
+    chat.scrollTop = chat.scrollHeight;
 
     try {
-        // GỌI ĐẾN API TRUNG GIAN CỦA VERCEL (GIẤU KEY)
         const response = await fetch('/api/chat', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text }) // Chỉ gửi tin nhắn đi
+            body: JSON.stringify({ message: text })
         });
 
+        // Đọc dữ liệu từ server
         const data = await response.json();
+        console.log("Dữ liệu từ Vercel:", data); // F12 để xem cái này nếu lỗi
 
+        // Kiểm tra xem có lỗi từ file chat.js trả về không
+        if (data.error) {
+            aiDiv.innerHTML = `❌ Lỗi: ${data.error}`;
+            return;
+        }
+
+        // Kiểm tra cấu trúc dữ liệu của Gemini
         if (data.candidates && data.candidates[0].content) {
             const botReply = data.candidates[0].content.parts[0].text;
             aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
         } else {
-            aiDiv.innerHTML = `❌ Lỗi: AI không phản hồi.`;
+            // Trường hợp này thường là do Key bị lỗi nhưng server vẫn trả về 200
+            aiDiv.innerHTML = `❌ Lỗi: Cấu trúc dữ liệu AI không khớp. Check Console!`;
+            console.error("Cấu trúc lạ:", data);
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối server!`;
+        console.error("Lỗi Fetch:", e);
+        aiDiv.innerHTML = `❌ Lỗi kết nối server! Hãy chắc chắn đã Deploy lên Vercel.`;
     }
     chat.scrollTop = chat.scrollHeight;
 }
