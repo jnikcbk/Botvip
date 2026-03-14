@@ -12,6 +12,62 @@
     
     <style>
         .logo-wrapper {
+    width: 160px; /* Thu nhỏ lại một chút cho vừa mắt */
+    height: 160px;
+    margin: 0 auto 20px;
+    position: relative;
+    z-index: 10;
+}
+.main-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--neon-blue);
+    object-fit: cover;
+}
+        .main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid var(--neon-blue);
+}
+
+.nav-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-logo-img {
+    height: 45px; /* Thu nhỏ logo trên thanh menu */
+    border-radius: 50%;
+    filter: drop-shadow(0 0 8px var(--neon-blue));
+}
+
+.nav-logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: 2px;
+}
+
+.text-highlight {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.btn-login-small {
+    background: var(--neon-blue);
+    color: #000 !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+}
+        .logo-wrapper {
     position: relative;
     width: 200px; /* Chỉnh kích thước tùy ý */
     height: 200px;
@@ -574,26 +630,30 @@
     <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
         <span></span><span></span><span></span>
     </div>
+<nav class="main-nav">
+    <a href="index.html" class="nav-logo-container">
+        <img src="logo-kaizen.png" alt="KaizenMC" class="nav-logo-img">
+        <span class="nav-logo-text">KAIZEN<span class="text-highlight">MC</span></span>
+    </a>
 
     <div class="nav-links" id="navLinks">
         <a href="dang-ky.html">🏠 Đăng ký</a>
         <a href="shop.html">🛒 Shop</a>
-        <a href="nap-xu.html">💎 Nạp Xu</a>
-        <a href="top-nap-thang.html">🏆 Top nạp</a>
-        <a href="luat.html">⚖️ Luật</a>
+        <a href="nap-xu.html">💎 Nạp</a>
+        <a href="top-nap-thang.html">🏆 Top</a>
         <a href="botdiscord.html">🤖 Bot</a>
-        <a href="choigame.html">🎮 Chơi Game</a>
-<a href="chattg.html">🌍 Chat</a>
-        
         <div class="admin-dropdown" id="adminContainer" style="display: none;"> 
-            <a href="#" class="admin-btn">🛡️ Quản trị ▾</a>
+            <a href="#" class="admin-btn">🛡️ Admin ▾</a>
             <div class="dropdown-content">
-                <a href="admin.html">📊 Admin Panel</a>
-                <a href="tatcamember.html">👥 Tất cả Member</a>
+                <a href="admin.html">📊 Panel</a>
+                <a href="tatcamember.html">👥 Members</a>
             </div>
         </div>
+        <a href="dang-nhap.html" id="loginLink" class="btn-login-small">🔑 Đăng nhập</a>
+    </div>
 
-        <a href="dang-nhap.html" id="loginLink">🔑 Đăng nhập</a>
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
     </div>
 </nav>
 
