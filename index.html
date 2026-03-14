@@ -11,6 +11,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* --- POKEMON FALLING EFFECT --- */
+.pokemon-fallback {
+    position: fixed;
+    top: -50px;
+    z-index: -1; /* Nằm dưới các nút bấm và nội dung */
+    user-select: none;
+    pointer-events: none;
+    animation: fall linear forwards;
+    filter: drop-shadow(0 0 5px var(--neon-blue));
+    opacity: 0.6;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
         .btn-platform {
     flex: 1;
     padding: 5px;
@@ -549,7 +566,46 @@ function playMedia() {
 window.addEventListener('DOMContentLoaded', () => {
     setPlatform('sc');
 });
+    
+const POKEMON_ICONS = [
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png',
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif', // Pikachu
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif',  // Bulbasaur
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif',  // Charmander
+    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif'   // Squirtle
+];
 
+function createFallingPokemon() {
+    const pokemon = document.createElement('img');
+    const randomIcon = POKEMON_ICONS[Math.floor(Math.random() * POKEMON_ICONS.length)];
+    
+    pokemon.src = randomIcon;
+    pokemon.className = 'pokemon-fallback';
+    
+    // Vị trí ngang ngẫu nhiên
+    pokemon.style.left = Math.random() * 100 + "vw";
+    
+    // Kích thước ngẫu nhiên (từ 20px đến 40px)
+    const size = Math.random() * 20 + 20 + "px";
+    pokemon.style.width = size;
+    
+    // Tốc độ rơi ngẫu nhiên (từ 5s đến 10s)
+    const duration = Math.random() * 5 + 5 + "s";
+    pokemon.style.animationDuration = duration;
+
+    document.body.appendChild(pokemon);
+
+    // Xóa bỏ icon sau khi rơi xong để tránh nặng máy
+    setTimeout(() => {
+        pokemon.remove();
+    }, parseFloat(duration) * 1000);
+}
+
+// Cứ mỗi 1 giây (1000ms) tạo 1 con mới
+setInterval(createFallingPokemon, 1000);
 </script>
 
 </body>
