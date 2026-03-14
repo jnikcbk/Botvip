@@ -11,6 +11,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        h1 {
+    text-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4, 0 0 30px #06b6d4; /* Hiệu ứng Neon xanh */
+    /* Hoặc dùng Gradient màu */
+    background: linear-gradient(to right, #38bdf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
         .logo-wrapper {
     width: 160px; /* Thu nhỏ lại một chút cho vừa mắt */
     height: 160px;
@@ -503,14 +510,13 @@
 [data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #020617;
-            color: #f1f5f9;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
+       body {
+    /* Dùng hình ảnh phong cảnh Pokémon mờ làm nền */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80'); /* Thay link ảnh đẹp vào đây */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Giữ nền cố định khi cuộn */
+}
         /* --- NAVIGATION --- */
         .main-nav {
             position: fixed; top: 0; left: 0; right: 0; height: 72px;
@@ -621,6 +627,8 @@
     </style>
 </head>
 <body>
+    <img src="https://media.rawg.io/media/screenshots/030/03064669f5b6b158869c3a647d95394b.jpg" class="absolute top-20 left-10 w-16 opacity-50 floating" alt="decor">
+    
     <div id="scroll-progress-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 10002; background: rgba(255,255,255,0.05);">
     <div id="scroll-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink)); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.1s ease-out;"></div>
 </div>
