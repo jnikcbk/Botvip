@@ -9,6 +9,76 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Bảng hiện thẻ bài */
+#profileModal {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    perspective: 1000px; /* Tạo độ sâu 3D */
+}
+
+.card-3d {
+    width: 280px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transition: transform 0.1s; /* Phục vụ hiệu ứng nghiêng */
+    color: white;
+}
+
+.card-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    margin-bottom: 10px;
+    background: #334155;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.stat-item {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.stat-value { color: #fbbf24; font-weight: bold; display: block; }
+.stat-label { font-size: 10px; color: #94a3b8; }
+
+.close-card {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #94a3b8;
+    cursor: pointer;
+}
+        /* Màu sắc biệt danh theo Rank */
+.name-admin { color: #ff4757; font-weight: bold; text-shadow: 0 0 8px rgba(255, 71, 87, 0.5); }
+.name-vip { color: #ffa502; font-weight: bold; }
+.name-member { color: #70a1ff; }
+.name-guest { color: #94a3b8; }
+
+/* Tag hiển thị bên cạnh tên */
+.badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-right: 5px;
+    vertical-align: middle;
+    text-transform: uppercase;
+}
+.badge-admin { background: #ff4757; color: white; }
+.badge-vip { background: #ffa502; color: black; }
         .chat-wrapper {
     background: rgba(30, 41, 59, 0.7); /* Giảm độ đục */
     backdrop-filter: blur(12px); /* Làm mờ hậu cảnh */
@@ -206,6 +276,25 @@
     <span onclick="document.getElementById('chatInput').value += '🔥'">🔥</span>
     <span onclick="document.getElementById('chatInput').value += '💎'">💎</span>
 </div>
+    <div id="profileModal" onclick="closeCard()">
+    <div class="card-3d" id="card">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kaizen" class="card-avatar" id="cAvatar">
+        <h3 id="cName" style="margin: 10px 0 5px;">User Name</h3>
+        <span id="cRank" class="badge badge-vip">MEMBER</span>
+        
+        <div class="stat-grid">
+            <div class="stat-item">
+                <span class="stat-value" id="cPower">1,250</span>
+                <span class="stat-label">SỨC MẠNH</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="cCoin">50,000</span>
+                <span class="stat-label">XU</span>
+            </div>
+        </div>
+        <div class="close-card">Nhấn để đóng</div>
+    </div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -215,7 +304,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Lấy hoặc tạo tên và màu sắc cá nhân
     const myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
+    const myColor = localStorage.getItem("userColor") || "#" + Math.floor(Math.random()*16777215).toString(16);
+    if(!localStorage.getItem("userColor")) localStorage.setItem("userColor", myColor);
 
     function sendMsg() {
         const input = document.getElementById("chatInput");
@@ -225,6 +317,7 @@
         db.ref("global_chat").push({
             user: myName,
             text: val,
+            color: myColor, // Lưu màu sắc biệt danh
             time: Date.now()
         });
 
@@ -243,14 +336,64 @@
             const data = child.val();
             const isMe = data.user === myName;
             
+            // Xử lý Danh hiệu (Badge)
+            let badge = "";
+            let nameStyle = `color: ${data.color || '#94a3b8'};`;
+            
+            if(data.user === "Admin" || data.user === "KaizenMC") {
+                badge = `<span style="background:#ef4444; color:white; padding:1px 5px; border-radius:4px; font-size:9px; margin-right:5px;">ADMIN</span>`;
+                nameStyle = "color: #ff4d4d; font-weight: bold; text-shadow: 0 0 5px rgba(255,0,0,0.3);";
+            } else if (data.user.includes("VIP")) {
+                badge = `<span style="background:#f59e0b; color:black; padding:1px 5px; border-radius:4px; font-size:9px; margin-right:5px;">VIP</span>`;
+            }
+
             const div = document.createElement("div");
             div.className = `msg ${isMe ? 'me' : 'other'}`;
-            div.innerHTML = `<b>${data.user}</b> ${data.text}`;
+            
+            // Render nội dung tin nhắn
+            div.innerHTML = `
+                <b style="${nameStyle}">${badge}${data.user}</b> 
+                <span style="color: white;">${data.text}</span>
+            `;
             box.appendChild(div);
         });
 
-        box.scrollTop = box.scrollHeight;
+        // Cuộn mượt xuống cuối
+        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
     });
+    // 1. Trong vòng lặp snap.forEach, sửa dòng b (thẻ b tên người dùng):
+div.innerHTML = `
+    <b style="${nameStyle}" cursor:pointer" onclick="showProfile('${data.user}', '${data.color}')">
+        ${badge}${data.user}
+    </b> 
+    <span style="color: white;">${data.text}</span>
+`;
+
+// 2. Thêm các hàm xử lý thẻ bài ở cuối script:
+function showProfile(name, color) {
+    document.getElementById("cName").innerText = name;
+    document.getElementById("cName").style.color = color;
+    document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+    
+    // Giả lập chỉ số (Sau này ông kết nối Database để lấy số thật)
+    document.getElementById("cPower").innerText = Math.floor(Math.random() * 5000).toLocaleString();
+    document.getElementById("cCoin").innerText = Math.floor(Math.random() * 100000).toLocaleString();
+    
+    const modal = document.getElementById("profileModal");
+    modal.style.display = "block";
+
+    // Hiệu ứng nghiêng 3D khi di chuyển chuột (Tilt)
+    const card = document.getElementById("card");
+    modal.onmousemove = (e) => {
+        let x = (window.innerWidth / 2 - e.pageX) / 15;
+        let y = (window.innerHeight / 2 - e.pageY) / 15;
+        card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+    };
+}
+
+function closeCard() {
+    document.getElementById("profileModal").style.display = "none";
+}
 </script>
 
 </body>
