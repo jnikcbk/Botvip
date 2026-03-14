@@ -11,43 +11,64 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-        #loader {
+      #loader {
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background: #020617;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
+    z-index: 100000;
+    transition: opacity 0.8s ease, visibility 0.8s;
 }
 
 .pokeball-loader {
     width: 60px;
     height: 60px;
-    background: #fff;
-    border: 3px solid #333;
+    background: linear-gradient(to bottom, #ff1c1c 50%, #fff 50%);
+    border: 4px solid #333;
     border-radius: 50%;
     position: relative;
-    animation: spin 1s linear infinite;
+    /* Hiệu ứng rung rinh thay vì chỉ xoay */
+    animation: shake 1.25s cubic-bezier(.36,.07,.19,.97) infinite;
 }
 
+/* Vạch ngang và nút bấm ở giữa quả cầu */
 .pokeball-loader::after {
     content: "";
     position: absolute;
     width: 60px;
-    height: 3px;
+    height: 4px;
     background: #333;
-    top: 28px;
-    left: -3px;
+    top: 24px;
+    left: -4px;
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+.pokeball-loader::before {
+    content: "";
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 50%;
+    top: 18px;
+    left: 18px;
+    z-index: 10;
 }
-       
+
+@keyframes shake {
+    0% { transform: rotate(0); }
+    20% { transform: rotate(-20deg); }
+    40% { transform: rotate(20deg); }
+    60% { transform: rotate(-10deg); }
+    80% { transform: rotate(10deg); }
+    100% { transform: rotate(0); }
+}
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
     color: #ff4d4d !important; /* Màu đỏ cảnh báo */
@@ -925,7 +946,12 @@
     <div id="loader">
     <div class="pokeball-loader"></div>
 </div>
-  
+  <div id="loader">
+    <div class="pokeball-loader"></div>
+    <p style="color: #00f0ff; margin-top: 20px; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">
+        ĐANG KHỞI TẠO KỶ NGUYÊN...
+    </p>
+</div>
 </footer>
 
 <script>
@@ -1356,7 +1382,21 @@ async function updateFooterIP() {
     }
 }
 
-
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    
+    // Đặt thời gian chờ là 3000ms (tương đương 3 giây)
+    setTimeout(() => {
+        if (loader) {
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden';
+            
+            // Sau khi load xong 3s, tự động phát nhạc nếu muốn
+            const bgMusic = document.getElementById('bg-music');
+            if (bgMusic) { bgMusic.volume = 0.3; }
+        }
+    }, 3000); 
+});
 
 </script>
 
