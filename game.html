@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon Catcher</title>
+    <title>Pokemon Catcher - Thực tế</title>
     <style>
-        body { margin: 0; background: #2d3436; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Arial', sans-serif; overflow: hidden; }
-        canvas { background: url('https://img.freepik.com/free-vector/pixel-art-grass-background_52683-113063.jpg'); background-size: cover; border: 4px solid #f1c40f; border-radius: 10px; cursor: crosshair; }
-        .info { color: white; margin-bottom: 10px; text-align: center; }
-        h1 { color: #ffcb05; text-shadow: 2px 2px #3b4cca; margin: 0; }
+        body { margin: 0; background: #2d3436; display: flex; flex-direction: column; align-items: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
+        canvas { background: url('https://img.freepik.com/free-vector/pixel-art-grass-background_52683-113063.jpg'); background-size: cover; border: 5px solid #ffcb05; border-radius: 15px; cursor: url('https://cur.cursors-4u.net/games/gam-13/gam1214.cur'), auto; }
+        .ui { color: white; text-align: center; padding: 10px; }
+        h1 { color: #ffcb05; text-shadow: 2px 2px #3b4cca; margin: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="info">
-        <h1>POKEMON CATCHER</h1>
-        <p>Bấm vào các vòng tròn Pokemon để bắt! Đừng để chúng biến mất.</p>
+    <div class="ui">
+        <h1>POKEMON GO WEB</h1>
+        <p>Bắt Pokemon hiếm để được nhiều điểm hơn!</p>
         <h2>Điểm: <span id="score">0</span> | Thời gian: <span id="timer">30</span>s</h2>
     </div>
     <canvas id="gameCanvas"></canvas>
@@ -26,36 +26,41 @@
         const scoreEl = document.getElementById("score");
         const timerEl = document.getElementById("timer");
 
-        canvas.width = 600;
-        canvas.height = 400;
+        canvas.width = 700;
+        canvas.height = 450;
 
         let score = 0;
         let timeLeft = 30;
         let pokemons = [];
         let gameActive = true;
 
-        // Các loại Pokemon (giả lập bằng màu sắc và kích thước)
-        const pokeTypes = [
-            { name: "Pikachu", color: "#f1c40f", radius: 25, points: 10 },
-            { name: "Charmander", color: "#e67e22", radius: 20, points: 20 },
-            { name: "Squirtle", color: "#3498db", radius: 18, points: 30 },
-            { name: "Mewtwo", color: "#9b59b6", radius: 12, points: 100 } // Hiếm và khó bấm
+        // Định nghĩa danh sách Pokemon với link ảnh thật
+        const pokeData = [
+            { name: "Pikachu", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png", size: 60, points: 10 },
+            { name: "Charmander", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png", size: 55, points: 15 },
+            { name: "Squirtle", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png", size: 55, points: 15 },
+            { name: "Mewtwo", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png", size: 80, points: 50 }
         ];
 
-        function createPokemon() {
-            if (!gameActive) return;
-            const type = pokeTypes[Math.floor(Math.random() * pokeTypes.length)];
-            const pokemon = {
-                x: Math.random() * (canvas.width - 50) + 25,
-                y: Math.random() * (canvas.height - 50) + 25,
-                ...type,
-                life: 2000 + Math.random() * 2000, // Tồn tại trong 2-4 giây
-                spawnTime: Date.now()
-            };
-            pokemons.push(pokemon);
+        // Tải trước hình ảnh vào bộ nhớ
+        const loadedImages = {};
+        pokeData.forEach(p => {
+            const img = new Image();
+            img.src = p.img;
+            loadedImages[p.name] = img;
+        });
 
-            // Cứ sau 0.8s lại tạo 1 con mới
-            setTimeout(createPokemon, 800);
+        function spawn() {
+            if (!gameActive) return;
+            const type = pokeData[Math.floor(Math.random() * pokeData.length)];
+            pokemons.push({
+                x: Math.random() * (canvas.width - 100) + 50,
+                y: Math.random() * (canvas.height - 100) + 50,
+                ...type,
+                life: 1500 + Math.random() * 2000,
+                spawnTime: Date.now()
+            });
+            setTimeout(spawn, 700);
         }
 
         function draw() {
@@ -64,29 +69,18 @@
 
             pokemons = pokemons.filter(p => {
                 const age = now - p.spawnTime;
-                if (age > p.life) return false; // Pokemon biến mất nếu quá thời gian
+                if (age > p.life) return false;
 
-                // Vẽ hiệu ứng vòng tròn (Pokeball style)
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 3;
-                ctx.stroke();
+                // Vẽ hình ảnh Pokemon thay vì hình tròn
+                const img = loadedImages[p.name];
+                ctx.drawImage(img, p.x - p.size/2, p.y - p.size/2, p.size, p.size);
                 
-                // Vẽ mắt đơn giản
-                ctx.fillStyle = "black";
-                ctx.fillRect(p.x - 5, p.y - 5, 4, 4);
-                ctx.fillRect(p.x + 2, p.y - 5, 4, 4);
-
                 return true;
             });
 
             if (gameActive) requestAnimationFrame(draw);
         }
 
-        // Xử lý khi click (ném Pokeball)
         canvas.addEventListener("mousedown", (e) => {
             if (!gameActive) return;
             const rect = canvas.getBoundingClientRect();
@@ -95,27 +89,26 @@
 
             pokemons.forEach((p, index) => {
                 const dist = Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2);
-                if (dist < p.radius) {
+                if (dist < p.size/2) {
                     score += p.points;
                     scoreEl.innerText = score;
-                    pokemons.splice(index, 1); // Bắt được thì xóa khỏi mảng
+                    pokemons.splice(index, 1);
                 }
             });
         });
 
-        // Đếm ngược thời gian
-        const countdown = setInterval(() => {
+        const timer = setInterval(() => {
             timeLeft--;
             timerEl.innerText = timeLeft;
             if (timeLeft <= 0) {
                 gameActive = false;
-                clearInterval(countdown);
-                alert("Hết giờ! Bạn đã bắt được số Pokemon trị giá: " + score + " điểm!");
+                clearInterval(timer);
+                alert("Chúc mừng! Bạn đạt được: " + score + " điểm.");
                 location.reload();
             }
         }, 1000);
 
-        createPokemon();
+        spawn();
         draw();
     </script>
 </body>
