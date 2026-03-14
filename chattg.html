@@ -117,7 +117,16 @@
             </div>
         </div>
     </div>
+<div id="news" class="page-content">
+    <h2>📰 Tin Tức Server</h2>
+    
+    <div class="admin-input-area" style="gap:10px; margin-bottom:20px;">
+        <input type="text" id="newsInput" placeholder="Chỉ Admin mới đăng được tin tức...">
+        <button onclick="postNews()">ĐĂNG TIN</button>
+    </div>
 
+    <div id="newsList"></div>
+</div>
     <script>
         // CẤU HÌNH FIREBASE
         const firebaseConfig = {
@@ -203,6 +212,19 @@
         };
 
         document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
+        const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
+let myName = localStorage.getItem("username") || "Khách";
+
+// KIỂM TRA QUYỀN: Nếu là Admin thì mới cho hiện khung nhập tin
+const isAdmin = ADMIN_LIST.includes(myName);
+
+// Tự động ẩn khung nhập nếu không phải Admin
+document.addEventListener("DOMContentLoaded", () => {
+    const adminOnlyInputs = document.querySelectorAll(".admin-input-area");
+    adminOnlyInputs.forEach(el => {
+        el.style.display = isAdmin ? "flex" : "none";
+    });
+});
     </script>
 </body>
 </html>
