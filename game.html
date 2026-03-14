@@ -3,63 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon Catcher Pro</title>
+    <title>KaizenMC - Pokemon Catch MiniGame</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            margin: 0; 
-            background: #1a1a1a; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            height: 100vh; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            overflow: hidden; 
+        :root {
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff00aa;
+            --glass: rgba(15, 23, 42, 0.85);
+            --border: rgba(0, 240, 255, 0.3);
         }
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 15px;
-        }
-        h1 { 
-            color: #ffcb05; 
-            text-shadow: 3px 3px #3b4cca; 
-            font-size: 3rem;
+
+        body {
             margin: 0;
-            letter-spacing: 2px;
+            padding: 0;
+            background: #020617; /* Màu nền tối sâu của KaizenMC */
+            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        .stats {
-            background: rgba(0,0,0,0.6);
-            padding: 10px 20px;
+
+        /* Hiệu ứng Meteor giống web chính */
+        .meteor {
+            position: fixed;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--neon-blue));
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .header-ui {
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #38bdf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--neon-blue));
+        }
+
+        .stats-container {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(15px);
+            padding: 10px 30px;
             border-radius: 50px;
-            border: 2px solid #ffcb05;
-            display: inline-block;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
         }
-        canvas { 
-            /* Hình nền đồng cỏ pixel cực sạch */
-            background: url('https://iterminal.at/assets/images/posts/2018-05-18-pixel-art-grass/grass.png');
-            background-size: 200px; /* Làm họa tiết lặp lại nhìn đẹp hơn */
-            border: 8px solid #3b4cca; 
-            border-radius: 20px; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+
+        .stat-item span {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        canvas {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
             cursor: crosshair;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Nút quay lại style Kaizen */
+        .btn-back {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .btn-back:hover {
+            background: var(--neon-pink);
+            color: white;
+            box-shadow: 0 0 15px var(--neon-pink);
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>POKEMON GO WEB</h1>
-        <div class="stats">
-            Điểm: <span id="score" style="color: #00ff88;">0</span> | 
-            Thời gian: <span id="timer" style="color: #ff4757;">30</span>s
+    <div class="header-ui">
+        <h1>POKEMON HUNTER</h1>
+        <div class="stats-container">
+            <div class="stat-item">ĐIỂM: <span id="score">0</span></div>
+            <div class="stat-item">THỜI GIAN: <span id="timer">30</span>s</div>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
+
+    <a href="index.html" class="btn-back">Quay lại KaizenMC</a>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -68,20 +122,20 @@
         const timerEl = document.getElementById("timer");
 
         canvas.width = 800;
-        canvas.height = 500;
+        canvas.height = 450;
 
         let score = 0;
         let timeLeft = 30;
         let pokemons = [];
         let gameActive = true;
 
+        // Data Pokemon (Lấy ID giống Card trên web của bạn)
         const pokeData = [
-            { id: 25, name: "Pikachu", points: 10, size: 70 },
-            { id: 4, name: "Charmander", points: 20, size: 65 },
-            { id: 7, name: "Squirtle", points: 20, size: 65 },
-            { id: 1, name: "Bulbasaur", points: 20, size: 65 },
-            { id: 150, name: "Mewtwo", points: 100, size: 90 },
-            { id: 151, name: "Mew", points: 200, size: 50 } // Mew bé tí, cực khó bắt
+            { id: 6, name: "Charizard", points: 50, size: 80 },
+            { id: 9, name: "Blastoise", points: 40, size: 80 },
+            { id: 3, name: "Venusaur", points: 40, size: 80 },
+            { id: 25, name: "Pikachu", points: 20, size: 60 },
+            { id: 150, name: "Mewtwo", points: 150, size: 100 }
         ];
 
         const loadedImages = {};
@@ -91,8 +145,24 @@
             loadedImages[p.name] = img;
         });
 
-        const pokeballImg = new Image();
-        pokeballImg.src = "https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg";
+        // Tạo hiệu ứng sao rơi (Meteors)
+        function createMeteor() {
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor';
+            meteor.style.left = Math.random() * 100 + 'vw';
+            meteor.style.top = '-100px';
+            document.body.appendChild(meteor);
+
+            const duration = Math.random() * 2 + 1;
+            meteor.animate([
+                { transform: 'translate(0, 0) rotate(45deg)', opacity: 0 },
+                { opacity: 1, offset: 0.2 },
+                { transform: 'translate(-500px, 500px) rotate(45deg)', opacity: 0 }
+            ], { duration: duration * 1000, easing: 'linear' });
+
+            setTimeout(() => meteor.remove(), duration * 1000);
+        }
+        setInterval(createMeteor, 2000);
 
         function spawn() {
             if (!gameActive) return;
@@ -101,9 +171,9 @@
                 x: Math.random() * (canvas.width - 150) + 75,
                 y: Math.random() * (canvas.height - 150) + 75,
                 ...type,
-                life: 1200 + Math.random() * 1000,
+                life: 1000 + Math.random() * 1500,
                 spawnTime: Date.now(),
-                opacity: 0 // Hiệu ứng hiện hình
+                scale: 0
             });
             setTimeout(spawn, 800);
         }
@@ -116,12 +186,19 @@
                 const age = now - p.spawnTime;
                 if (age > p.life) return false;
 
-                // Hiệu ứng hiện hình (fade in)
-                if (p.opacity < 1) p.opacity += 0.1;
+                // Hiệu ứng scale khi xuất hiện
+                if (p.scale < 1) p.scale += 0.1;
 
-                ctx.globalAlpha = p.opacity;
-                ctx.drawImage(loadedImages[p.name], p.x - p.size/2, p.y - p.size/2, p.size, p.size);
-                ctx.globalAlpha = 1.0;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.scale(p.scale, p.scale);
+                
+                // Đổ bóng phát sáng cho Pokemon
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "rgba(0, 240, 255, 0.5)";
+                
+                ctx.drawImage(loadedImages[p.name], -p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
                 
                 return true;
             });
@@ -135,15 +212,18 @@
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
-            // Vẽ Pokeball tại điểm click
-            ctx.drawImage(pokeballImg, mouseX-20, mouseY-20, 40, 40);
-
             pokemons.forEach((p, index) => {
                 const dist = Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2);
                 if (dist < p.size/2) {
                     score += p.points;
                     scoreEl.innerText = score;
                     pokemons.splice(index, 1);
+                    
+                    // Hiệu ứng loé sáng khi bắt trúng
+                    ctx.fillStyle = "white";
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 40, 0, Math.PI*2);
+                    ctx.fill();
                 }
             });
         });
@@ -154,7 +234,7 @@
             if (timeLeft <= 0) {
                 gameActive = false;
                 clearInterval(timer);
-                alert("KẾT THÚC! Tổng điểm của bạn: " + score);
+                alert("TRẬN ĐẤU KẾT THÚC!\nĐiểm của bạn: " + score);
                 location.reload();
             }
         }, 1000);
