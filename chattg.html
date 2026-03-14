@@ -366,9 +366,12 @@ async function sendMsg() {
                 <span class="badge" style="background: #10b981; color: white;">BOT AI</span> KaizenAI
             </b> 
             <span style="color: #d1d5db;">Chào <b>${myName}</b>! Tôi có thể giúp gì cho ông?<br><br>
+            
             📌 <b>/nick [tên]</b>: Đổi danh tính<br>
             📌 <b>/poke [tên]</b>: Triệu hồi Pokemon 3D<br>
-            📌 <b>/help</b>: Gọi tôi hỗ trợ</span>
+            📌 <b>/dice</b>: Thử vận may xúc xắc<br>
+            📌 <b>/gift [mã]</b>: Nhận quà (Code: KAIZEN2024)<br>
+            📌 <b>/clear</b>: Xóa trắng màn hình chat
         `;
         box.appendChild(botDiv);
         box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
@@ -386,7 +389,40 @@ async function sendMsg() {
         }
         input.value = ""; return;
     }
+// 1. LỆNH /CLEAR: Dọn dẹp chiến trường
+    if (val === "/clear") {
+        document.getElementById("chatBox").innerHTML = "";
+        botSay("🧹 Đã dọn dẹp màn hình chat cho sếp sạch bóng!");
+        input.value = ""; return;
+    }
 
+    // 2. LỆNH /GIFT: Nhập code nhận quà (Thử gõ: /gift KAIZEN2024)
+    if (val.startsWith("/gift ")) {
+        const code = val.replace("/gift ", "").trim().toUpperCase();
+        input.value = "";
+        
+        if (code === "KAIZEN2036" || code === "ADMIN_FREE") {
+            const giftXu = Math.floor(Math.random() * 5000) + 1000;
+            botSay(`🎁 <b>MÃ QUÀ TẶNG HỢP LỆ!</b><br>Chúc mừng ông nhận được <b>${giftXu.toLocaleString()} Xu</b> vào tài khoản giả lập!`);
+        } else {
+            botSay("❌ Mã quà tặng này đã hết hạn hoặc không tồn tại.");
+        }
+        return;
+    }
+
+    // 3. LỆNH /DICE: Đổ xúc xắc
+    if (val === "/dice") {
+        const num = Math.floor(Math.random() * 6) + 1;
+        const icons = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        // Gửi kết quả lên Firebase để mọi người cùng thấy
+        db.ref("global_chat").push({
+            user: myName,
+            text: `🎲 Đã đổ xúc xắc: <b>${icons[num]} (${num} điểm)</b>`,
+            color: myColor,
+            time: Date.now()
+        });
+        input.value = ""; return;
+    }
     // LỆNH /POKE (Giữ nguyên)
     if (val.startsWith("/poke ")) {
         const pokeName = val.replace("/poke ", "").trim().toLowerCase();
@@ -526,6 +562,46 @@ async function sendMsg() {
             location.reload();
         }
     }
+        // --- ĐOẠN CODE TỰ ĐỘNG NHẮC NHỞ /HELP ---
+db.ref("global_chat").limitToLast(40).on("value", snap => {
+    const box = document.getElementById("chatBox");
+    box.innerHTML = "";
+    
+    snap.forEach(child => {
+        const d = child.val();
+        const isMe = d.user === myName;
+        const isAdmin = ADMIN_LIST.includes(d.user);
+        
+        const div = document.createElement("div");
+        div.className = `msg ${isMe ? 'me' : 'other'}`;
+        
+        const tag = isAdmin ? `<span class="badge badge-admin">ADMIN</span>` : "";
+        const nStyle = isAdmin ? `color:#ff4757; font-weight:bold;` : `color:${d.color};`;
+
+        div.innerHTML = `
+            <b style="${nStyle} cursor:pointer;" onclick="showProfile('${d.user}', '${d.color}')">
+                ${tag}${d.user}
+            </b> 
+            <span>${d.text}</span>
+        `;
+        box.appendChild(div);
+    });
+
+    // --- LOGIC BOT TỰ ĐỘNG CHAT (CHỖ ÔNG CẦN ĐÂY) ---
+    const now = Date.now();
+    // Bot sẽ chỉ chat nếu: 1. Có tin nhắn mới | 2. Đã qua 30 giây kể từ lần nhắc cuối
+    if (now - lastBotTime > 30000) { 
+        // Delay 1.5 giây để tin nhắn người dùng hiện lên trước, Bot hiện sau cho tự nhiên
+        setTimeout(() => {
+            botSay("Chào sếp! Đừng quên gõ <b>/help</b> để khám phá sức mạnh của KaizenAI và lệnh /poke nhé! 🚀");
+        }, 1500);
+        
+        lastBotTime = now; // Cập nhật lại thời gian để không bị spam liên tục
+    }
+
+    // Luôn cuộn xuống cuối khi có tin nhắn hoặc bot chat
+    box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+});
 </script>
 
 </body>
