@@ -2,33 +2,43 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>KaizenMC - Pokemon 3D Cosmic Run</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KaizenMC - Mobile 3D Run</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #020617; font-family: 'Orbitron', sans-serif; }
+        body { 
+            margin: 0; overflow: hidden; background: #020617; 
+            font-family: 'Orbitron', sans-serif;
+            /* Chặn cuộn trang và zoom trên điện thoại */
+            touch-action: none; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
         
-        /* UI Điểm số */
         #ui {
-            position: absolute; top: 30px; left: 30px; color: #00f0ff;
-            font-size: 28px; text-shadow: 0 0 15px #00f0ff; pointer-events: none;
-            z-index: 10;
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            color: #00f0ff; font-size: 24px; text-shadow: 0 0 10px #00f0ff;
+            pointer-events: none; z-index: 10;
         }
 
-        /* Menu Game Over */
         #game-over {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.9);
+            background: rgba(2, 6, 23, 0.95);
             display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 100; backdrop-filter: blur(10px);
         }
-        #game-over h1 { color: #ff00aa; font-size: 80px; text-shadow: 0 0 20px #ff00aa; margin: 0; }
-        #game-over p { color: white; font-size: 24px; margin: 20px 0; }
+        #game-over h1 { color: #ff00aa; font-size: 50px; text-shadow: 0 0 20px #ff00aa; margin: 0; }
         #game-over button {
-            padding: 15px 40px; background: transparent; border: 2px solid #00f0ff;
-            color: #00f0ff; font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
-            transition: 0.3s; border-radius: 5px;
+            margin-top: 30px; padding: 15px 40px; background: transparent; 
+            border: 2px solid #00f0ff; color: #00f0ff; font-family: 'Orbitron';
+            font-size: 20px; cursor: pointer; border-radius: 10px;
         }
-        #game-over button:hover { background: #00f0ff; color: #020617; box-shadow: 0 0 30px #00f0ff; }
+
+        /* Hướng dẫn chạm cho mobile */
+        #touch-hint {
+            position: absolute; bottom: 20px; width: 100%; text-align: center;
+            color: rgba(255,255,255,0.4); font-size: 12px; pointer-events: none;
+        }
 
         canvas { display: block; }
     </style>
@@ -37,72 +47,84 @@
 <body>
 
     <div id="ui">SCORE: <span id="scoreVal">0</span></div>
+    <div id="touch-hint">CHẠM TRÁI / PHẢI ĐỂ DI CHUYỂN</div>
 
     <div id="game-over">
         <h1>K.O!</h1>
-        <p>BẠN ĐÃ VA CHẠM VỚI CHƯỚNG NGẠI VẬT</p>
-        <p style="font-size: 40px;">ĐIỂM: <span id="finalScore">0</span></p>
+        <p style="color:white">BẠN ĐÃ VA CHẠM</p>
+        <p style="font-size: 30px; color:#ffcb05">ĐIỂM: <span id="finalScore">0</span></p>
         <button onclick="location.reload()">CHƠI LẠI</button>
     </div>
 
     <script>
         let scene, camera, renderer, player, stars;
         let obstacles = [], cards = [];
-        let score = 0, speed = 0.6, lane = 0;
-        let isGameOver = false; // Biến quan trọng để fix lỗi spam die
-        const laneWidth = 4;
+        let score = 0, speed = 0.5, lane = 0, isGameOver = false;
+        const laneWidth = 3.5; // Thu hẹp làn đường cho màn hình dọc điện thoại
 
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020617);
-            scene.fog = new THREE.Fog(0x020617, 15, 60);
+            scene.fog = new THREE.Fog(0x020617, 10, 50);
 
+            // Camera chỉnh góc cao hơn một chút cho mobile dễ nhìn
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 4, 8);
+            camera.position.set(0, 4, 7);
             camera.lookAt(0, 0, -5);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Tối ưu hiệu năng mobile
             document.body.appendChild(renderer.domElement);
 
-            // Ánh sáng
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             const pLight = new THREE.PointLight(0x00f0ff, 1, 100);
             pLight.position.set(0, 10, 5);
             scene.add(pLight);
 
-            // Tạo bầu trời sao (Starfield)
+            // Sao nền
             const starGeo = new THREE.BufferGeometry();
             const starCoords = [];
-            for(let i=0; i<5000; i++) {
-                starCoords.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
+            for(let i=0; i<3000; i++) {
+                starCoords.push((Math.random()-0.5)*1000, (Math.random()-0.5)*1000, (Math.random()-0.5)*1000);
             }
             starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-            const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
-            stars = new THREE.Points(starGeo, starMat);
+            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
             scene.add(stars);
 
-            // Đường chạy Neon
-            const grid = new THREE.GridHelper(2000, 100, 0x00f0ff, 0x0f172a);
-            grid.position.y = 0;
+            // Grid chạy
+            const grid = new THREE.GridHelper(1000, 80, 0x00f0ff, 0x0f172a);
             scene.add(grid);
 
-            // Người chơi (Cầu Neon)
-            const playerGeo = new THREE.SphereGeometry(0.7, 32, 32);
-            const playerMat = new THREE.MeshPhongMaterial({ 
-                color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 0.5 
-            });
-            player = new THREE.Mesh(playerGeo, playerMat);
-            player.position.y = 0.7;
+            // Player
+            player = new THREE.Mesh(
+                new THREE.SphereGeometry(0.6, 24, 24),
+                new THREE.MeshPhongMaterial({ color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 0.5 })
+            );
+            player.position.y = 0.6;
             scene.add(player);
 
+            // XỬ LÝ ĐIỀU KHIỂN
+            // 1. Cho PC (Bàn phím)
             window.addEventListener('keydown', (e) => {
                 if(isGameOver) return;
                 if ((e.key === 'a' || e.key === 'ArrowLeft') && lane > -1) lane--;
                 if ((e.key === 'd' || e.key === 'ArrowRight') && lane < 1) lane++;
             });
+
+            // 2. Cho MOBILE (Cảm ứng chạm 2 bên màn hình)
+            window.addEventListener('touchstart', (e) => {
+                if(isGameOver) return;
+                const touchX = e.touches[0].clientX;
+                const halfWidth = window.innerWidth / 2;
+                
+                if (touchX < halfWidth) {
+                    if(lane > -1) lane--; // Chạm bên trái
+                } else {
+                    if(lane < 1) lane++;  // Chạm bên phải
+                }
+            }, { passive: false });
 
             spawnObjects();
             animate();
@@ -110,64 +132,55 @@
 
         function spawnObjects() {
             const textureLoader = new THREE.TextureLoader();
-            // Link ảnh Pokemon cho thẻ bài
-            const pkmImg = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png";
-            const cardTex = textureLoader.load(pkmImg);
+            const cardTex = textureLoader.load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png");
 
-            for (let i = 0; i < 60; i++) {
-                // Chướng ngại vật (Khối pha lê đỏ)
-                const obsGeo = new THREE.IcosahedronGeometry(1.2, 0);
-                const obsMat = new THREE.MeshPhongMaterial({ color: 0xff0000, wireframe: false });
-                const obs = new THREE.Mesh(obsGeo, obsMat);
-                obs.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1.2, -i * 25 - 30);
+            for (let i = 0; i < 40; i++) {
+                // Obstacle
+                const obs = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(1, 0),
+                    new THREE.MeshPhongMaterial({ color: 0xff0000 })
+                );
+                obs.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1, -i * 30 - 40);
                 scene.add(obs);
                 obstacles.push(obs);
 
-                // Thẻ bài Pokemon
-                const cardGeo = new THREE.BoxGeometry(1.5, 2, 0.1);
-                const cardMat = new THREE.MeshPhongMaterial({ map: cardTex, transparent: true });
-                const card = new THREE.Mesh(cardGeo, cardMat);
-                card.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1.5, -i * 25 - 15);
+                // Card
+                const card = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.2, 1.8, 0.1),
+                    new THREE.MeshPhongMaterial({ map: cardTex, transparent: true })
+                );
+                card.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1.2, -i * 30 - 20);
                 scene.add(card);
                 cards.push(card);
             }
         }
 
         function animate() {
-            if (isGameOver) return; // Dừng toàn bộ logic nếu đã chết
-
+            if (isGameOver) return;
             requestAnimationFrame(animate);
 
-            // Hiệu ứng di chuyển
-            stars.rotation.y += 0.0005;
+            stars.rotation.z += 0.0003;
             player.position.x = THREE.MathUtils.lerp(player.position.x, lane * laneWidth, 0.15);
             player.rotation.x += 0.1;
 
-            // Xử lý Chướng ngại vật
             obstacles.forEach(obs => {
                 obs.position.z += speed;
-                obs.rotation.y += 0.02;
-                if (obs.position.z > 10) obs.position.z = -1400;
+                obs.rotation.x += 0.02;
+                if (obs.position.z > 10) obs.position.z = -1100;
 
-                // Kiểm tra va chạm (Dùng khoảng cách toán học)
-                let dist = player.position.distanceTo(obs.position);
-                if (dist < 1.5) {
-                    endGame();
-                }
+                if (player.position.distanceTo(obs.position) < 1.4) endGame();
             });
 
-            // Xử lý Thẻ bài
             cards.forEach(card => {
                 card.position.z += speed;
-                card.rotation.y += 0.05;
-                if (card.position.z > 10) card.position.z = -1400;
+                card.rotation.y += 0.04;
+                if (card.position.z > 10) card.position.z = -1100;
 
-                let dist = player.position.distanceTo(card.position);
-                if (dist < 1.5) {
+                if (player.position.distanceTo(card.position) < 1.4) {
                     score += 10;
                     document.getElementById('scoreVal').innerText = score;
-                    card.position.z = -1400; // Đẩy ra xa
-                    speed += 0.005; // Tăng dần độ khó
+                    card.position.z = -1100;
+                    speed += 0.005;
                 }
             });
 
@@ -180,7 +193,6 @@
             document.getElementById('game-over').style.display = 'flex';
         }
 
-        // Fix kích thước khi đổi size màn hình
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
