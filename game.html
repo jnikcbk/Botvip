@@ -2,245 +2,178 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaizenMC - Pokemon Catch MiniGame</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <title>KaizenMC - Pokemon Shooter Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-blue: #00f0ff;
-            --neon-pink: #ff00aa;
-            --glass: rgba(15, 23, 42, 0.85);
-            --border: rgba(0, 240, 255, 0.3);
+        :root { --neon: #00f0ff; --pink: #ff00aa; }
+        body { margin: 0; background: #020617; color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        
+        .ui-top { position: absolute; top: 20px; display: flex; gap: 40px; background: rgba(0,0,0,0.5); padding: 15px 30px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(10px); }
+        .stat span { color: var(--neon); font-weight: 900; font-size: 1.5rem; }
+
+        canvas { 
+            background: radial-gradient(circle, #0f172a 0%, #020617 100%);
+            border: 3px solid var(--neon);
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+            cursor: none; /* Ẩn chuột để dùng tâm ngắm riêng */
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background: #020617; /* Màu nền tối sâu của KaizenMC */
-            color: white;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+        .combo-text {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--pink);
+            pointer-events: none;
+            animation: zoomOut 0.5s ease-out forwards;
         }
 
-        /* Hiệu ứng Meteor giống web chính */
-        .meteor {
-            position: fixed;
-            width: 2px;
-            height: 100px;
-            background: linear-gradient(to bottom, transparent, var(--neon-blue));
-            opacity: 0;
-            z-index: -1;
-        }
-
-        .header-ui {
-            text-align: center;
-            z-index: 10;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            margin: 0;
-            background: linear-gradient(to right, #38bdf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px var(--neon-blue));
-        }
-
-        .stats-container {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            backdrop-filter: blur(15px);
-            padding: 10px 30px;
-            border-radius: 50px;
-            margin-top: 15px;
-            display: flex;
-            gap: 20px;
-            font-family: 'Orbitron', sans-serif;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-        }
-
-        .stat-item span {
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
-        }
-
-        canvas {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-            cursor: crosshair;
-            backdrop-filter: blur(5px);
-        }
-
-        /* Nút quay lại style Kaizen */
-        .btn-back {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: transparent;
-            border: 1px solid var(--neon-pink);
-            color: var(--neon-pink);
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-        .btn-back:hover {
-            background: var(--neon-pink);
-            color: white;
-            box-shadow: 0 0 15px var(--neon-pink);
+        @keyframes zoomOut {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header-ui">
-        <h1>POKEMON HUNTER</h1>
-        <div class="stats-container">
-            <div class="stat-item">ĐIỂM: <span id="score">0</span></div>
-            <div class="stat-item">THỜI GIAN: <span id="timer">30</span>s</div>
-        </div>
+    <div class="ui-top">
+        <div class="stat">SCORE: <span id="score">0</span></div>
+        <div class="stat">COMBO: <span id="combo">0</span></div>
+        <div class="stat">TIME: <span id="timer">30</span>s</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <a href="index.html" class="btn-back">Quay lại KaizenMC</a>
-
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const scoreEl = document.getElementById("score");
-        const timerEl = document.getElementById("timer");
+        canvas.width = 900;
+        canvas.height = 550;
 
-        canvas.width = 800;
-        canvas.height = 450;
+        let score = 0, combo = 0, timeLeft = 30, gameActive = true;
+        let mouseX = 0, mouseY = 0;
+        let pokemons = [], lasers = [], particles = [];
 
-        let score = 0;
-        let timeLeft = 30;
-        let pokemons = [];
-        let gameActive = true;
+        const pokeIDs = [6, 9, 3, 25, 150, 151, 54, 143]; // Charizard, Blastoise, Venusaur, Pikachu...
+        const images = {};
 
-        // Data Pokemon (Lấy ID giống Card trên web của bạn)
-        const pokeData = [
-            { id: 6, name: "Charizard", points: 50, size: 80 },
-            { id: 9, name: "Blastoise", points: 40, size: 80 },
-            { id: 3, name: "Venusaur", points: 40, size: 80 },
-            { id: 25, name: "Pikachu", points: 20, size: 60 },
-            { id: 150, name: "Mewtwo", points: 150, size: 100 }
-        ];
-
-        const loadedImages = {};
-        pokeData.forEach(p => {
+        pokeIDs.forEach(id => {
             const img = new Image();
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
-            loadedImages[p.name] = img;
+            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+            images[id] = img;
         });
 
-        // Tạo hiệu ứng sao rơi (Meteors)
-        function createMeteor() {
-            const meteor = document.createElement('div');
-            meteor.className = 'meteor';
-            meteor.style.left = Math.random() * 100 + 'vw';
-            meteor.style.top = '-100px';
-            document.body.appendChild(meteor);
+        // Lắng nghe di chuyển chuột
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
 
-            const duration = Math.random() * 2 + 1;
-            meteor.animate([
-                { transform: 'translate(0, 0) rotate(45deg)', opacity: 0 },
-                { opacity: 1, offset: 0.2 },
-                { transform: 'translate(-500px, 500px) rotate(45deg)', opacity: 0 }
-            ], { duration: duration * 1000, easing: 'linear' });
-
-            setTimeout(() => meteor.remove(), duration * 1000);
-        }
-        setInterval(createMeteor, 2000);
+        // Bắn Laser
+        canvas.addEventListener('mousedown', () => {
+            if(!gameActive) return;
+            lasers.push({ x: canvas.width/2, y: canvas.height, tx: mouseX, ty: mouseY, life: 10 });
+            checkHit();
+        });
 
         function spawn() {
-            if (!gameActive) return;
-            const type = pokeData[Math.floor(Math.random() * pokeData.length)];
+            if(!gameActive) return;
+            const id = pokeIDs[Math.floor(Math.random() * pokeIDs.length)];
             pokemons.push({
-                x: Math.random() * (canvas.width - 150) + 75,
-                y: Math.random() * (canvas.height - 150) + 75,
-                ...type,
-                life: 1000 + Math.random() * 1500,
-                spawnTime: Date.now(),
-                scale: 0
+                id, x: Math.random() * (canvas.width - 100) + 50,
+                y: Math.random() * (canvas.height - 200) + 50,
+                size: 70, 
+                vx: (Math.random() - 0.5) * 4, // Pokemon biết di chuyển qua lại
+                vy: (Math.random() - 0.5) * 4,
+                life: 2000
             });
-            setTimeout(spawn, 800);
+            setTimeout(spawn, 700);
+        }
+
+        function checkHit() {
+            let hit = false;
+            pokemons.forEach((p, i) => {
+                const dist = Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2);
+                if(dist < p.size/2) {
+                    hit = true;
+                    createExplosion(p.x, p.y, "#00f0ff");
+                    score += 10 + (combo * 2);
+                    combo++;
+                    pokemons.splice(i, 1);
+                }
+            });
+            if(!hit) combo = 0;
+            updateUI();
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<15; i++) {
+                particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 20, color });
+            }
+        }
+
+        function updateUI() {
+            document.getElementById("score").innerText = score;
+            document.getElementById("combo").innerText = combo;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const now = Date.now();
 
-            pokemons = pokemons.filter(p => {
-                const age = now - p.spawnTime;
-                if (age > p.life) return false;
-
-                // Hiệu ứng scale khi xuất hiện
-                if (p.scale < 1) p.scale += 0.1;
-
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.scale(p.scale, p.scale);
-                
-                // Đổ bóng phát sáng cho Pokemon
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "rgba(0, 240, 255, 0.5)";
-                
-                ctx.drawImage(loadedImages[p.name], -p.size/2, -p.size/2, p.size, p.size);
-                ctx.restore();
-                
-                return true;
+            // 1. Vẽ Pokemon & Di chuyển
+            pokemons.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 50 || p.x > canvas.width-50) p.vx *= -1;
+                if(p.y < 50 || p.y > canvas.height-150) p.vy *= -1;
+                ctx.shadowBlur = 15; ctx.shadowColor = "rgba(0,240,255,0.5)";
+                ctx.drawImage(images[p.id], p.x - p.size/2, p.y - p.size/2, p.size, p.size);
             });
 
-            if (gameActive) requestAnimationFrame(draw);
+            // 2. Vẽ Lasers
+            lasers = lasers.filter(l => {
+                ctx.beginPath();
+                ctx.strokeStyle = "white"; ctx.lineWidth = l.life;
+                ctx.moveTo(l.x, l.y); ctx.lineTo(l.tx, l.ty);
+                ctx.stroke();
+                l.life -= 2; return l.life > 0;
+            });
+
+            // 3. Vẽ Hiệu ứng hạt (Explosion)
+            particles = particles.filter(p => {
+                p.x += p.vx; p.y += p.vy;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 4, 4);
+                p.life--; return p.life > 0;
+            });
+
+            // 4. Vẽ Súng & Tâm ngắm (Cannon)
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#ff00aa";
+            ctx.beginPath(); // Tâm ngắm
+            ctx.arc(mouseX, mouseY, 20, 0, Math.PI*2);
+            ctx.moveTo(mouseX-30, mouseY); ctx.lineTo(mouseX+30, mouseY);
+            ctx.moveTo(mouseX, mouseY-30); ctx.lineTo(mouseX, mouseY+30);
+            ctx.stroke();
+
+            ctx.fillStyle = "#00f0ff"; // Thân súng
+            ctx.fillRect(canvas.width/2 - 20, canvas.height - 40, 40, 40);
+
+            if(gameActive) requestAnimationFrame(draw);
         }
-
-        canvas.addEventListener("mousedown", (e) => {
-            if (!gameActive) return;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            pokemons.forEach((p, index) => {
-                const dist = Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2);
-                if (dist < p.size/2) {
-                    score += p.points;
-                    scoreEl.innerText = score;
-                    pokemons.splice(index, 1);
-                    
-                    // Hiệu ứng loé sáng khi bắt trúng
-                    ctx.fillStyle = "white";
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 40, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            });
-        });
 
         const timer = setInterval(() => {
             timeLeft--;
-            timerEl.innerText = timeLeft;
-            if (timeLeft <= 0) {
-                gameActive = false;
-                clearInterval(timer);
-                alert("TRẬN ĐẤU KẾT THÚC!\nĐiểm của bạn: " + score);
+            document.getElementById("timer").innerText = timeLeft;
+            if(timeLeft <= 0) {
+                gameActive = false; clearInterval(timer);
+                alert("GAME OVER! SCORE: " + score);
                 location.reload();
             }
         }, 1000);
 
-        spawn();
-        draw();
+        spawn(); draw();
     </script>
 </body>
 </html>
