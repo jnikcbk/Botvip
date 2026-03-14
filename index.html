@@ -11,6 +11,87 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        #loader {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: #020617;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.pokeball-loader {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 50%;
+    position: relative;
+    animation: spin 1s linear infinite;
+}
+
+.pokeball-loader::after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background: #333;
+    top: 28px;
+    left: -3px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+        .music-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.music-btn {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--neon-blue);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.music-btn:hover {
+    box-shadow: 0 0 25px var(--neon-blue);
+    transform: scale(1.05);
+}
+
+.music-btn.playing {
+    border-color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.music-icon {
+    font-size: 1.2rem;
+}
+
+/* Hiệu ứng sóng nhạc khi đang phát */
+.music-btn.playing .music-icon {
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.3); }
+}
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
     color: #ff4d4d !important; /* Màu đỏ cảnh báo */
@@ -871,6 +952,15 @@
     </video>
     <div class="video-overlay-layer"></div>
 </div>
+    <div class="music-container">
+    <button id="music-toggle" class="music-btn">
+        <span class="music-icon">🎵</span>
+        <span class="music-text">BGM: Kỷ Nguyên Pokémon</span>
+    </button>
+    <audio id="bg-music" loop>
+        <source src="https://vgmsite.com/soundtracks/pokemon-ten-years-of-pokemon/vghvunsc/01%20-%20Opening.mp3" type="audio/mpeg">
+    </audio>
+</div>
 </section>
 
 <footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
@@ -890,6 +980,9 @@
     <div class="status-offline" style="margin-top: 15px; font-size: 11px; padding: 5px 15px;">
         <span class="blink-dot"></span> KAIZENMC HIỆN ĐANG ĐÓNG CỬA PHÙ PHÉP
     </div>
+    <div id="loader">
+    <div class="pokeball-loader"></div>
+</div>
 </footer>
 
 <script>
@@ -1322,6 +1415,25 @@ async function updateFooterIP() {
 
 // Chạy ngay khi web load
 window.addEventListener('DOMContentLoaded', updateFooterIP);
+    const musicBtn = document.getElementById('music-toggle');
+const bgMusic = document.getElementById('bg-music');
+let isPlaying = false;
+
+// Thiết lập âm lượng vừa phải (30%)
+bgMusic.volume = 0.3;
+
+musicBtn.addEventListener('click', () => {
+    if (isPlaying) {
+        bgMusic.pause();
+        musicBtn.classList.remove('playing');
+        musicBtn.querySelector('.music-text').innerText = 'BGM: Tạm dừng';
+    } else {
+        bgMusic.play();
+        musicBtn.classList.add('playing');
+        musicBtn.querySelector('.music-text').innerText = 'BGM: Đang phát...';
+    }
+    isPlaying = !isPlaying;
+});
 </script>
 
 </body>
