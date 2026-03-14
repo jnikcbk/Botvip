@@ -820,9 +820,23 @@
 </div>
 </section>
 
-<footer>
-    © 2026 KaizenMC • Minhmeo & Đăng Mạnh<br>
-    IP Server: 180.93.103.140:26666
+<footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
+    <div class="footer-decor" style="margin-bottom: 15px; color: var(--neon-blue); opacity: 0.5;">
+        ✨ ——— 🌌 ——— ✨
+    </div>
+    
+    <div style="margin-bottom: 10px;">
+        <span style="color: #fff; font-weight: bold;">© 2026 KaizenMC</span> • 
+        <span style="color: var(--neon-pink);">Minhmeo & Đăng Mạnh</span>
+    </div>
+
+    <div id="user-ip-container" style="color: #cbd5e1; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">
+        HÀNH TRÌNH CỦA BẠN TỪ: <span id="user-ip-footer" style="color: var(--neon-blue); font-weight: 800;">Đang dò tìm tọa độ...</span>
+    </div>
+
+    <div class="status-offline" style="margin-top: 15px; font-size: 11px; padding: 5px 15px;">
+        <span class="blink-dot"></span> KAIZENMC HIỆN ĐANG ĐÓNG CỬA PHÙ PHÉP
+    </div>
 </footer>
 
 <script>
@@ -1233,7 +1247,28 @@ allPokeCards.forEach(card => {
         glare.style.background = `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
     });
 });
+async function updateFooterIP() {
+    const ipFooter = document.getElementById('user-ip-footer');
+    try {
+        // Gọi API lấy IP người dùng
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        
+        // Hiển thị IP người dùng vào footer
+        if(ipFooter) {
+            ipFooter.innerText = data.ip;
+        }
+    } catch (error) {
+        // Nếu lỗi (do chặn quảng cáo...) thì hiện IP Server làm dự phòng
+        if(ipFooter) {
+            ipFooter.innerText = "180.93.103.140";
+        }
+        console.log("Không thể lấy IP người dùng.");
+    }
+}
 
+// Chạy ngay khi web load
+window.addEventListener('DOMContentLoaded', updateFooterIP);
 </script>
 
 </body>
