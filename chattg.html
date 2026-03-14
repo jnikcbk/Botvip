@@ -9,6 +9,44 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Hiệu ứng tin nhắn Bot - Gradient mượt mà */
+.bot-msg {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%) !important;
+    border-left: 4px solid #10b981 !important;
+    border-radius: 8px 20px 20px 8px !important;
+    padding: 12px !important;
+    margin: 10px 0 !important;
+    position: relative;
+    overflow: hidden;
+    animation: botGlow 2s infinite alternate;
+}
+
+/* Hào quang cho Bot */
+@keyframes botGlow {
+    from { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+    to { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+}
+
+/* Badge Bot lấp lánh */
+.bot-badge {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-right: 5px;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+/* Hiệu ứng chữ đang gõ */
+.typing {
+    font-style: italic;
+    font-size: 12px;
+    color: #10b981;
+    margin-bottom: 5px;
+}
         /* Thêm cái này vào cuối thẻ style */
 #profileModal {
     display: none; position: fixed; top: 0; left: 0; 
@@ -329,8 +367,8 @@
     </button>
 </div>
 
-    <script>
-    // 1. CẤU HÌNH FIREBASE
+  <script>
+    // 1. CẤU HÌNH & KHỞI TẠO
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
         databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -339,269 +377,148 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. KHỞI TẠO HỆ THỐNG QUYỀN LỰC
     const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
     let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
     let myColor = localStorage.getItem("userColor") || "#3b82f6";
-    
+    let lastBotTime = 0;
+
     if(!localStorage.getItem("username")) localStorage.setItem("username", myName);
 
-    // 3. HÀM XỬ LÝ TIN NHẮN & LỆNH CHAT
-   // 3. HÀM XỬ LÝ TIN NHẮN & LỆNH CHAT
-async function sendMsg() {
-    const input = document.getElementById("chatInput");
-    const val = input.value.trim();
-    if (!val) return;
-
-    // LỆNH /HELP - Bot KaizenAI trả lời
-    if (val === "/help") {
-        input.value = "";
+    // 2. HÀM BOT CHAT SIÊU CẤP (Có hiệu ứng gõ chữ)
+    function botSay(text) {
         const box = document.getElementById("chatBox");
-        const botDiv = document.createElement("div");
-        botDiv.className = "msg other"; // Hiện bên trái như người khác
-        botDiv.style.border = "1px solid #10b981"; // Viền xanh lá đặc trưng của AI
         
-        botDiv.innerHTML = `
-            <b style="color: #10b981; cursor: pointer;" onclick="showProfile('KaizenAI', '#10b981')">
-                <span class="badge" style="background: #10b981; color: white;">BOT AI</span> KaizenAI
-            </b> 
-            <span style="color: #d1d5db;">Chào <b>${myName}</b>! Tôi có thể giúp gì cho ông?<br><br>
-            
-            📌 <b>/nick [tên]</b>: Đổi danh tính<br>
-            📌 <b>/poke [tên]</b>: Triệu hồi Pokemon 3D<br>
-            📌 <b>/dice</b>: Thử vận may xúc xắc<br>
-            📌 <b>/gift [mã]</b>: Nhận quà (Code: KAIZEN2024)<br>
-            📌 <b>/clear</b>: Xóa trắng màn hình chat
-        `;
-        box.appendChild(botDiv);
+        // Tạo hiệu ứng "Đang gõ..."
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "typing";
+        typingDiv.innerHTML = "KaizenAI đang soạn tin nhắn...";
+        box.appendChild(typingDiv);
         box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-        return;
+
+        setTimeout(() => {
+            typingDiv.remove();
+            const botDiv = document.createElement("div");
+            botDiv.className = "msg other bot-msg";
+            botDiv.innerHTML = `
+                <b style="color: #10b981; cursor: pointer;" onclick="showProfile('KaizenAI', '#10b981')">
+                    <span class="bot-badge">BOT AI</span> KaizenAI
+                </b> 
+                <div style="margin-top:5px; color: #e5e7eb; line-height: 1.5;">${text}</div>
+            `;
+            box.appendChild(botDiv);
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        }, 800);
     }
 
-    // LỆNH /NICK (Giữ nguyên)
-    if (val.startsWith("/nick ")) {
-        const newNick = val.replace("/nick ", "").trim();
-        if (newNick && newNick.length < 18) {
-            localStorage.setItem("username", newNick);
-            // Cho Bot chào tạm biệt tên cũ luôn
-            alert("KaizenAI: Đã ghi nhận danh tính mới của ông!");
-            location.reload();
+    // 3. XỬ LÝ LỆNH & TIN NHẮN
+    async function sendMsg() {
+        const input = document.getElementById("chatInput");
+        const val = input.value.trim();
+        if (!val) return;
+
+        // BỘ XỬ LÝ LỆNH (COMMAND PROCESSOR)
+        if (val.startsWith("/")) {
+            input.value = "";
+            const cmd = val.split(" ")[0].toLowerCase();
+            const args = val.split(" ").slice(1).join(" ");
+
+            switch(cmd) {
+                case "/help":
+                    botSay(`Sếp cần hỗ trợ gì ạ? Danh sách bí kíp đây:<br>
+                        ✨ <b>/poke [tên]</b>: Gọi hồn Pokemon 3D<br>
+                        🎲 <b>/dice</b>: Đổ xúc xắc (Mọi người cùng thấy)<br>
+                        🎁 <b>/gift [mã]</b>: Nhận quà (Thử mã: KAIZEN2036)<br>
+                        🎭 <b>/nick [tên]</b>: Đổi danh tính mới<br>
+                        🧹 <b>/clear</b>: Dọn sạch sàn chat`);
+                    break;
+                case "/clear":
+                    document.getElementById("chatBox").innerHTML = "";
+                    botSay("🧹 Sàn chat đã được lau dọn sạch bóng!");
+                    break;
+                case "/dice":
+                    const n = Math.floor(Math.random()*6)+1;
+                    const icons = ["", "⚀","⚁","⚂","⚃","⚄","⚅"];
+                    db.ref("global_chat").push({ user: myName, text: `🎲 Đã đổ: <b>${icons[n]} (${n} điểm)</b>`, color: myColor, time: Date.now() });
+                    break;
+                case "/gift":
+                    if(args === "KAIZEN2036") botSay("🎁 <b>HỢP LỆ!</b> Sếp nhận được 10.000 Xu!");
+                    else botSay("❌ Mã sai rồi sếp ơi!");
+                    break;
+                case "/poke":
+                    try {
+                        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${args.toLowerCase()}`);
+                        const data = await res.json();
+                        showPokeCard(data);
+                    } catch { botSay("❌ Pokemon này lạ quá, tôi tìm không ra!"); }
+                    break;
+                case "/nick":
+                    if(args) { localStorage.setItem("username", args); location.reload(); }
+                    break;
+                default:
+                    botSay("❌ Lệnh này tôi chưa được học sếp ơi!");
+            }
+            return;
         }
-        input.value = ""; return;
-    }
-// 1. LỆNH /CLEAR: Dọn dẹp chiến trường
-    if (val === "/clear") {
-        document.getElementById("chatBox").innerHTML = "";
-        botSay("🧹 Đã dọn dẹp màn hình chat cho sếp sạch bóng!");
-        input.value = ""; return;
-    }
 
-    // 2. LỆNH /GIFT: Nhập code nhận quà (Thử gõ: /gift KAIZEN2024)
-    if (val.startsWith("/gift ")) {
-        const code = val.replace("/gift ", "").trim().toUpperCase();
+        // GỬI TIN NHẮN THƯỜNG
+        db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
         input.value = "";
-        
-        if (code === "KAIZEN2036" || code === "ADMIN_FREE") {
-            const giftXu = Math.floor(Math.random() * 5000) + 1000;
-            botSay(`🎁 <b>MÃ QUÀ TẶNG HỢP LỆ!</b><br>Chúc mừng ông nhận được <b>${giftXu.toLocaleString()} Xu</b> vào tài khoản giả lập!`);
-        } else {
-            botSay("❌ Mã quà tặng này đã hết hạn hoặc không tồn tại.");
-        }
-        return;
     }
 
-    // 3. LỆNH /DICE: Đổ xúc xắc
-    if (val === "/dice") {
-        const num = Math.floor(Math.random() * 6) + 1;
-        const icons = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-        // Gửi kết quả lên Firebase để mọi người cùng thấy
-        db.ref("global_chat").push({
-            user: myName,
-            text: `🎲 Đã đổ xúc xắc: <b>${icons[num]} (${num} điểm)</b>`,
-            color: myColor,
-            time: Date.now()
-        });
-        input.value = ""; return;
-    }
-    // LỆNH /POKE (Giữ nguyên)
-    if (val.startsWith("/poke ")) {
-        const pokeName = val.replace("/poke ", "").trim().toLowerCase();
-        try {
-            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeName}`);
-            const data = await res.json();
-            showPokeCard(data);
-        } catch (err) {
-            // Thay vì alert, cho Bot báo lỗi vào chat
-            const box = document.getElementById("chatBox");
-            const errDiv = document.createElement("div");
-            errDiv.className = "msg other";
-            errDiv.innerHTML = `<b style="color:#ef4444;">KaizenAI</b>: Không tìm thấy Pokemon <b>${pokeName}</b>. Thử lại xem sếp!`;
-            box.appendChild(errDiv);
-        }
-        input.value = ""; return;
-    }
-
-    // GỬI TIN NHẮN LÊN FIREBASE
-    db.ref("global_chat").push({
-        user: myName,
-        text: val,
-        color: myColor,
-        time: Date.now()
-    });
-    input.value = "";
-}
-    // 4. HÀM SHOW THẺ POKEMON (HIỆU ỨNG NEON GOLD)
-    function showPokeCard(data) {
-        const card = document.getElementById("card");
-        const nameEle = document.getElementById("cName");
-        const rank = document.getElementById("cRank");
-
-        // Style thẻ Pokemon cực cháy
-        card.style.border = "2px solid #ffcb05";
-        card.style.boxShadow = "0 0 40px rgba(255, 203, 5, 0.6), inset 0 0 20px rgba(255, 203, 5, 0.2)";
-        
-        nameEle.innerText = data.name.toUpperCase();
-        nameEle.style.color = "#ffcb05";
-        nameEle.style.textShadow = "0 0 15px #ffcb05";
-        
-        document.getElementById("cAvatar").src = data.sprites.other['official-artwork'].front_default;
-        document.getElementById("cPower").innerText = "⚡ " + data.stats[1].base_stat;
-        document.getElementById("cCoin").innerText = "✨ " + data.base_experience;
-        
-        rank.innerText = "POKEMON LEGENDARY";
-        rank.style.background = "linear-gradient(90deg, #ffcb05, #3d7dca)";
-        
-        document.getElementById("adminControls").style.display = "none";
-        document.getElementById("profileModal").style.display = "flex";
-    }
-
-    // 5. HÀM SHOW THẺ PROFILE (HIỆU ỨNG THEO RANK)
-    function showProfile(name, color) {
-        const card = document.getElementById("card");
-        const nameEle = document.getElementById("cName");
-        const rank = document.getElementById("cRank");
-        const adminPanel = document.getElementById("adminControls");
-
-        nameEle.innerText = name;
-        nameEle.style.color = color;
-        nameEle.style.textShadow = `0 0 10px ${color}`;
-        document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-
-        // Reset style cơ bản
-        card.style.border = "1px solid rgba(255,255,255,0.2)";
-        card.style.boxShadow = "0 20px 50px rgba(0,0,0,0.8)";
-
-        // Kiểm tra xem người được chọn có phải Admin không
-        if (ADMIN_LIST.includes(name)) {
-            card.style.border = "2px solid #ff4757";
-            card.style.boxShadow = "0 0 40px rgba(255, 71, 87, 0.5)";
-            rank.innerText = "CHỦ SERVER";
-            rank.style.background = "linear-gradient(45deg, #ff4757, #ff6b81)";
-        } else {
-            rank.innerText = "THÀNH VIÊN";
-            rank.style.background = "rgba(255,255,255,0.1)";
-        }
-
-        // Hiện nút đổi tên nếu người đang xem là 1 trong 3 Admin
-        adminPanel.style.display = ADMIN_LIST.includes(myName) ? "block" : "none";
-
-        document.getElementById("cPower").innerText = "🔥 " + Math.floor(Math.random()*5000);
-        document.getElementById("cCoin").innerText = "💰 " + Math.floor(Math.random()*9999);
-        document.getElementById("profileModal").style.display = "flex";
-    }
-
-    // 6. XỬ LÝ ĐÓNG THẺ VÀ XOAY 3D
-    function closeCard() {
-        document.getElementById("profileModal").style.display = "none";
-        document.getElementById("card").style.transform = "rotateX(0deg) rotateY(0deg)";
-    }
-
-    const modal = document.getElementById("profileModal");
-    const card = document.getElementById("card");
-    modal.onmousemove = (e) => {
-        let x = (window.innerWidth / 2 - e.pageX) / 15;
-        let y = (window.innerHeight / 2 - e.pageY) / 15;
-        card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
-    };
-
-    // 7. LẮNG NGHE FIREBASE & HIỂN THỊ CHAT
-    db.ref("global_chat").limitToLast(40).on("value", snap => {
+    // 4. LẮNG NGHE FIREBASE & TỰ ĐỘNG NHẮC NHỞ
+    db.ref("global_chat").limitToLast(30).on("value", snap => {
         const box = document.getElementById("chatBox");
         box.innerHTML = "";
         snap.forEach(child => {
             const d = child.val();
-            const isMe = d.user === myName;
             const isAdmin = ADMIN_LIST.includes(d.user);
-            
             const div = document.createElement("div");
-            div.className = `msg ${isMe ? 'me' : 'other'}`;
-            
-            const tag = isAdmin ? `<span class="badge badge-admin">ADMIN</span>` : "";
-            const nStyle = isAdmin ? `color:#ff4757; font-weight:bold; text-shadow:0 0 5px rgba(255,71,87,0.3);` : `color:${d.color};`;
-
-            div.innerHTML = `
-                <b style="${nStyle} cursor:pointer;" onclick="showProfile('${d.user}', '${d.color}')">
-                    ${tag}${d.user}
-                </b> 
-                <span>${d.text}</span>
-            `;
+            div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
+            div.innerHTML = `<b style="color:${isAdmin?'#ff4757':d.color};" onclick="showProfile('${d.user}', '${d.color}')">${isAdmin?'[AD] ':''}${d.user}</b> <span>${d.text}</span>`;
             box.appendChild(div);
         });
+
+        // Bot tự động "Thả thính" sau mỗi 40 giây nếu có chat mới
+        const now = Date.now();
+        if (now - lastBotTime > 40000) { 
+            setTimeout(() => botSay("Sếp cần xem lệnh thì gõ <b>/help</b> nhé, phục vụ sếp 24/7! 🫡"), 2000);
+            lastBotTime = now;
+        }
         box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
     });
 
-    // Sự kiện Enter
+    // 5. CÁC HÀM HIỂN THỊ THẺ (GIỮ NGUYÊN BẢN 3D ĐẸP NHẤT)
+    function showPokeCard(data) {
+        const card = document.getElementById("card");
+        document.getElementById("cName").innerText = data.name.toUpperCase();
+        document.getElementById("cAvatar").src = data.sprites.other['official-artwork'].front_default;
+        document.getElementById("cPower").innerText = "⚡ " + data.stats[1].base_stat;
+        document.getElementById("cCoin").innerText = "✨ " + data.base_experience;
+        document.getElementById("cRank").innerText = "POKEMON LEGENDARY";
+        document.getElementById("profileModal").style.display = "flex";
+        // Thêm hiệu ứng phát sáng vàng đặc trưng
+        card.style.boxShadow = "0 0 50px #ffcb05";
+    }
+
+    function showProfile(name, color) {
+        document.getElementById("cName").innerText = name;
+        document.getElementById("cName").style.color = color;
+        document.getElementById("cAvatar").src = name === "KaizenAI" ? "https://api.dicebear.com/7.x/bottts/svg?seed=Kaizen" : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+        document.getElementById("cRank").innerText = ADMIN_LIST.includes(name) ? "CHỦ SERVER" : (name === "KaizenAI" ? "HỆ THỐNG AI" : "THÀNH VIÊN");
+        document.getElementById("profileModal").style.display = "flex";
+    }
+
+    function closeCard() { document.getElementById("profileModal").style.display = "none"; }
     document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
 
-    // Hàm Admin đổi tên
-    function changeNickname() {
-        const n = document.getElementById("newNickInput").value.trim();
-        if(n) {
-            localStorage.setItem("username", n);
-            alert("🛠 Hệ thống: Đã xác nhận đổi danh tính!");
-            location.reload();
-        }
-    }
-        // --- ĐOẠN CODE TỰ ĐỘNG NHẮC NHỞ /HELP ---
-db.ref("global_chat").limitToLast(40).on("value", snap => {
-    const box = document.getElementById("chatBox");
-    box.innerHTML = "";
-    
-    snap.forEach(child => {
-        const d = child.val();
-        const isMe = d.user === myName;
-        const isAdmin = ADMIN_LIST.includes(d.user);
-        
-        const div = document.createElement("div");
-        div.className = `msg ${isMe ? 'me' : 'other'}`;
-        
-        const tag = isAdmin ? `<span class="badge badge-admin">ADMIN</span>` : "";
-        const nStyle = isAdmin ? `color:#ff4757; font-weight:bold;` : `color:${d.color};`;
-
-        div.innerHTML = `
-            <b style="${nStyle} cursor:pointer;" onclick="showProfile('${d.user}', '${d.color}')">
-                ${tag}${d.user}
-            </b> 
-            <span>${d.text}</span>
-        `;
-        box.appendChild(div);
-    });
-
-    // --- LOGIC BOT TỰ ĐỘNG CHAT (CHỖ ÔNG CẦN ĐÂY) ---
-    const now = Date.now();
-    // Bot sẽ chỉ chat nếu: 1. Có tin nhắn mới | 2. Đã qua 30 giây kể từ lần nhắc cuối
-    if (now - lastBotTime > 30000) { 
-        // Delay 1.5 giây để tin nhắn người dùng hiện lên trước, Bot hiện sau cho tự nhiên
-        setTimeout(() => {
-            botSay("Chào sếp! Đừng quên gõ <b>/help</b> để khám phá sức mạnh của KaizenAI và lệnh /poke nhé! 🚀");
-        }, 1500);
-        
-        lastBotTime = now; // Cập nhật lại thời gian để không bị spam liên tục
-    }
-
-    // Luôn cuộn xuống cuối khi có tin nhắn hoặc bot chat
-    box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-});
+    // Hiệu ứng xoay 3D (Xịn nhất TG)
+    const modal = document.getElementById("profileModal");
+    const cardBody = document.getElementById("card");
+    modal.onmousemove = (e) => {
+        let x = (window.innerWidth / 2 - e.pageX) / 10;
+        let y = (window.innerHeight / 2 - e.pageY) / 10;
+        cardBody.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+    };
 </script>
 
 </body>
