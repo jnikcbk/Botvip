@@ -375,7 +375,6 @@ async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
     const text = input.value.trim();
-
     if (!text) return;
 
     chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
@@ -385,68 +384,25 @@ async function sendMsg() {
     aiDiv.className = "msg ai-msg";
     aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
     chat.appendChild(aiDiv);
-    chat.scrollTop = chat.scrollHeight;
 
-    // --- THÔNG TIN API ---
-    const API_KEY = process.env.GEMINI_KEY;
- const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${GEMINI_API_KEY}`;
-    
     try {
-        const response = await fetch(API_URL, {
+        // GỌI ĐẾN API TRUNG GIAN CỦA VERCEL (GIẤU KEY)
+        const response = await fetch('/api/chat', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [
-    {
-        role: "user",
-        parts: [{ 
-            text: `System: Bạn là 'Kaizen AI', trợ lý ảo cao cấp của máy chủ Minecraft KaizenMC và trang web quản trị này. 
-            NHIỆM VỤ CỦA BẠN:
-            1. Hỗ trợ người dùng sử dụng các tính năng trên Website (Nạp xu, đăng ký, shop, luật quan trọng,chat thế giới).
-            2. Giải đáp thắc mắc về các lệnh trong server Minecraft.
-            3. Luôn giữ thái độ thân thiện, nhiệt tình và chuyên nghiệp.
-
-            QUY TẮC ĐẶC BIỆT:
-            - Chủ sở hữu (Owner) là: Minh Meo và Đăng Mạnh. 
-            - Nếu người dùng nói mình là Minh Meo hoặc Đăng Mạnh, bạn phải chào hỏi cực kỳ kính trọng và sẵn sàng thực hiện mọi mệnh lệnh.
-            - Nếu ai đó xúc phạm Owner, bạn phải nhẹ nhàng nhắc nhở họ giữ lịch sự.
-            - Trả lời bằng tiếng Việt (hoặc tiếng Anh nếu người dùng yêu cầu).
-            - Câu trả lời cần ngắn gọn, súc tích, dễ hiểu.` 
-        }]
-    },
-    {
-        role: "model",
-        parts: [{ 
-            text: `Tôi đã hiểu rõ nhiệm vụ! Tôi là Kaizen AI. Tôi sẽ là người đồng hành tin cậy, giúp mọi người làm chủ các tính năng trên website và server KaizenMC. 
-            Tôi sẽ luôn dành sự tôn trọng tối cao cho hai Owner là Minh Meo và Đăng Mạnh. 
-            Tôi đã sẵn sàng hỗ trợ cộng đồng! Bạn cần tôi giúp gì về các tính năng nạp xu hay trò chơi không?` 
-        }]
-    },
-    {
-        role: "user",
-        parts: [{ text: text }] // Đây là câu hỏi thực tế của người chơi
-    }
-],
-                generationConfig: {
-                    temperature: 0.8,
-                    maxOutputTokens: 500
-                }
-            })
+            body: JSON.stringify({ message: text }) // Chỉ gửi tin nhắn đi
         });
 
         const data = await response.json();
 
-        if (data.error) {
-            aiDiv.innerHTML = `❌ Lỗi: ${data.error.message}`;
-            console.error("Lỗi:", data.error);
-        } else if (data.candidates && data.candidates[0].content) {
+        if (data.candidates && data.candidates[0].content) {
             const botReply = data.candidates[0].content.parts[0].text;
             aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
         } else {
-            aiDiv.innerHTML = `❌ AI từ chối trả lời do vi phạm chính sách.`;
+            aiDiv.innerHTML = `❌ Lỗi: AI không phản hồi.`;
         }
     } catch (e) {
-        aiDiv.innerHTML = `❌ Lỗi kết nối. Hãy kiểm tra mạng!`;
+        aiDiv.innerHTML = `❌ Lỗi kết nối server!`;
     }
     chat.scrollTop = chat.scrollHeight;
 }
