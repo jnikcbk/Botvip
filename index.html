@@ -47,41 +47,7 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
-       .music-container {
-    position: fixed;
-    bottom: 25px;
-    left: 25px;
-    z-index: 99999; /* Đảm bảo nổi lên trên cùng */
-}
-
-.music-btn {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(8px);
-    border: 2px solid #00f0ff;
-    color: #00f0ff;
-    padding: 12px 20px;
-    border-radius: 50px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-}
-
-.music-btn:hover {
-    transform: scale(1.05);
-    background: #00f0ff;
-    color: #020617;
-}
-
-.music-btn.playing {
-    border-color: #00ff88;
-    color: #00ff88;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
-}
+       
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
     color: #ff4d4d !important; /* Màu đỏ cảnh báo */
@@ -936,21 +902,7 @@
         SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
     </div>
 </div>
-   <div class="video-bg-container">
-    <video autoplay muted loop playsinline class="bg-video">
-        <source src="https://assets.pokemon.com/video/us/watch-pokemon-tv-trailer.mp4" type="video/mp4">
-    </video>
-    <div class="video-overlay-layer"></div>
-</div>
-    <div class="music-container">
-    <button id="music-toggle" class="music-btn">
-        <span class="music-icon">🎵</span>
-        <span class="music-text">BGM: Kỷ Nguyên Pokémon</span>
-    </button>
-    <audio id="bg-music" loop>
-        <source src="https://vgmsite.com/soundtracks/pokemon-ten-years-of-pokemon/vghvunsc/01%20-%20Opening.mp3" type="audio/mpeg">
-    </audio>
-</div>
+   
 </section>
 
 <footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
@@ -1413,32 +1365,7 @@ async function updateFooterIP() {
 }
 
 
-window.addEventListener('load', () => {
-    const musicBtn = document.getElementById('music-toggle');
-    const bgMusic = document.getElementById('bg-music');
-    const musicText = document.getElementById('music-text');
-    let isPlaying = false;
 
-    if (musicBtn && bgMusic) {
-        bgMusic.volume = 0.3;
-        musicBtn.addEventListener('click', () => {
-            if (!isPlaying) {
-                bgMusic.play().then(() => {
-                    isPlaying = true;
-                    musicBtn.style.borderColor = "#00ff88";
-                    musicBtn.style.color = "#00ff88";
-                    musicText.innerText = 'BGM: Đang phát...';
-                }).catch(err => alert("Nhấn lại lần nữa để nghe nhạc nhé!"));
-            } else {
-                bgMusic.pause();
-                isPlaying = false;
-                musicBtn.style.borderColor = "#00f0ff";
-                musicBtn.style.color = "#00f0ff";
-                musicText.innerText = 'BGM: Tạm dừng';
-            }
-        });
-    }
-});
 </script>
 
 </body>
