@@ -3,244 +3,245 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Thế Giới • Kaizen</title>
+  <title>Chat Kaizen • Material</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --md-primary: #6750a4;          /* Tím Material 3 */
+      --md-primary-light: #d0bcff;
+      --md-on-primary: #ffffff;
+      --md-surface: #fef7ff;
+      --md-surface-dim: #f5efff;
+      --md-outline: #79747e;
+      --md-shadow: rgba(0,0,0,0.08);
+      --md-elevation-1: 0 1px 3px var(--md-shadow), 0 1px 2px var(--md-shadow);
+      --md-elevation-2: 0 3px 6px var(--md-shadow), 0 3px 6px var(--md-shadow);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0d0d0d;
-      color: #e0e0e0;
-      height: 100vh;
+      font-family: 'Roboto', sans-serif;
+      background: var(--md-surface);
+      color: #1d1b20;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
-    .header {
-      background: #17212b;
-      padding: 12px 16px;
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--md-primary), #5e35b1);
+      color: var(--md-on-primary);
+      padding: 16px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #0f1621;
+      gap: 16px;
+      box-shadow: var(--md-elevation-2);
       position: sticky;
       top: 0;
       z-index: 10;
     }
     .avatar {
-      width: 42px;
-      height: 42px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #0088cc, #00a3e0);
+      background: var(--md-primary-light);
+      color: var(--md-primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 18px;
-      color: white;
+      font-size: 26px;
+      font-weight: 700;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
-    .info h2 { font-size: 16px; margin-bottom: 2px; }
-    .info p { font-size: 13px; color: #8a8a8a; }
-    .chat-container {
+    .header-info h1 {
+      font-size: 22px;
+      font-weight: 500;
+      margin: 0;
+    }
+    .header-info p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    /* Chat area */
+    main {
       flex: 1;
-      padding: 16px;
+      padding: 20px 16px;
       overflow-y: auto;
-      background: url('https://i.imgur.com/8q7Zx9v.png') repeat;
-      background-size: 200px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      background: linear-gradient(to bottom, var(--md-surface-dim), var(--md-surface));
     }
     .message {
-      max-width: 78%;
-      padding: 10px 14px;
-      border-radius: 18px;
-      line-height: 1.4;
-      font-size: 15px;
-      word-wrap: break-word;
+      max-width: 82%;
+      padding: 12px 16px;
+      border-radius: 24px;
+      font-size: 15.5px;
+      line-height: 1.45;
+      box-shadow: var(--md-elevation-1);
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .message.sent {
       align-self: flex-end;
-      background: #248046;
+      background: var(--md-primary);
       color: white;
-      border-bottom-right-radius: 4px;
+      border-bottom-right-radius: 8px;
     }
     .message.received {
       align-self: flex-start;
-      background: #2b5278;
-      color: white;
-      border-bottom-left-radius: 4px;
-    }
-    .sender {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-bottom: 4px;
-      font-weight: bold;
+      background: #f0e8ff;
+      color: #1d1b20;
+      border-bottom-left-radius: 8px;
     }
     .time {
       font-size: 11px;
-      opacity: 0.7;
-      margin-top: 4px;
+      opacity: 0.75;
+      margin-top: 6px;
       text-align: right;
     }
+
+    /* Input area */
     .input-area {
-      background: #17212b;
-      padding: 12px 16px;
+      background: white;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       gap: 12px;
-      border-top: 1px solid #0f1621;
+      border-top: 1px solid var(--md-outline);
+      box-shadow: 0 -3px 10px var(--md-shadow);
     }
     .input-area input {
       flex: 1;
-      background: #2b2b2b;
-      border: none;
-      border-radius: 24px;
-      padding: 12px 20px;
-      color: white;
-      font-size: 15px;
+      padding: 14px 20px;
+      border: 1px solid var(--md-outline);
+      border-radius: 28px;
+      font-size: 16px;
       outline: none;
+      transition: border-color 0.2s;
     }
-    .input-area input::placeholder { color: #8a8a8a; }
+    .input-area input:focus {
+      border-color: var(--md-primary);
+      box-shadow: 0 0 0 3px rgba(103,80,164,0.15);
+    }
     .send-btn {
-      background: #0088cc;
+      background: var(--md-primary);
       color: white;
       border: none;
-      width: 44px;
-      height: 44px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 26px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      box-shadow: var(--md-elevation-1);
     }
-    .send-btn:hover { background: #00a3e0; }
-    .send-btn:disabled { background: #444; cursor: not-allowed; }
+    .send-btn:hover {
+      background: #5e35b1;
+      transform: scale(1.05);
+    }
+    .send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="avatar">🌍</div>
-    <div class="info">
-      <h2>Chat Thế Giới Kaizen</h2>
-      <p>Realtime • Mọi người đang online...</p>
+  <header>
+    <div class="avatar">K</div>
+    <div class="header-info">
+      <h1>Chat Kaizen</h1>
+      <p>đang hoạt động • online</p>
     </div>
-  </div>
+  </header>
 
-  <div class="chat-container" id="chatContainer">
-    <!-- Tin nhắn sẽ load realtime -->
-  </div>
+  <main id="chatContainer">
+    <div class="message received">
+      Chào Minh! Có gì vui hôm nay không? 😄
+      <div class="time">19:05</div>
+    </div>
+  </main>
 
   <div class="input-area">
-    <input type="text" id="nameInput" placeholder="Tên bạn..." style="width:140px; margin-right:8px;" value="Khách"/>
-    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..."/>
-    <button class="send-btn" id="sendBtn" disabled>➤</button>
+    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." autocomplete="off"/>
+    <button class="send-btn" id="sendBtn" disabled>send</button>
   </div>
 
-  <!-- Firebase SDK v10 compat (ổn định cho web HTML/JS) -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-
   <script>
-    // Config dự án của bạn
-    const firebaseConfig = {
-      apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-      databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "kaizenmc-web-ba518"
-    };
-
-    let db, messagesRef;
-
-    // Khởi tạo Firebase
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      messagesRef = db.ref('messages'); // đường dẫn lưu tin nhắn
-      console.log("✅ Firebase kết nối thành công!");
-    } catch (error) {
-      console.error("❌ LỖI KẾT NỐI FIREBASE:", error);
-      alert("Không kết nối được Firebase. Kiểm tra Console (F12) và config.");
-    }
-
     const chatContainer = document.getElementById('chatContainer');
-    const nameInput = document.getElementById('nameInput');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // Kích hoạt nút gửi khi có text
     messageInput.addEventListener('input', () => {
       sendBtn.disabled = !messageInput.value.trim();
     });
 
-    // Hàm gửi tin nhắn
     function sendMessage() {
-      if (!messagesRef) {
-        alert("Chưa kết nối Firebase!");
-        return;
-      }
-
-      const name = nameInput.value.trim() || "Khách";
       const text = messageInput.value.trim();
       if (!text) return;
 
-      console.log("Gửi tin:", { name, text });
+      // Tin nhắn của bạn
+      const msgSent = document.createElement('div');
+      msgSent.className = 'message sent';
+      msgSent.innerHTML = `${text}<div class="time">${getTime()}</div>`;
+      chatContainer.appendChild(msgSent);
 
-      messagesRef.push({
-        name: name,
-        text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        console.log("Gửi OK!");
-        messageInput.value = '';
-        sendBtn.disabled = true;
-      }).catch(err => {
-        console.error("Lỗi gửi:", err);
-        alert("Gửi thất bại: " + (err.message || "Permission denied? Kiểm tra Rules!"));
-      });
+      // Fake reply sau 0.8–1.5 giây
+      setTimeout(() => {
+        const replies = [
+          "Tuyệt vời luôn! 🔥",
+          "Haha kể tiếp đi Minh ơi!",
+          "Mình đang nghĩ đây...",
+          "Cái này đỉnh thật đấy 😎",
+          "Hôm nay năng lượng cao ghê ha",
+          "Ok, note lại rồi nè!",
+          "Bạn hay thật á!"
+        ];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+
+        const msgRecv = document.createElement('div');
+        msgRecv.className = 'message received';
+        msgRecv.innerHTML = `${reply}<div class="time">${getTime()}</div>`;
+        chatContainer.appendChild(msgRecv);
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 800 + Math.random() * 700);
+
+      messageInput.value = '';
+      sendBtn.disabled = true;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     sendBtn.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
     });
 
-    // Lắng nghe tin nhắn mới (realtime)
-    if (messagesRef) {
-      messagesRef.orderByChild('timestamp').limitToLast(150).on('child_added', snapshot => {
-        const data = snapshot.val();
-        if (!data || !data.text) return;
-
-        const isSent = data.name === (nameInput.value.trim() || "Khách");
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-        msgDiv.innerHTML = `
-          <div class="sender">${data.name || 'Ẩn danh'}</div>
-          ${data.text}
-          <div class="time">${formatTime(data.timestamp)}</div>
-        `;
-
-        chatContainer.appendChild(msgDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, err => {
-        console.error("Lỗi lắng nghe realtime:", err);
-        alert("Lỗi realtime: " + err.message);
-      });
+    function getTime() {
+      const now = new Date();
+      return now.getHours().toString().padStart(2, '0') + ':' +
+             now.getMinutes().toString().padStart(2, '0');
     }
 
-    function formatTime(ts) {
-      if (!ts) return '--:--';
-      const d = new Date(ts);
-      return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
-    }
-
-    // Focus input khi load
     messageInput.focus();
-    console.log("Chat app loaded! Thử gửi tin nhắn xem...");
   </script>
 
 </body>
