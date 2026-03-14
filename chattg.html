@@ -11,6 +11,68 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* CSS THẺ BÀI POKÉMON 3D (khi bot trả lời /poke) */
+.poke-card-3d {
+    border: 3px solid var(--neon-blue);
+    border-radius: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(0,240,255,0.12), rgba(195,0,255,0.08));
+    box-shadow: 
+        0 10px 30px rgba(0,240,255,0.3),
+        inset 0 0 20px rgba(0,240,255,0.15);
+    max-width: 90%;
+    margin: 8px auto;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.poke-card-3d:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+        0 20px 50px rgba(0,240,255,0.5),
+        inset 0 0 30px rgba(0,240,255,0.25);
+}
+
+.poke-card-3d::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+    animation: shine 6s infinite linear;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%); }
+    50% { transform: translateX(100%) translateY(100%); }
+    100% { transform: translateX(-100%) translateY(-100%); }
+}
+
+.poke-card-3d img {
+    width: 96px;
+    height: 96px;
+    border-radius: 12px;
+    float: left;
+    margin-right: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 15px var(--neon-blue);
+    image-rendering: pixelated; /* Giữ nét pixel cho GIF Pokémon */
+}
+
+.poke-card-3d b {
+    color: var(--neon-blue);
+    text-shadow: 0 0 8px var(--neon-blue);
+}
+
+.poke-card-3d small {
+    opacity: 0.8;
+    font-style: italic;
+    color: var(--neon-purple);
+    display: block;
+    margin-top: 8px;
+}
         :root {
             --neon-blue: #00f0ff; --neon-purple: #c300ff; --neon-pink: #ff00aa;
             --border: rgba(255,255,255,0.12); --glass: rgba(15,23,42,0.88);
@@ -199,6 +261,139 @@ function createFallingPokemon() {
     setTimeout(() => p.remove(), 7000);
 }
 setInterval(createFallingPokemon, 500);
+    if (cmd === '/help') {
+    botReply(`<b>📜 DANH SÁCH 5 LỆNH HAY NHẤT KAIZEN CHAT</b><br><br>
+    <b>/help</b> → Xem lại danh sách lệnh này (gõ gì cũng ra đây)<br>
+    <b>/online</b> → Kiểm tra số huấn luyện viên đang online ngay lúc này<br>
+    <b>/clear</b> → Xóa sạch toàn bộ tin nhắn hiển thị trên màn hình của bạn<br>
+    <b>/poke</b> → Bắt ngẫu nhiên 1 Pokémon và bot thông báo kết quả<br>
+    <b>/me &lt;nội dung&gt;</b> → Tạo hành động (ví dụ: /me đang cưỡi Charizard bay vèo vèo)<br><br>
+    <small style="opacity:0.7;">Gõ lệnh nào cũng phải có dấu / ở đầu nhé! 🔥</small>`);
+}
+else if (cmd === '/online') {
+    // Đếm số tin nhắn gần đây (giả lập online: ai gửi tin trong 10 phút qua được tính là online)
+    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+
+    messagesRef.orderByChild('timestamp').startAt(tenMinutesAgo).once('value', snapshot => {
+        const onlineCount = snapshot.numChildren(); // Số tin nhắn trong 10 phút qua
+
+        let statusText = '';
+        let emoji = '🌐';
+        if (onlineCount >= 20) {
+            statusText = 'Server đang cực hot!';
+            emoji = '🔥🌐🔥';
+        } else if (onlineCount >= 10) {
+            statusText = 'Đang sôi động lắm nha!';
+            emoji = '⚡🌐⚡';
+        } else {
+            statusText = 'Chờ thêm bạn bè vào chat nào!';
+            emoji = '🌙🌐🌙';
+        }
+
+        botReply(`
+            <div style="
+                background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(195,0,255,0.1));
+                border: 2px solid var(--neon-blue);
+                border-radius: 16px;
+                padding: 16px;
+                text-align: center;
+                box-shadow: 0 0 25px rgba(0,240,255,0.4);
+                animation: pulseGlow 3s infinite alternate;
+            ">
+                <span style="font-size: 24px; font-weight: bold; color: var(--neon-blue);">
+                    ${emoji} <b>${onlineCount}</b> huấn luyện viên đang online!
+                </span><br><br>
+                <span style="color: var(--neon-purple); font-style: italic;">
+                    ${statusText}
+                </span>
+            </div>
+        `);
+    });
+
+    messageInput.value = '';
+    return;
+}
+
+// Thêm animation vào <style> nếu chưa có
+@keyframes pulseGlow {
+    from { box-shadow: 0 0 15px rgba(0,240,255,0.3); }
+    to   { box-shadow: 0 0 35px rgba(0,240,255,0.7); }
+}
+else if (cmd === '/clear') {
+    chatContainer.innerHTML = '';
+    botReply(`✅ Đã xóa sạch tin nhắn hiển thị trên màn hình của bạn. Chat mới bắt đầu thôi!`);
+}
+else if (cmd === '/poke') {
+    if (!args) {
+        botReply(`❌ Sai cú pháp! Ví dụ: <b>/poke Pikachu</b> hoặc <b>/poke charizard</b>`);
+        return;
+    }
+
+    const pokeName = args.trim().toLowerCase();
+
+    botReply(`🔍 Đang tìm kiếm Pokémon "${pokeName}" từ PokeAPI...`);
+
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokeName}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Không tìm thấy Pokémon');
+            return response.json();
+        })
+        .then(data => {
+            const name = data.name.charAt(0).toUpperCase() + data.name.slice(1);
+            const types = data.types.map(t => t.type.name).join(' / ');
+            const hp = data.stats.find(s => s.stat.name === 'hp').base_stat;
+            const desc = `Pokémon số ${data.id} - Cao ${data.height/10}m, nặng ${data.weight/10}kg.`;
+            const gif = data.sprites.versions['generation-v']['black-white'].animated.front_default || data.sprites.front_default;
+
+            botReply(`
+                <div class="poke-card-3d">
+                    <img src="${gif}" alt="${name}" width="96" style="float:left; margin-right:12px; border-radius:12px; box-shadow:0 0 15px var(--neon-blue);">
+                    <b>${name}</b> (#${data.id})<br>
+                    <b>Type:</b> ${types}<br>
+                    <b>HP:</b> ${hp} ❤️<br><br>
+                    ${desc}<br><br>
+                    <small>✨ Thẻ bài 3D KaizenMC - Bắt thành công từ PokeAPI!</small>
+                </div>
+            `);
+        })
+        .catch(err => {
+            botReply(`❌ Không tìm thấy Pokémon "${pokeName}". Thử tên khác nhé! (ví dụ: pikachu, charizard, mewtwo)`);
+        });
+
+    messageInput.value = '';
+    return;
+}
+else if (cmd === '/me' && args) {
+    const actionText = args.trim();
+    botReply(`
+        <div style="
+            background: linear-gradient(135deg, rgba(195,0,255,0.15), rgba(0,240,255,0.1));
+            border-left: 5px solid var(--neon-purple);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            box-shadow: 0 0 20px rgba(195,0,255,0.4);
+            animation: glowPulse 2s infinite alternate;
+        ">
+            <span style="color: var(--neon-purple); font-weight: 800; font-size: 16px;">
+                ✦ ${username} ${actionText} ✦
+            </span>
+            <br>
+            <small style="opacity:0.7; color: var(--neon-blue); font-style: italic;">
+                (hành động nổi bật - toàn server thấy!)
+            </small>
+        </div>
+    `);
+}
+
+// Thêm animation vào <style> (nếu chưa có)
+@keyframes glowPulse {
+    from { box-shadow: 0 0 10px rgba(195,0,255,0.3); }
+    to   { box-shadow: 0 0 30px rgba(195,0,255,0.7); }
+}
+else {
+    botReply(`❌ Lệnh không tồn tại. Gõ <b>/help</b> để xem danh sách lệnh nhé!`);
+}
 </script>
 </body>
 </html>
