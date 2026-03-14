@@ -11,32 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-      #loader-chuan {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: #020617;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 100000; /* Số cực lớn để nó luôn nằm trên cùng */
-}
-
-.loading-text {
-    color: #00f0ff;
-    margin-top: 20px;
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 2px;
-}
-@keyframes shake {
-    0% { transform: rotate(0); }
-    20% { transform: rotate(-20deg); }
-    40% { transform: rotate(20deg); }
-    60% { transform: rotate(-10deg); }
-    80% { transform: rotate(10deg); }
-    100% { transform: rotate(0); }
-}
+     
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
     color: #ff4d4d !important; /* Màu đỏ cảnh báo */
@@ -911,10 +886,7 @@
     <div class="status-offline" style="margin-top: 15px; font-size: 11px; padding: 5px 15px;">
         <span class="blink-dot"></span> KAIZENMC HIỆN ĐANG ĐÓNG CỬA PHÙ PHÉP
     </div>
-   <div id="loader-chuan">
-    <div class="pokeball-loader"></div>
-    <div class="loading-text">ĐANG KHỞI TẠO KỶ NGUYÊN...</div>
-</div>
+   
 </footer>
 
 <script>
@@ -1345,26 +1317,6 @@ async function updateFooterIP() {
     }
 }
 
-window.addEventListener('load', () => {
-    const loader = document.getElementById('loader');
-    
-    // Ép buộc màn hình loading phải biến mất sau 3 giây
-// Lệnh cưỡng ép tắt màn hình Load sau đúng 3 giây
-setTimeout(function() {
-    var manHinhLoad = document.getElementById('loader-chuan');
-    if (manHinhLoad) {
-        manHinhLoad.style.opacity = '0';
-        manHinhLoad.style.transition = '0.5s';
-        setTimeout(function() {
-            manHinhLoad.style.display = 'none';
-        }, 500);
-    }
-}, 3000);
-
-// Vẫn giữ lệnh load chính để đảm bảo web chạy mượt
-window.addEventListener('load', () => {
-    console.log("Web đã tải xong!");
-});
 
 </script>
 
