@@ -11,6 +11,45 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        /* Style cho bảng thông báo ngừng hoạt động */
+.status-offline {
+    color: #ff4d4d !important; /* Màu đỏ cảnh báo */
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; /* Hiệu ứng Neon đỏ */
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 0, 0, 0.1);
+    display: inline-block;
+    margin-top: 10px;
+    animation: alert-pulse 1.5s infinite; /* Hiệu ứng nhịp đập */
+}
+
+/* Chấm đỏ nhấp nháy */
+.blink-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 0 0 10px #ff0000;
+}
+
+/* Animation nhấp nháy cảnh báo */
+@keyframes alert-pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.98); box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Đổi màu tiêu đề Kaizen khi offline (tùy chọn) */
+.kaizen-title.offline {
+    filter: grayscale(1) brightness(0.8);
+}
         img[src*="poke-api"] {
     filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
     image-rendering: pixelated; /* Giữ độ sắc nét cho ảnh gif pokemon pixel */
@@ -772,7 +811,13 @@
     <div class="radar-line"></div>
     <img src="logo-kaizen.png" alt="KaizenMC Logo" class="main-avatar">
 </div>
-    
+    <div class="server-status-box">
+    <h2 class="kaizen-title">KAIZENMC</h2>
+    <div class="status-offline">
+        <span class="blink-dot"></span> 
+        SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
+    </div>
+</div>
 </section>
 
 <footer>
