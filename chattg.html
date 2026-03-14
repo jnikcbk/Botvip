@@ -2,524 +2,332 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KaizenMC - Chat Thế Giới</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaizenMC - Hệ Thống Chat AI</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Hiệu ứng tin nhắn Bot - Gradient mượt mà */
-.bot-msg {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%) !important;
-    border-left: 4px solid #10b981 !important;
-    border-radius: 8px 20px 20px 8px !important;
-    padding: 12px !important;
-    margin: 10px 0 !important;
-    position: relative;
-    overflow: hidden;
-    animation: botGlow 2s infinite alternate;
-}
-
-/* Hào quang cho Bot */
-@keyframes botGlow {
-    from { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
-    to { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-}
-
-/* Badge Bot lấp lánh */
-.bot-badge {
-    background: linear-gradient(90deg, #10b981, #34d399);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 5px;
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: bold;
-    margin-right: 5px;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-}
-
-/* Hiệu ứng chữ đang gõ */
-.typing {
-    font-style: italic;
-    font-size: 12px;
-    color: #10b981;
-    margin-bottom: 5px;
-}
-        /* Thêm cái này vào cuối thẻ style */
-#profileModal {
-    display: none; position: fixed; top: 0; left: 0; 
-    width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-    z-index: 10000; perspective: 1000px;
-    align-items: center; justify-content: center;
-}
-.card-3d {
-    width: 280px; background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(20px); border-radius: 25px;
-    padding: 30px 20px; text-align: center;
-    border: 1px solid rgba(255,255,255,0.2);
-    transition: transform 0.1s; color: white;
-}
-.card-avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #3b82f6; }
-        /* Bảng hiện thẻ bài */
-#profileModal {
-    display: none;
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    perspective: 1000px; /* Tạo độ sâu 3D */
-}
-
-.card-3d {
-    width: 280px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    transition: transform 0.1s; /* Phục vụ hiệu ứng nghiêng */
-    color: white;
-}
-
-.card-avatar {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--primary);
-    margin-bottom: 10px;
-    background: #334155;
-}
-
-.stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.stat-item {
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.stat-value { color: #fbbf24; font-weight: bold; display: block; }
-.stat-label { font-size: 10px; color: #94a3b8; }
-
-.close-card {
-    margin-top: 15px;
-    font-size: 12px;
-    color: #94a3b8;
-    cursor: pointer;
-}
-        /* Màu sắc biệt danh theo Rank */
-.name-admin { color: #ff4757; font-weight: bold; text-shadow: 0 0 8px rgba(255, 71, 87, 0.5); }
-.name-vip { color: #ffa502; font-weight: bold; }
-.name-member { color: #70a1ff; }
-.name-guest { color: #94a3b8; }
-
-/* Tag hiển thị bên cạnh tên */
-.badge {
-    font-size: 9px;
-    padding: 2px 5px;
-    border-radius: 4px;
-    margin-right: 5px;
-    vertical-align: middle;
-    text-transform: uppercase;
-}
-.badge-admin { background: #ff4757; color: white; }
-.badge-vip { background: #ffa502; color: black; }
-        .chat-wrapper {
-    background: rgba(30, 41, 59, 0.7); /* Giảm độ đục */
-    backdrop-filter: blur(12px); /* Làm mờ hậu cảnh */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-}
         :root {
             --primary: #3b82f6;
-            --bg-dark: #020617;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --ai-color: #10b981;
+            --bg-dark: #0f172a;
+            --msg-other: rgba(255, 255, 255, 0.1);
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Chặn cuộn cả trang để tập trung vào chat */
-        }
-
-        /* Navigation Bar - Sửa lỗi tràn Menu trên điện thoại */
-        .nav-bar {
-            background: rgba(30, 41, 59, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            border-bottom: 1px solid #334155;
-            overflow-x: auto; /* Cho phép vuốt ngang menu trên đt */
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .nav-bar::-webkit-scrollbar { display: none; } /* Ẩn thanh cuộn menu */
-
-        .nav-bar a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        .nav-bar a.active {
-            background: var(--primary);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
             color: white;
-        }
-
-        /* Chat Layout - Tự co giãn theo màn hình */
-        .chat-wrapper {
-            flex: 1; /* Chiếm toàn bộ không gian còn lại */
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
             display: flex;
-            flex-direction: column;
-            background: var(--card-bg);
-            border-left: 1px solid #334155;
-            border-right: 1px solid #334155;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
 
-        .chat-header {
-            padding: 12px 20px;
-            background: #1e293b;
-            border-bottom: 1px solid #334155;
+        /* --- KHUNG CHAT CHÍNH --- */
+        #chatContainer {
+            width: 95%;
+            max-width: 500px;
+            height: 80vh;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 20px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .status-dot {
-            width: 8px; height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 10px #22c55e;
-            margin-right: 5px;
-        }
-
-        /* Messages Area - Sửa lỗi tràn chữ */
         #chatBox {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            background-image: radial-gradient(#334155 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
+            gap: 12px;
+            scroll-behavior: smooth;
         }
 
+        /* Tùy chỉnh thanh cuộn */
+        #chatBox::-webkit-scrollbar { width: 5px; }
+        #chatBox::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* --- STYLE TIN NHẮN --- */
         .msg {
-            max-width: 85%; /* Giới hạn độ rộng tin nhắn */
-            padding: 10px 14px;
-            border-radius: 15px;
-            font-size: 14.5px;
-            line-height: 1.4;
-            word-wrap: break-word; /* Tự xuống dòng nếu từ quá dài */
-            animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .msg.other {
-            background: #0f172a;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            animation: pop 0.3s ease-out;
+            word-wrap: break-word;
         }
 
         .msg.me {
-            background: var(--primary);
             align-self: flex-end;
-            border-bottom-right-radius: 2px;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
         }
 
-        .msg b {
-            display: block;
-            font-size: 11px;
-            margin-bottom: 3px;
-            opacity: 0.7;
-            text-transform: uppercase;
+        .msg.other {
+            align-self: flex-start;
+            background: var(--msg-other);
+            color: #e2e8f0;
+            border-bottom-left-radius: 4px;
         }
 
-        /* Input Area - Tối ưu cho bàn phím điện thoại */
+        /* BOX CHAT CỦA KAIZENAI - ĐÃ FIX LỖI HIỂN THỊ */
+        .bot-msg {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
+            border-left: 4px solid var(--ai-color) !important;
+            border-radius: 10px 20px 20px 10px !important;
+            height: auto !important; /* Fix lỗi lùn */
+            width: 90% !important;
+            display: block !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+        }
+
+        .bot-text {
+            margin-top: 8px;
+            color: #ffffff !important;
+            font-weight: 400;
+        }
+
+        .badge {
+            background: var(--ai-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            color: white;
+        }
+
+        /* --- KHU VỰC NHẬP LIỆU --- */
         .input-area {
             padding: 15px;
-            background: #1e293b;
+            background: rgba(15, 23, 42, 0.9);
             display: flex;
-            gap: 8px;
-            border-top: 1px solid #334155;
+            gap: 10px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
         }
 
-        #chatInput {
+        input {
             flex: 1;
-            background: #0f172a;
-            border: 1px solid #334155;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             padding: 12px 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             color: white;
             outline: none;
-            font-size: 16px; /* Chống tự động zoom trên iPhone */
         }
 
-        .send-btn {
+        button {
             background: var(--primary);
             border: none;
             color: white;
-            padding: 0 18px;
-            border-radius: 10px;
+            padding: 0 20px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        /* Mobile specific adjustments */
-        @media (max-width: 600px) {
-            .chat-wrapper { border: none; }
-            .msg { max-width: 90%; }
-            .nav-bar a { padding: 6px 12px; font-size: 13px; }
+        /* --- MODAL 3D CARD --- */
+        #profileModal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center;
+            z-index: 100; backdrop-filter: blur(5px);
         }
+
+        #card {
+            width: 300px; padding: 25px; background: #1e293b; border-radius: 20px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.1);
+            transform-style: preserve-3d; transition: transform 0.1s;
+        }
+
+        #cAvatar { width: 150px; height: 150px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        #cRank { padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin: 10px 0; }
+
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
-<nav class="nav-bar">
-    <a href="index.html">🏠 Trang chủ</a>
-    <a href="shop.html">🛒 Shop</a>
-    <a href="nap-xu.html">💳 Nạp Thẻ</a>
-    <a href="chattg.html" class="active">🌍 Chat Thế Giới</a>
-    <a href="top.html">🏆 Đua Top</a>
-</nav>
-
-<div class="chat-wrapper">
-    <div class="chat-header">
-        <div><span class="status-dot"></span> <b style="font-size: 14px;">GLOBAL CHAT</b></div>
-        <small id="userCount" style="color: var(--text-dim); font-size: 11px;">Kết nối tốt</small>
-    </div>
-
-    <div id="chatBox"></div>
-
-    <div class="input-area">
-        <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." autocomplete="off">
-        <button class="send-btn" onclick="sendMsg()">Gửi</button>
-    </div>
-</div>
-<div class="emoji-bar" style="padding: 0 15px 5px; display:flex; gap:10px; font-size:18px; cursor:pointer;">
-    <span onclick="document.getElementById('chatInput').value += '😊'">😊</span>
-    <span onclick="document.getElementById('chatInput').value += '🔥'">🔥</span>
-    <span onclick="document.getElementById('chatInput').value += '💎'">💎</span>
-</div>
-    <div id="profileModal" onclick="closeCard()">
-    <div class="card-3d" id="card">
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kaizen" class="card-avatar" id="cAvatar">
-        <h3 id="cName" style="margin: 10px 0 5px;">User Name</h3>
-        <span id="cRank" class="badge badge-vip">MEMBER</span>
-        
-        <div class="stat-grid">
-            <div class="stat-item">
-                <span class="stat-value" id="cPower">1,250</span>
-                <span class="stat-label">SỨC MẠNH</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="cCoin">50,000</span>
-                <span class="stat-label">XU</span>
-            </div>
-        </div>
-        <div class="close-card">Nhấn để đóng</div>
-    </div>
-</div>
-    <div id="profileModal" onclick="closeCard()">
-    <div class="card-3d" id="card">
-        <img src="" class="card-avatar" id="cAvatar">
-        <h3 id="cName">User</h3>
-        <div style="display:flex; justify-content: space-around; margin-top:15px;">
-            <div><b id="cPower">0</b><br><small>SỨC MẠNH</small></div>
-            <div><b id="cCoin">0</b><br><small>XU</small></div>
+    <div id="chatContainer">
+        <div id="chatBox"></div>
+        <div class="input-area">
+            <input type="text" id="chatInput" placeholder="Gõ /help để xem lệnh...">
+            <button onclick="sendMsg()">GỬI</button>
         </div>
     </div>
-</div>
-    <div id="adminControls" style="display:none; margin-top: 15px;">
-    <input type="text" id="newNickInput" placeholder="Nhập biệt danh mới..." 
-           style="width: 80%; padding: 5px; border-radius: 5px; border: none; outline: none;">
-    <button onclick="changeNickname()" 
-            style="margin-top: 5px; background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-        XÁC NHẬN ĐỔI
-    </button>
-</div>
 
-  <script>
-    // 1. CẤU HÌNH & KHỞI TẠO
-    const firebaseConfig = {
-        apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
-        databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "kaizenmc-web-ba518"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <div id="profileModal" onclick="closeCard()">
+        <div id="card" onclick="event.stopPropagation()">
+            <div id="cRank">THÀNH VIÊN</div>
+            <img id="cAvatar" src="" alt="Avatar">
+            <h2 id="cName" style="margin: 10px 0;">TÊN USER</h2>
+            <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                <span id="cPower">⚡ 0</span>
+                <span id="cCoin">💰 0</span>
+            </div>
+        </div>
+    </div>
 
-    const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
-    let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
-    let myColor = localStorage.getItem("userColor") || "#3b82f6";
-    let lastBotTime = 0;
+    <script>
+        // 1. CẤU HÌNH FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
+            databaseURL: "https://kaizenmc-web-ba518-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kaizenmc-web-ba518"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    if(!localStorage.getItem("username")) localStorage.setItem("username", myName);
+        // 2. BIẾN HỆ THỐNG
+        const ADMIN_LIST = ["kaizenadmin", "kaizenadmindz", "minhmeo@!"];
+        let myName = localStorage.getItem("username") || "Khách_" + Math.floor(Math.random()*999);
+        let myColor = localStorage.getItem("userColor") || "#3b82f6";
+        let lastBotTime = 0;
 
-    // 2. HÀM BOT CHAT SIÊU CẤP (Có hiệu ứng gõ chữ)
-    function botSay(text) {
-        const box = document.getElementById("chatBox");
-        
-        // Tạo hiệu ứng "Đang gõ..."
-        const typingDiv = document.createElement("div");
-        typingDiv.className = "typing";
-        typingDiv.innerHTML = "KaizenAI đang soạn tin nhắn...";
-        box.appendChild(typingDiv);
-        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        if(!localStorage.getItem("username")) localStorage.setItem("username", myName);
 
-        setTimeout(() => {
-            typingDiv.remove();
+        // 3. HÀM BOT CHAT (ĐÃ FIX LỖI HIỂN THỊ)
+        function botSay(text) {
+            const box = document.getElementById("chatBox");
             const botDiv = document.createElement("div");
             botDiv.className = "msg other bot-msg";
             botDiv.innerHTML = `
                 <b style="color: #10b981; cursor: pointer;" onclick="showProfile('KaizenAI', '#10b981')">
-                    <span class="bot-badge">BOT AI</span> KaizenAI
+                    <span class="badge">BOT AI</span> KAIZENAI
                 </b> 
-                <div style="margin-top:5px; color: #e5e7eb; line-height: 1.5;">${text}</div>
+                <div class="bot-text">${text}</div>
             `;
             box.appendChild(botDiv);
             box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-        }, 800);
-    }
-
-    // 3. XỬ LÝ LỆNH & TIN NHẮN
-    async function sendMsg() {
-        const input = document.getElementById("chatInput");
-        const val = input.value.trim();
-        if (!val) return;
-
-        // BỘ XỬ LÝ LỆNH (COMMAND PROCESSOR)
-        if (val.startsWith("/")) {
-            input.value = "";
-            const cmd = val.split(" ")[0].toLowerCase();
-            const args = val.split(" ").slice(1).join(" ");
-
-            switch(cmd) {
-                case "/help":
-                    botSay(`Sếp cần hỗ trợ gì ạ? Danh sách bí kíp đây:<br>
-                        ✨ <b>/poke [tên]</b>: Gọi hồn Pokemon 3D<br>
-                        🎲 <b>/dice</b>: Đổ xúc xắc (Mọi người cùng thấy)<br>
-                        🎁 <b>/gift [mã]</b>: Nhận quà (Thử mã: KAIZEN2036)<br>
-                        🎭 <b>/nick [tên]</b>: Đổi danh tính mới<br>
-                        🧹 <b>/clear</b>: Dọn sạch sàn chat`);
-                    break;
-                case "/clear":
-                    document.getElementById("chatBox").innerHTML = "";
-                    botSay("🧹 Sàn chat đã được lau dọn sạch bóng!");
-                    break;
-                case "/dice":
-                    const n = Math.floor(Math.random()*6)+1;
-                    const icons = ["", "⚀","⚁","⚂","⚃","⚄","⚅"];
-                    db.ref("global_chat").push({ user: myName, text: `🎲 Đã đổ: <b>${icons[n]} (${n} điểm)</b>`, color: myColor, time: Date.now() });
-                    break;
-                case "/gift":
-                    if(args === "KAIZEN2036") botSay("🎁 <b>HỢP LỆ!</b> Sếp nhận được 10.000 Xu!");
-                    else botSay("❌ Mã sai rồi sếp ơi!");
-                    break;
-                case "/poke":
-                    try {
-                        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${args.toLowerCase()}`);
-                        const data = await res.json();
-                        showPokeCard(data);
-                    } catch { botSay("❌ Pokemon này lạ quá, tôi tìm không ra!"); }
-                    break;
-                case "/nick":
-                    if(args) { localStorage.setItem("username", args); location.reload(); }
-                    break;
-                default:
-                    botSay("❌ Lệnh này tôi chưa được học sếp ơi!");
-            }
-            return;
         }
 
-        // GỬI TIN NHẮN THƯỜNG
-        db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
-        input.value = "";
-    }
+        // 4. XỬ LÝ GỬI TIN & LỆNH
+        async function sendMsg() {
+            const input = document.getElementById("chatInput");
+            const val = input.value.trim();
+            if (!val) return;
 
-    // 4. LẮNG NGHE FIREBASE & TỰ ĐỘNG NHẮC NHỞ
-    db.ref("global_chat").limitToLast(30).on("value", snap => {
-        const box = document.getElementById("chatBox");
-        box.innerHTML = "";
-        snap.forEach(child => {
-            const d = child.val();
-            const isAdmin = ADMIN_LIST.includes(d.user);
-            const div = document.createElement("div");
-            div.className = `msg ${d.user === myName ? 'me' : 'other'}`;
-            div.innerHTML = `<b style="color:${isAdmin?'#ff4757':d.color};" onclick="showProfile('${d.user}', '${d.color}')">${isAdmin?'[AD] ':''}${d.user}</b> <span>${d.text}</span>`;
-            box.appendChild(div);
+            if (val.startsWith("/")) {
+                input.value = "";
+                const parts = val.split(" ");
+                const cmd = parts[0].toLowerCase();
+                const args = parts.slice(1).join(" ");
+
+                switch(cmd) {
+                    case "/help":
+                        botSay(`Xin chào <b>${myName}</b>! Tôi là quản gia KaizenAI:<br><br>
+                            ✨ <b>/poke [tên]</b>: Gọi Pokemon 3D<br>
+                            🎲 <b>/dice</b>: Đổ xúc xắc may mắn<br>
+                            🎁 <b>/gift [mã]</b>: Nhận quà (Code: KAIZEN2036)<br>
+                            🎭 <b>/nick [tên]</b>: Đổi danh tính<br>
+                            🧹 <b>/clear</b>: Dọn sạch sàn chat`);
+                        break;
+                    case "/dice":
+                        const n = Math.floor(Math.random()*6)+1;
+                        const icons = ["", "⚀","⚁","⚂","⚃","⚄","⚅"];
+                        db.ref("global_chat").push({ user: myName, text: `🎲 Đã đổ xúc xắc: <b>${icons[n]} (${n} điểm)</b>`, color: myColor, time: Date.now() });
+                        break;
+                    case "/clear":
+                        document.getElementById("chatBox").innerHTML = "";
+                        botSay("🧹 Đã dọn dẹp sạch bóng!");
+                        break;
+                    case "/gift":
+                        if(args.toUpperCase() === "KAIZEN2036") botSay("🎁 <b>CHÍNH XÁC!</b> Sếp nhận được 50,000 Xu!");
+                        else botSay("❌ Mã không đúng hoặc đã hết hạn.");
+                        break;
+                    case "/poke":
+                        if(!args) return botSay("Sếp quên tên Pokemon rồi!");
+                        try {
+                            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${args.toLowerCase()}`);
+                            const data = await res.json();
+                            showPokeCard(data);
+                        } catch { botSay("❌ Không tìm thấy Pokemon này!"); }
+                        break;
+                    case "/nick":
+                        if(args) { localStorage.setItem("username", args); location.reload(); }
+                        break;
+                    default: botSay("❌ Lệnh này tôi chưa biết!");
+                }
+                return;
+            }
+
+            db.ref("global_chat").push({ user: myName, text: val, color: myColor, time: Date.now() });
+            input.value = "";
+        }
+
+        // 5. LẮNG NGHE FIREBASE
+        db.ref("global_chat").limitToLast(30).on("value", snap => {
+            const box = document.getElementById("chatBox");
+            box.innerHTML = "";
+            snap.forEach(child => {
+                const d = child.val();
+                const isAdmin = ADMIN_LIST.includes(d.user);
+                const isMe = d.user === myName;
+                const div = document.createElement("div");
+                div.className = `msg ${isMe ? 'me' : 'other'}`;
+                const nameTag = isAdmin ? `<span style="background:#ff4757; color:white; padding:1px 4px; border-radius:3px; font-size:10px; margin-right:4px;">AD</span>` : "";
+                
+                div.innerHTML = `
+                    <b style="color:${isAdmin?'#ff4757':d.color}; cursor:pointer;" onclick="showProfile('${d.user}', '${d.color}')">
+                        ${nameTag}${d.user}
+                    </b><br>
+                    <span>${d.text}</span>
+                `;
+                box.appendChild(div);
+            });
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
         });
 
-        // Bot tự động "Thả thính" sau mỗi 40 giây nếu có chat mới
-        const now = Date.now();
-        if (now - lastBotTime > 40000) { 
-            setTimeout(() => botSay("Sếp cần xem lệnh thì gõ <b>/help</b> nhé, phục vụ sếp 24/7! 🫡"), 2000);
-            lastBotTime = now;
+        // 6. HIỆU ỨNG THẺ
+        function showPokeCard(data) {
+            document.getElementById("cName").innerText = data.name.toUpperCase();
+            document.getElementById("cAvatar").src = data.sprites.other['official-artwork'].front_default;
+            document.getElementById("cPower").innerText = "⚡ " + data.stats[1].base_stat;
+            document.getElementById("cCoin").innerText = "✨ " + data.base_experience;
+            document.getElementById("cRank").innerText = "POKEMON LEGENDARY";
+            document.getElementById("cRank").style.background = "linear-gradient(90deg, #ffcb05, #3d7dca)";
+            document.getElementById("card").style.boxShadow = "0 0 30px #ffcb05";
+            document.getElementById("profileModal").style.display = "flex";
         }
-        box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-    });
 
-    // 5. CÁC HÀM HIỂN THỊ THẺ (GIỮ NGUYÊN BẢN 3D ĐẸP NHẤT)
-    function showPokeCard(data) {
+        function showProfile(name, color) {
+            const rank = document.getElementById("cRank");
+            document.getElementById("cName").innerText = name;
+            document.getElementById("cName").style.color = color;
+            document.getElementById("cAvatar").src = name === "KaizenAI" ? "https://api.dicebear.com/7.x/bottts/svg?seed=Kaizen" : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+            
+            if(ADMIN_LIST.includes(name)) {
+                rank.innerText = "CHỦ SERVER";
+                rank.style.background = "#ff4757";
+            } else {
+                rank.innerText = "THÀNH VIÊN";
+                rank.style.background = "rgba(255,255,255,0.1)";
+            }
+            document.getElementById("card").style.boxShadow = "0 10px 30px rgba(0,0,0,0.5)";
+            document.getElementById("profileModal").style.display = "flex";
+        }
+
+        function closeCard() { document.getElementById("profileModal").style.display = "none"; }
+
+        // Xoay 3D
         const card = document.getElementById("card");
-        document.getElementById("cName").innerText = data.name.toUpperCase();
-        document.getElementById("cAvatar").src = data.sprites.other['official-artwork'].front_default;
-        document.getElementById("cPower").innerText = "⚡ " + data.stats[1].base_stat;
-        document.getElementById("cCoin").innerText = "✨ " + data.base_experience;
-        document.getElementById("cRank").innerText = "POKEMON LEGENDARY";
-        document.getElementById("profileModal").style.display = "flex";
-        // Thêm hiệu ứng phát sáng vàng đặc trưng
-        card.style.boxShadow = "0 0 50px #ffcb05";
-    }
+        document.getElementById("profileModal").onmousemove = (e) => {
+            let x = (window.innerWidth / 2 - e.pageX) / 15;
+            let y = (window.innerHeight / 2 - e.pageY) / 15;
+            card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+        };
 
-    function showProfile(name, color) {
-        document.getElementById("cName").innerText = name;
-        document.getElementById("cName").style.color = color;
-        document.getElementById("cAvatar").src = name === "KaizenAI" ? "https://api.dicebear.com/7.x/bottts/svg?seed=Kaizen" : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
-        document.getElementById("cRank").innerText = ADMIN_LIST.includes(name) ? "CHỦ SERVER" : (name === "KaizenAI" ? "HỆ THỐNG AI" : "THÀNH VIÊN");
-        document.getElementById("profileModal").style.display = "flex";
-    }
-
-    function closeCard() { document.getElementById("profileModal").style.display = "none"; }
-    document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
-
-    // Hiệu ứng xoay 3D (Xịn nhất TG)
-    const modal = document.getElementById("profileModal");
-    const cardBody = document.getElementById("card");
-    modal.onmousemove = (e) => {
-        let x = (window.innerWidth / 2 - e.pageX) / 10;
-        let y = (window.innerHeight / 2 - e.pageY) / 10;
-        cardBody.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
-    };
-</script>
-
+        document.getElementById("chatInput").addEventListener("keypress", (e) => { if(e.key === "Enter") sendMsg(); });
+    </script>
 </body>
 </html>
