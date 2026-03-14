@@ -561,10 +561,15 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
      body {
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), 
-                url('https://wallpaperaccess.com/full/20966.jpg') no-repeat center center fixed;
+    /* Lớp phủ màu tối để làm nổi bật nội dung chữ bên trên */
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), 
+                url('https://images8.alphacoders.com/133/1331613.png') no-repeat center center fixed;
+    /* Đảm bảo hình ảnh bao phủ toàn bộ màn hình */
     background-size: cover;
+    /* Giữ cho hình ảnh không bị vỡ khi kéo dài */
     min-height: 100vh;
+    /* Thêm hiệu ứng chuyển cảnh mượt mà khi đổi theme */
+    transition: background 0.5s ease;
 }
         /* --- NAVIGATION --- */
         .main-nav {
