@@ -9,6 +9,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* Thêm cái này vào cuối thẻ style */
+#profileModal {
+    display: none; position: fixed; top: 0; left: 0; 
+    width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+    z-index: 10000; perspective: 1000px;
+    align-items: center; justify-content: center;
+}
+.card-3d {
+    width: 280px; background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px); border-radius: 25px;
+    padding: 30px 20px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: transform 0.1s; color: white;
+}
+.card-avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #3b82f6; }
         /* Bảng hiện thẻ bài */
 #profileModal {
     display: none;
@@ -295,6 +310,16 @@
         <div class="close-card">Nhấn để đóng</div>
     </div>
 </div>
+    <div id="profileModal" onclick="closeCard()">
+    <div class="card-3d" id="card">
+        <img src="" class="card-avatar" id="cAvatar">
+        <h3 id="cName">User</h3>
+        <div style="display:flex; justify-content: space-around; margin-top:15px;">
+            <div><b id="cPower">0</b><br><small>SỨC MẠNH</small></div>
+            <div><b id="cCoin">0</b><br><small>XU</small></div>
+        </div>
+    </div>
+</div>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAsYTU5j-jh4LlHnRez1Tnm5o6Rq-RrSyA",
@@ -363,10 +388,10 @@
     });
     // 1. Trong vòng lặp snap.forEach, sửa dòng b (thẻ b tên người dùng):
 div.innerHTML = `
-    <b style="${nameStyle}" cursor:pointer" onclick="showProfile('${data.user}', '${data.color}')">
+    <b style="${nameStyle}" onclick="showProfile('${data.user}', '${data.color || '#fff'}')">
         ${badge}${data.user}
     </b> 
-    <span style="color: white;">${data.text}</span>
+    <span>${data.text}</span>
 `;
 
 // 2. Thêm các hàm xử lý thẻ bài ở cuối script:
@@ -389,6 +414,16 @@ function showProfile(name, color) {
         let y = (window.innerHeight / 2 - e.pageY) / 15;
         card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
     };
+}
+
+function closeCard() {
+    document.getElementById("profileModal").style.display = "none";
+}
+    function showProfile(name, color) {
+    document.getElementById("cName").innerText = name;
+    document.getElementById("cName").style.color = color;
+    document.getElementById("cAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${name}`;
+    document.getElementById("profileModal").style.display = "flex";
 }
 
 function closeCard() {
