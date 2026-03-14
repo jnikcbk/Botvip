@@ -560,26 +560,29 @@
 [data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
+   body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     color: white;
     overflow-x: hidden;
+    /* Dự phòng nếu video không load được */
+    background: #020617; 
 }
 
-/* Container chứa video nền */
-.video-bg {
+/* Container Video toàn màn hình */
+.video-bg-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -2; /* Nằm dưới cùng */
+    z-index: -2;
     overflow: hidden;
 }
 
-.video-bg video {
+.bg-video {
     min-width: 100%;
     min-height: 100%;
     width: auto;
@@ -589,25 +592,26 @@
     left: 50%;
     transform: translate(-50%, -50%);
     object-fit: cover;
+    filter: brightness(0.6) saturate(1.2); /* Làm video đậm chất điện ảnh hơn */
 }
 
-/* Lớp phủ để làm mờ video giúp chữ dễ đọc hơn */
-.video-overlay {
+/* Lớp phủ chuyển màu (Gradient) để tạo chiều sâu */
+.video-overlay-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(2,6,23,0.8) 100%);
+    background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(2,6,23,0.8) 100%);
     z-index: -1;
 }
 
-/* Hiệu ứng mờ ảo cho Kỷ nguyên Pokemon */
-.server-box {
-    backdrop-filter: blur(10px);
-    background: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid var(--neon-blue) !important;
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+/* Làm các box nội dung trở nên lung linh hơn trên nền động */
+.server-box, .stat-card, .music-panel {
+    background: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(15px) saturate(150%);
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
         /* --- NAVIGATION --- */
         .main-nav {
@@ -861,11 +865,11 @@
         SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
     </div>
 </div>
-    <div class="video-bg">
-    <video autoplay muted loop playsinline>
+   <div class="video-bg-container">
+    <video autoplay muted loop playsinline class="bg-video">
         <source src="https://assets.pokemon.com/video/us/watch-pokemon-tv-trailer.mp4" type="video/mp4">
     </video>
-    <div class="video-overlay"></div>
+    <div class="video-overlay-layer"></div>
 </div>
 </section>
 
