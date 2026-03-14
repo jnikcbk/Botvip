@@ -2,182 +2,147 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>KaizenMC - Pokemon Battle RPG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <title>KaizenMC - Pokemon 3D Cosmic Run</title>
     <style>
-        :root { --blue: #00f0ff; --pink: #ff00aa; --yellow: #ffcb05; }
-        body { 
-            margin: 0; background: #020617; color: white; 
-            font-family: 'Orbitron', sans-serif; overflow: hidden; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; 
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #00f0ff;
+            font-size: 24px; text-shadow: 0 0 10px #00f0ff; pointer-events: none;
         }
-
-        /* Giao diện UI xịn xò */
-        .ui-container {
-            position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between;
-            background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 15px; border: 1px solid var(--blue);
-            backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
-        }
-
-        .hp-bar-container {
-            position: fixed; bottom: 50px; width: 400px; height: 30px;
-            background: #333; border: 2px solid #fff; border-radius: 15px; overflow: hidden;
-        }
-        #hp-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff4d4d, #ff0000); transition: 0.1s; }
-
-        canvas { 
-            background: url('https://wallpaperaccess.com/full/585193.png') center/cover;
-            border: 4px solid var(--blue); border-radius: 20px; cursor: url('https://cur.cursors-4u.net/games/gam-13/gam1214.cur'), auto;
-        }
-
-        /* Hiệu ứng số damage bay lên */
-        .dmg {
-            position: absolute; color: var(--yellow); font-weight: 900; font-size: 24px;
-            pointer-events: none; animation: flyUp 0.6s ease-out forwards; text-shadow: 0 0 5px black;
-        }
-        @keyframes flyUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
-
-        .ult-btn {
-            position: fixed; right: 50px; bottom: 50px; padding: 20px;
-            background: var(--pink); border-radius: 50%; border: none; color: white;
-            font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
-            box-shadow: 0 0 20px var(--pink); display: none;
+        #instructions {
+            position: absolute; bottom: 20px; width: 100%; text-align: center;
+            color: white; opacity: 0.6; font-size: 14px;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div class="ui-container">
-        <div>LEVEL: <span id="lvl" style="color:var(--yellow)">1</span></div>
-        <div style="text-align: center">ĐANG CHIẾN ĐẤU: <br><span id="pkm-name" style="color:var(--blue)">---</span></div>
-        <div>SCORE: <span id="score" style="color:var(--pink)">0</span></div>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <div class="hp-bar-container">
-        <div id="hp-fill"></div>
-        <div style="position:absolute; top:5px; width:100%; text-align:center; font-size:12px">ENEMY HP</div>
-    </div>
-
-    <button id="ultBtn" class="ult-btn">KAIZEN<br>ULTI</button>
+    <div id="ui">SCORE: <span id="scoreVal">0</span></div>
+    <div id="instructions">Dùng phím A - D hoặc Mũi tên để di chuyển</div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 900; canvas.height = 500;
+        let scene, camera, renderer, player, clock;
+        let obstacles = [], cards = [];
+        let score = 0;
+        let speed = 0.5;
+        let lane = 0; // -1: trái, 0: giữa, 1: phải
+        const laneWidth = 4;
 
-        let score = 0, currentLevel = 1, ultCharge = 0;
-        let activePokemon = null;
-        let shake = 0;
+        function init() {
+            // 1. Khởi tạo không gian (Scene)
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
+            scene.fog = new THREE.Fog(0x020617, 10, 50);
 
-        const pokeData = [
-            { id: 25, name: "Pikachu", hp: 100, size: 150 },
-            { id: 6, name: "Charizard", hp: 500, size: 220 },
-            { id: 150, name: "Mewtwo", hp: 2000, size: 250 },
-            { id: 384, name: "Rayquaza", hp: 5000, size: 300 }
-        ];
+            // 2. Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 6);
+            camera.lookAt(0, 0, -5);
 
-        function spawn() {
-            const data = pokeData[Math.min(currentLevel - 1, pokeData.length - 1)];
-            activePokemon = {
-                ...data,
-                maxHp: data.hp * currentLevel,
-                currentHp: data.hp * currentLevel,
-                x: canvas.width/2, y: canvas.height/2 + 50,
-                img: new Image()
-            };
-            activePokemon.img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`;
-            document.getElementById("pkm-name").innerText = data.name.toUpperCase();
+            // 3. Renderer (Trình hiển thị)
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // 4. Ánh sáng Neon
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            const light = new THREE.PointLight(0x00f0ff, 1, 100);
+            light.position.set(0, 10, 10);
+            scene.add(light);
+
+            // 5. Đường chạy (Floor)
+            const trackGeo = new THREE.PlaneGeometry(12, 1000);
+            const trackMat = new THREE.MeshPhongMaterial({ 
+                color: 0x0f172a, 
+                emissive: 0x00f0ff, 
+                emissiveIntensity: 0.1,
+                side: THREE.DoubleSide 
+            });
+            const track = new THREE.Mesh(trackGeo, trackMat);
+            track.rotation.x = -Math.PI / 2;
+            scene.add(track);
+
+            // Lưới (Grid) cho đẹp
+            const grid = new THREE.GridHelper(1000, 100, 0x00f0ff, 0x222222);
+            grid.position.y = 0.05;
+            scene.add(grid);
+
+            // 6. Người chơi (Cầu năng lượng)
+            const playerGeo = new THREE.SphereGeometry(0.6, 32, 32);
+            const playerMat = new THREE.MeshPhongMaterial({ color: 0xff00aa, emissive: 0xff00aa });
+            player = new THREE.Mesh(playerGeo, playerMat);
+            player.position.y = 0.6;
+            scene.add(player);
+
+            clock = new THREE.Clock();
+            window.addEventListener('keydown', handleInput);
+            spawnObjects();
+            animate();
         }
 
-        canvas.addEventListener('mousedown', (e) => {
-            if(!activePokemon) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            // Kiểm tra click trúng Pokemon
-            const dist = Math.sqrt((x - activePokemon.x)**2 + (y - (activePokemon.y - 50))**2);
-            if(dist < activePokemon.size/2) {
-                dealDamage(x, y);
-            }
-        });
-
-        function dealDamage(x, y) {
-            let dmg = 20 + (currentLevel * 5);
-            if(ultCharge >= 100) dmg *= 5; // X5 damage khi dùng Ulti
-
-            activePokemon.currentHp -= dmg;
-            score += 10;
-            ultCharge += 2;
-            shake = 10; // Rung màn hình
-
-            // Hiệu ứng số damage
-            const div = document.createElement('div');
-            div.className = 'dmg';
-            div.style.left = x + 'px'; div.style.top = y + 'px';
-            div.innerText = `-${dmg}`;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 600);
-
-            if(activePokemon.currentHp <= 0) {
-                currentLevel++;
-                score += 1000;
-                spawn();
-            }
-            updateUI();
+        function handleInput(e) {
+            if ((e.key === 'a' || e.key === 'ArrowLeft') && lane > -1) lane--;
+            if ((e.key === 'd' || e.key === 'ArrowRight') && lane < 1) lane++;
         }
 
-        function updateUI() {
-            document.getElementById("score").innerText = score;
-            document.getElementById("lvl").innerText = currentLevel;
-            const hpPercent = (activePokemon.currentHp / activePokemon.maxHp) * 100;
-            document.getElementById("hp-fill").style.width = hpPercent + "%";
+        function spawnObjects() {
+            for (let i = 0; i < 50; i++) {
+                // Tạo chướng ngại vật (Khối đỏ)
+                const obsGeo = new THREE.BoxGeometry(2, 2, 2);
+                const obsMat = new THREE.MeshPhongMaterial({ color: 0xff4d4d });
+                const obs = new THREE.Mesh(obsGeo, obsMat);
+                obs.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1, -i * 20 - 20);
+                scene.add(obs);
+                obstacles.push(obs);
+
+                // Tạo thẻ bài Pokemon (Khối vàng xoay)
+                const cardGeo = new THREE.BoxGeometry(1, 1.5, 0.1);
+                const cardMat = new THREE.MeshPhongMaterial({ color: 0xffcb05, emissive: 0xffcb05 });
+                const card = new THREE.Mesh(cardGeo, cardMat);
+                card.position.set(Math.floor(Math.random() * 3 - 1) * laneWidth, 1, -i * 20 - 10);
+                scene.add(card);
+                cards.push(card);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
             
-            if(ultCharge >= 100) document.getElementById("ultBtn").style.display = "block";
-            else document.getElementById("ultBtn").style.display = "none";
+            // Di chuyển người chơi mượt mà giữa các làn
+            player.position.x = THREE.MathUtils.lerp(player.position.x, lane * laneWidth, 0.1);
+
+            // Di chuyển vật thể về phía người chơi
+            obstacles.forEach(obs => {
+                obs.position.z += speed;
+                if (obs.position.z > 5) obs.position.z = -900;
+
+                // Kiểm tra va chạm vật cản
+                if (Math.abs(obs.position.z - player.position.z) < 1 && Math.abs(obs.position.x - player.position.x) < 1) {
+                    alert("GAME OVER! Score: " + score);
+                    location.reload();
+                }
+            });
+
+            cards.forEach(card => {
+                card.position.z += speed;
+                card.rotation.y += 0.05; // Xoay thẻ bài
+                if (card.position.z > 5) card.position.z = -900;
+
+                // Kiểm tra ăn thẻ
+                if (Math.abs(card.position.z - player.position.z) < 1 && Math.abs(card.position.x - player.position.x) < 1) {
+                    score += 10;
+                    document.getElementById('scoreVal').innerText = score;
+                    card.position.z = -900; // Đẩy ra xa coi như biến mất
+                    speed += 0.01; // Tăng tốc độ
+                }
+            });
+
+            renderer.render(scene, camera);
         }
 
-        document.getElementById("ultBtn").onclick = () => {
-            ultCharge = 0;
-            alert("KAIZEN MODE ACTIVATED: SÁT THƯƠNG X5!");
-        };
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Hiệu ứng Rung (Screen Shake)
-            let sx = (Math.random()-0.5) * shake;
-            let sy = (Math.random()-0.5) * shake;
-            if(shake > 0) shake *= 0.9;
-
-            if(activePokemon && activePokemon.img.complete) {
-                ctx.save();
-                ctx.translate(sx, sy);
-                
-                // Vẽ bóng (Shadow)
-                ctx.beginPath();
-                ctx.ellipse(activePokemon.x, activePokemon.y + 50, 60, 20, 0, 0, Math.PI*2);
-                ctx.fillStyle = "rgba(0,0,0,0.3)";
-                ctx.fill();
-
-                // Vẽ Pokemon chính
-                ctx.shadowBlur = 20; ctx.shadowColor = var(--blue);
-                ctx.drawImage(
-                    activePokemon.img, 
-                    activePokemon.x - activePokemon.size/2, 
-                    activePokemon.y - activePokemon.size, 
-                    activePokemon.size, activePokemon.size
-                );
-                ctx.restore();
-            }
-
-            requestAnimationFrame(draw);
-        }
-
-        spawn(); draw();
+        init();
     </script>
 </body>
 </html>
