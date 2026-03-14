@@ -11,6 +11,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        .theme-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-left: 10px;
+}
+.theme-toggle-btn:hover {
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: rotate(15deg);
+}
         /* --- POKEMON FALLING EFFECT --- */
 .pokemon-fallback {
     position: fixed;
@@ -172,15 +187,40 @@
 }
         
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        :root {
-            --neon-blue: #00f0ff;
-            --neon-purple: #c300ff;
-            --neon-pink: #ff00aa;
-            --border: rgba(255, 255, 255, 0.12);
-            --glass: rgba(15, 23, 42, 0.82);
-            --admin-red: #ef4444;
-            --bg-dark: #020617;
-        }
+       :root {
+    /* Mặc định - Hệ Nước/Băng */
+    --neon-blue: #00f0ff;
+    --neon-purple: #c300ff;
+    --neon-pink: #ff00aa;
+    --border: rgba(255, 255, 255, 0.12);
+    --glass: rgba(15, 23, 42, 0.82);
+    --bg-dark: #020617;
+    transition: 0.5s; /* Giúp đổi màu mượt mà */
+}
+
+/* Bộ màu Hệ Lửa */
+[data-theme="fire"] {
+    --neon-blue: #ff4d00;
+    --neon-purple: #ffb700;
+    --neon-pink: #ff0000;
+    --glass: rgba(28, 10, 10, 0.85);
+}
+
+/* Bộ màu Hệ Cỏ */
+[data-theme="grass"] {
+    --neon-blue: #00ff88;
+    --neon-purple: #9dff00;
+    --neon-pink: #32a852;
+    --glass: rgba(10, 28, 15, 0.85);
+}
+
+/* Bộ màu Hệ Điện */
+[data-theme="electric"] {
+    --neon-blue: #ffff00;
+    --neon-purple: #ffea00;
+    --neon-pink: #ffaa00;
+    --glass: rgba(28, 28, 10, 0.85);
+}
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -383,7 +423,9 @@
 
         <input type="text" id="media-url-input" placeholder="Dán link vào đây...">
         <button onclick="playMedia()" class="btn-change">PHÁT NGAY</button>
-        
+        <button class="theme-toggle-btn" onclick="nextTheme()" title="Đổi Hệ Màu">
+    🎨
+</button>
         <div id="media-wrapper" style="display: none; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-pink);">
             <div id="player-container"></div>
         </div>
@@ -606,6 +648,34 @@ function createFallingPokemon() {
 
 // Cứ mỗi 1 giây (1000ms) tạo 1 con mới
 setInterval(createFallingPokemon, 1000);
+    const themes = ["default", "fire", "grass", "electric"];
+let currentThemeIndex = 0;
+
+function nextTheme() {
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    const newTheme = themes[currentThemeIndex];
+    
+    // Gán thuộc tính data-theme vào thẻ html để đổi màu toàn trang
+    if (newTheme === "default") {
+        document.documentElement.removeAttribute("data-theme");
+    } else {
+        document.documentElement.setAttribute("data-theme", newTheme);
+    }
+    
+    // Lưu lựa chọn vào máy người dùng để lần sau quay lại không bị mất màu đã chọn
+    localStorage.setItem("selectedTheme", newTheme);
+    
+    console.log("Đã đổi sang hệ: " + newTheme);
+}
+
+// Khi load trang thì kiểm tra xem trước đó người dùng đã chọn hệ nào chưa
+window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem("selectedTheme");
+    if (savedTheme && savedTheme !== "default") {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        currentThemeIndex = themes.indexOf(savedTheme);
+    }
+});
 </script>
 
 </body>
