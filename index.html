@@ -12,6 +12,55 @@
 
     <style>
         .theme-toggle-btn {
+    /* Nút sẽ luôn có viền và màu chữ theo hệ màu đang chọn */
+    border-color: var(--neon-blue) !important;
+    color: var(--neon-blue) !important;
+}
+        #welcome-message {
+    line-height: 1.6;
+    font-size: 15px;
+    transition: all 0.5s ease;
+}
+
+.greeting-time {
+    color: var(--neon-blue);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-family: 'Orbitron', sans-serif;
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.trainer-name {
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+}
+        /* --- MOUSE GLOW EFFECT --- */
+#mouse-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 500px; /* Độ rộng của vùng hào quang */
+    height: 500px;
+    background: radial-gradient(
+        circle, 
+        rgba(0, 240, 255, 0.15) 0%,   /* Màu neon blue mờ ở tâm */
+        rgba(0, 240, 255, 0.05) 30%,  /* Nhạt dần */
+        transparent 70%               /* Biến mất hoàn toàn */
+    );
+    border-radius: 50%;
+    pointer-events: none; /* Quan trọng: Không cản trở việc click chuột vào các nút */
+    z-index: -1; /* Nằm dưới nội dung nhưng trên hình nền */
+    transform: translate(-50%, -50%); /* Căn giữa tâm hào quang vào đầu chuột */
+    transition: background 0.5s ease; /* Để đổi màu mượt khi bạn đổi theme */
+}
+
+/* Tự động đổi màu hào quang theo Theme bạn đã làm */
+[data-theme="fire"] #mouse-glow { background: radial-gradient(circle, rgba(255, 77, 0, 0.2) 0%, transparent 70%); }
+[data-theme="grass"] #mouse-glow { background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%); }
+[data-theme="electric"] #mouse-glow { background: radial-gradient(circle, rgba(255, 255, 0, 0.2) 0%, transparent 70%); }
+        .theme-toggle-btn {
     width: 40px;
     height: 40px;
     border-radius: 10px;
@@ -187,41 +236,69 @@
 }
         
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-       :root {
-    /* Mặc định - Hệ Nước/Băng */
-    --neon-blue: #00f0ff;
-    --neon-purple: #c300ff;
-    --neon-pink: #ff00aa;
-    --border: rgba(255, 255, 255, 0.12);
-    --glass: rgba(15, 23, 42, 0.82);
-    --bg-dark: #020617;
-    transition: 0.5s; /* Giúp đổi màu mượt mà */
+      :root {
+    /* 1. Mặc định (Hệ Nước/Băng) */
+    --neon-blue: #00f0ff; --neon-purple: #c300ff; --neon-pink: #ff00aa;
+    --border: rgba(255, 255, 255, 0.12); --glass: rgba(15, 23, 42, 0.82);
+    --bg-dark: #020617; transition: 0.5s;
 }
 
-/* Bộ màu Hệ Lửa */
-[data-theme="fire"] {
-    --neon-blue: #ff4d00;
-    --neon-purple: #ffb700;
-    --neon-pink: #ff0000;
-    --glass: rgba(28, 10, 10, 0.85);
-}
+/* 2. Hệ Lửa (Fire) */
+[data-theme="fire"] { --neon-blue: #ff4d00; --neon-purple: #ffb700; --neon-pink: #ff0000; --glass: rgba(30, 10, 5, 0.85); }
 
-/* Bộ màu Hệ Cỏ */
-[data-theme="grass"] {
-    --neon-blue: #00ff88;
-    --neon-purple: #9dff00;
-    --neon-pink: #32a852;
-    --glass: rgba(10, 28, 15, 0.85);
-}
+/* 3. Hệ Cỏ (Grass) */
+[data-theme="grass"] { --neon-blue: #00ff88; --neon-purple: #9dff00; --neon-pink: #32a852; --glass: rgba(10, 30, 15, 0.85); }
 
-/* Bộ màu Hệ Điện */
-[data-theme="electric"] {
-    --neon-blue: #ffff00;
-    --neon-purple: #ffea00;
-    --neon-pink: #ffaa00;
-    --glass: rgba(28, 28, 10, 0.85);
-}
+/* 4. Hệ Điện (Electric) */
+[data-theme="electric"] { --neon-blue: #ffff00; --neon-purple: #ffea00; --neon-pink: #ffaa00; --glass: rgba(30, 30, 5, 0.85); }
 
+/* 5. Hệ Ma (Ghost) */
+[data-theme="ghost"] { --neon-blue: #a370f7; --neon-purple: #4e1a8e; --neon-pink: #91369b; --glass: rgba(20, 10, 35, 0.85); }
+
+/* 6. Hệ Tiên (Fairy) */
+[data-theme="fairy"] { --neon-blue: #ff99cc; --neon-purple: #ff66aa; --neon-pink: #f8bbd0; --glass: rgba(40, 15, 30, 0.85); }
+
+/* 7. Hệ Rồng (Dragon) */
+[data-theme="dragon"] { --neon-blue: #7038f8; --neon-purple: #b088ff; --neon-pink: #ff44aa; --glass: rgba(15, 10, 40, 0.85); }
+
+/* 8. Hệ Siêu Linh (Psychic) */
+[data-theme="psychic"] { --neon-blue: #f85888; --neon-purple: #da1e5b; --neon-pink: #ff80ab; --glass: rgba(35, 10, 25, 0.85); }
+
+/* 9. Hệ Độc (Poison) */
+[data-theme="poison"] { --neon-blue: #a040a0; --neon-purple: #e060e0; --neon-pink: #c080c0; --glass: rgba(25, 10, 25, 0.85); }
+
+/* 10. Hệ Bóng Tối (Dark) */
+[data-theme="dark"] { --neon-blue: #705848; --neon-purple: #483c32; --neon-pink: #a48a7b; --glass: rgba(15, 15, 15, 0.9); }
+
+/* 11. Hệ Thép (Steel) */
+[data-theme="steel"] { --neon-blue: #b8b8d0; --neon-purple: #808090; --neon-pink: #ffffff; --glass: rgba(30, 30, 40, 0.85); }
+
+/* 12. Hệ Đá (Rock) */
+[data-theme="rock"] { --neon-blue: #b8a038; --neon-purple: #e0c068; --neon-pink: #8b7355; --glass: rgba(25, 20, 10, 0.85); }
+
+/* 13. Hệ Đất (Ground) */
+[data-theme="ground"] { --neon-blue: #e0c068; --neon-purple: #8b7355; --neon-pink: #ffcc66; --glass: rgba(35, 25, 15, 0.85); }
+
+/* 14. Hệ Côn Trùng (Bug) */
+[data-theme="bug"] { --neon-blue: #a8b820; --neon-purple: #6d7815; --neon-pink: #c6d16e; --glass: rgba(25, 30, 10, 0.85); }
+
+/* 15. Hệ Chiến Đấu (Fighting) */
+[data-theme="fighting"] { --neon-blue: #c03028; --neon-purple: #7d1f1a; --neon-pink: #ff4444; --glass: rgba(40, 10, 10, 0.85); }
+
+/* 16. Hệ Bay (Flying) */
+[data-theme="flying"] { --neon-blue: #a890f0; --neon-purple: #7058f8; --neon-pink: #c6b7f5; --glass: rgba(20, 20, 45, 0.85); }
+
+/* 17. Gold Edition (Vàng Hoàng Gia) */
+[data-theme="gold"] { --neon-blue: #ffd700; --neon-purple: #ff8c00; --neon-pink: #ffffff; --glass: rgba(30, 25, 0, 0.85); }
+
+/* 18. Matrix (Lục Bảo) */
+[data-theme="matrix"] { --neon-blue: #00ff41; --neon-purple: #008f11; --neon-pink: #003b00; --glass: rgba(0, 15, 0, 0.9); }
+
+/* 19. Blood Moon (Trăng Máu) */
+[data-theme="blood"] { --neon-blue: #880808; --neon-purple: #450a0a; --neon-pink: #ff0000; --glass: rgba(20, 0, 0, 0.9); }
+
+/* 20. Vaporwave (Tím Mộng Mơ) */
+[data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -342,7 +419,7 @@
     </style>
 </head>
 <body>
-
+<div id="mouse-glow"></div>
 <nav class="main-nav">
     <a href="index.html" class="nav-logo">
         <img src="kaizen.png"> KAIZEN MC
@@ -430,6 +507,9 @@
             <div id="player-container"></div>
         </div>
     </div>
+</div>
+    <div id="userDisplay" class="user-box">
+    <div id="welcome-message">Đang kết nối với vệ tinh Pokémon...</div>
 </div>
 </section>
 
@@ -648,34 +728,130 @@ function createFallingPokemon() {
 
 // Cứ mỗi 1 giây (1000ms) tạo 1 con mới
 setInterval(createFallingPokemon, 1000);
-    const themes = ["default", "fire", "grass", "electric"];
+   // Danh sách 20 hệ màu (phải khớp với các [data-theme] trong CSS)
+const themes = [
+    "default", "fire", "grass", "electric", "ghost", 
+    "fairy", "dragon", "psychic", "poison", "dark", 
+    "steel", "rock", "ground", "bug", "fighting", 
+    "flying", "gold", "matrix", "blood", "vaporwave"
+];
+
 let currentThemeIndex = 0;
 
 function nextTheme() {
+    // 1. Tăng chỉ số và quay vòng mảng
     currentThemeIndex = (currentThemeIndex + 1) % themes.length;
     const newTheme = themes[currentThemeIndex];
     
-    // Gán thuộc tính data-theme vào thẻ html để đổi màu toàn trang
+    // 2. Cập nhật thuộc tính trên thẻ <html>
     if (newTheme === "default") {
         document.documentElement.removeAttribute("data-theme");
     } else {
         document.documentElement.setAttribute("data-theme", newTheme);
     }
     
-    // Lưu lựa chọn vào máy người dùng để lần sau quay lại không bị mất màu đã chọn
+    // 3. Lưu vào máy người dùng
     localStorage.setItem("selectedTheme", newTheme);
     
-    console.log("Đã đổi sang hệ: " + newTheme);
+    // 4. Hiển thị thông báo nhỏ (Tùy chọn - giúp người dùng biết họ đang chọn hệ gì)
+    showThemeToast(newTheme);
+    
+    console.log("Đã đổi sang hệ: " + newTheme.toUpperCase());
 }
 
-// Khi load trang thì kiểm tra xem trước đó người dùng đã chọn hệ nào chưa
+// Hàm hiển thị thông báo tên hệ màu vừa đổi
+function showThemeToast(themeName) {
+    let toast = document.getElementById("theme-toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "theme-toast";
+        toast.style.cssText = `
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid var(--neon-blue);
+            color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 12px; font-weight: bold; z-index: 10000;
+            text-transform: uppercase; letter-spacing: 2px;
+            pointer-events: none; transition: 0.3s; opacity: 0;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerText = "Hệ màu: " + themeName;
+    toast.style.opacity = "1";
+    
+    // Ẩn thông báo sau 1.5 giây
+    setTimeout(() => { toast.style.opacity = "0"; }, 1500);
+}
+
+// Khi load trang
 window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem("selectedTheme");
-    if (savedTheme && savedTheme !== "default") {
-        document.documentElement.setAttribute("data-theme", savedTheme);
+    if (savedTheme && themes.includes(savedTheme)) {
+        if (savedTheme !== "default") {
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        }
         currentThemeIndex = themes.indexOf(savedTheme);
     }
 });
+    const glow = document.getElementById('mouse-glow');
+
+window.addEventListener('mousemove', (e) => {
+    // Cập nhật vị trí theo tọa độ chuột
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+});
+
+// Hiệu ứng ẩn đi khi chuột rời khỏi trình duyệt và hiện lại khi vào
+window.addEventListener('mouseout', () => {
+    glow.style.opacity = '0';
+});
+window.addEventListener('mouseover', () => {
+    glow.style.opacity = '1';
+});
+    function getSincereGreeting() {
+    const hour = new Date().getHours();
+    const username = localStorage.getItem("username");
+    const display = document.getElementById("welcome-message");
+    
+    let timeText = "";
+    let quote = "";
+    
+    // Thiết lập lời chào theo giờ
+    if (hour >= 5 && hour < 11) {
+        timeText = "🌅 Bình minh tại KaizenMC";
+        quote = "Một ngày mới đầy năng lượng nhé, Huấn luyện viên! Hôm nay chắc chắn bạn sẽ bắt được Shiny đó.";
+    } else if (hour >= 11 && hour < 14) {
+        timeText = "☀️ Buổi trưa rực rỡ";
+        quote = "Nghỉ ngơi một chút rồi tiếp tục hành trình nhé. Đừng quên nạp năng lượng cho cả mình và Pokémon!";
+    } else if (hour >= 14 && hour < 18) {
+        timeText = "🌇 Hoàng hôn buông xuống";
+        quote = "Thời điểm vàng để các Pokémon hệ Ma xuất hiện. Sẵn sàng bóng chưa?";
+    } else if (hour >= 18 && hour < 22) {
+        timeText = "🌌 Đêm huyền ảo";
+        quote = "Cảm ơn bạn đã chọn KaizenMC để thư giãn sau một ngày dài. Cùng tạo nên những kỷ niệm đẹp nhé!";
+    } else {
+        timeText = "✨ Sao đêm lấp lánh";
+        quote = "Muộn rồi đó, đừng thức quá khuya nhé. KaizenMC chúc bạn có những giấc mơ đẹp về vùng đất Pokémon.";
+    }
+
+    // Kiểm tra xem đã đăng nhập chưa để gọi tên
+    if (username) {
+        display.innerHTML = `
+            <span class="greeting-time">${timeText}</span>
+            Chào mừng quay trở lại, <span class="trainer-name">${username}</span>!<br>
+            <small style="font-style: italic; opacity: 0.8;">"${quote}"</small>
+        `;
+    } else {
+        display.innerHTML = `
+            <span class="greeting-time">${timeText}</span>
+            Chào bạn, lữ khách xa lạ!<br>
+            <small style="font-style: italic; opacity: 0.8;">"Hành trình vạn dặm luôn bắt đầu bằng việc <b>Đăng Nhập</b>. Tham gia cùng chúng mình nhé!"</small>
+        `;
+    }
+}
+
+// Chạy hàm ngay khi load trang
+window.addEventListener('DOMContentLoaded', getSincereGreeting);
 </script>
 
 </body>
