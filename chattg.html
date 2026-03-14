@@ -11,71 +11,113 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
-        /* Poke card 3D đẹp, float + glow */
+   /* GALAXY CARD */
 .poke-card-3d{
-    width:320px;
+    width:340px;
     display:flex;
     gap:14px;
     align-items:center;
-    padding:14px;
-    border-radius:16px;
-    background:linear-gradient(135deg, rgba(0,240,255,0.06), rgba(195,0,255,0.06));
-    border:1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,240,255,0.03);
-    transform-style:preserve-3d;
-    perspective:800px;
-    animation:cardFloat 3.8s ease-in-out infinite alternate;
-    transition:transform .25s ease;
-}
-.poke-card-3d:hover{ transform: translateY(-8px) rotateY(6deg) rotateX(-4deg) scale(1.02); }
+    padding:16px;
 
+    border-radius:18px;
+
+    background:
+    radial-gradient(circle at 20% 30%, rgba(0,240,255,0.2), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(195,0,255,0.2), transparent 40%),
+    linear-gradient(135deg,#020617,#0f172a);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+    0 20px 60px rgba(0,0,0,0.8),
+    inset 0 0 40px rgba(0,240,255,0.15);
+
+    transform-style:preserve-3d;
+    perspective:1200px;
+
+    transition:transform .2s ease, box-shadow .2s ease;
+
+    position:relative;
+    overflow:hidden;
+}
+
+/* ánh sáng hologram */
+.poke-card-3d::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.15),
+        transparent
+    );
+    opacity:0;
+    transition:opacity .3s;
+}
+
+.poke-card-3d:hover::before{
+    opacity:1;
+}
+
+/* pokemon image */
 .poke-art{
     width:110px;
     height:110px;
     object-fit:contain;
     flex-shrink:0;
-    transform:translateZ(30px);
-    filter: drop-shadow(0 8px 18px rgba(0,240,255,0.18));
-    border-radius:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.03));
+
+    transform:translateZ(40px);
+
+    filter:
+    drop-shadow(0 0 15px rgba(0,240,255,0.6))
+    drop-shadow(0 0 30px rgba(195,0,255,0.4));
 }
 
-.poke-info{ flex:1; color: #fff; text-align:left; }
+/* info */
+.poke-info{
+    flex:1;
+    transform:translateZ(30px);
+}
 
 .poke-name{
-    font-family: 'Orbitron', sans-serif;
-    font-weight:800;
-    font-size:18px;
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0,240,255,0.18);
-    display:flex; align-items:center; gap:8px;
+    font-family:'Orbitron',sans-serif;
+    font-weight:900;
+    font-size:20px;
+
+    background:linear-gradient(90deg,#fff,#00f0ff,#c300ff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
-.type-badges{ display:flex; gap:8px; margin:8px 0; flex-wrap:wrap; }
+.type-badges{
+    display:flex;
+    gap:6px;
+    margin:8px 0;
+}
+
 .type{
-    padding:6px 10px;
+    padding:4px 10px;
     border-radius:999px;
-    font-weight:700;
     font-size:12px;
-    text-transform:capitalize;
-    background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-    border:1px solid rgba(255,255,255,0.06);
-    box-shadow: inset 0 -6px 14px rgba(0,0,0,0.25);
+    font-weight:700;
+
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(6px);
 }
 
-.poke-stats{ margin-top:6px; }
+/* HP bar */
 .hp-bar{
-    height:9px;
-    background: rgba(255,255,255,0.06);
+    height:8px;
+    background:rgba(255,255,255,0.08);
     border-radius:999px;
     overflow:hidden;
 }
+
 .hp-fill{
     height:100%;
-    width:0%;
-    background: linear-gradient(90deg,#ffdd55,#ff7a00);
-    box-shadow: 0 6px 18px rgba(255,122,0,0.18);
-    transition: width .7s cubic-bezier(.2,.9,.2,1);
+    background:linear-gradient(90deg,#00f0ff,#c300ff);
+    box-shadow:0 0 10px #00f0ff;
 }
 
 /* subtle floating */
@@ -345,59 +387,83 @@ function sendMessage(){
             });
         }
 
-       else if(cmd === "/poke"){
+    else if(cmd === "/poke"){
+
     if(!args){
         botReply("❌ Ví dụ: /poke pikachu");
         return;
     }
 
     const pokeName = args.trim().toLowerCase();
-    botReply(`🔍 Đang tìm Pokémon "${pokeName}"...`);
+
+    botReply(`🔎 Đang tìm Pokémon <b>${pokeName}</b>...`);
 
     fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(pokeName)}`)
-    .then(r => {
-        if(!r.ok) throw new Error("not found");
+    .then(r=>{
+        if(!r.ok) throw new Error("notfound");
         return r.json();
     })
-    .then(data => {
-        const name = data.name.charAt(0).toUpperCase() + data.name.slice(1);
+    .then(data=>{
+
+        const name = data.name.charAt(0).toUpperCase()+data.name.slice(1);
         const id = data.id;
-        const types = (data.types || []).map(t => t.type.name);
-        const hp = (data.stats || []).find(s => s.stat && s.stat.name === 'hp')?.base_stat || 0;
-        // dùng official-artwork nếu có, fallback sprite
-        const sprite = (data.sprites?.other && (data.sprites.other['official-artwork']?.front_default))
-                       || data.sprites?.front_default
-                       || (data.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default)
-                       || '';
 
-        // badges
-        const typeHTML = types.map(t => `<span class="type">${t}</span>`).join('');
+        const types = data.types.map(t=>t.type.name);
+        const typeHTML = types.map(t=>`<span class="type">${t}</span>`).join("");
 
-        // tính % HP (giới hạn theo 255 để hiển thị)
-        const maxHp = 255;
-        const hpPercent = Math.min(100, Math.round((hp / maxHp) * 100));
+        const hp = data.stats.find(s=>s.stat.name==="hp").base_stat;
+
+        const sprite =
+        data.sprites.other["official-artwork"].front_default ||
+        data.sprites.front_default;
+
+        const hpPercent = Math.min(100,Math.round((hp/255)*100));
 
         botReply(`
-            <div class="poke-card-3d" role="article" aria-label="Pokémon ${name}">
-                <img class="poke-art" src="${sprite}" alt="${name}">
-                <div class="poke-info">
-                    <div class="poke-name">${name} <small style="opacity:.75; font-size:12px; margin-left:6px; color:#d1d5db">#${id}</small></div>
-                    <div class="type-badges">${typeHTML}</div>
-                    <div class="poke-stats">
-                        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; opacity:0.95;">
-                            <span>HP</span><strong>${hp}</strong>
-                        </div>
-                        <div class="hp-bar"><div class="hp-fill" style="width:${hpPercent}%;"></div></div>
-                    </div>
-                </div>
-            </div>
+
+<div class="poke-card-3d">
+
+<div class="card-galaxy"></div>
+
+<img class="poke-art" src="${sprite}">
+
+<div class="poke-info">
+
+<div class="poke-name">
+${name}
+<span class="poke-id">#${id}</span>
+</div>
+
+<div class="type-badges">
+${typeHTML}
+</div>
+
+<div class="poke-stats">
+
+<div class="hp-label">
+HP <b>${hp}</b>
+</div>
+
+<div class="hp-bar">
+<div class="hp-fill" style="width:${hpPercent}%"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
         `);
+
+        setTimeout(enableCard3D,100);
+
     })
-    .catch(() => {
-        botReply(`❌ Không tìm thấy Pokémon "${pokeName}". Thử tên khác (ví dụ: pikachu, charizard).`);
+    .catch(()=>{
+        botReply(`❌ Không tìm thấy Pokémon "${pokeName}"`);
     });
 
-    messageInput.value = '';
+    messageInput.value='';
     return;
 }
         else if(cmd === "/me"){
@@ -446,6 +512,34 @@ messagesRef.orderByChild("timestamp").limitToLast(200).on("child_added",snap=>{
     chatContainer.scrollTop=chatContainer.scrollHeight;
 });
 
+}
+    function enableCard3D(){
+
+document.querySelectorAll(".poke-card-3d").forEach(card=>{
+
+card.addEventListener("mousemove",e=>{
+
+const rect=card.getBoundingClientRect();
+
+const x=e.clientX-rect.left;
+const y=e.clientY-rect.top;
+
+const centerX=rect.width/2;
+const centerY=rect.height/2;
+
+const rotateX=-(y-centerY)/12;
+const rotateY=(x-centerX)/12;
+
+card.style.transform=
+`rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+
+});
+
+card.addEventListener("mouseleave",()=>{
+card.style.transform="rotateX(0) rotateY(0)";
+});
+
+});
 }
 </script>
 </script>
