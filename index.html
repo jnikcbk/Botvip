@@ -11,6 +11,65 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
     <style>
+        /* --- FLOATING MUSIC PLAYER --- */
+.music-player-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#sc-iframe-wrapper {
+    display: none; /* Mặc định ẩn */
+    width: 300px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid var(--neon-blue);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.music-toggle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.music-toggle-btn:hover {
+    transform: scale(1.1);
+    background: var(--neon-blue);
+    color: #000;
+}
+
+.music-toggle-btn.playing {
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(0, 240, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
         
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         :root {
@@ -210,7 +269,24 @@
         </div>
     </div>
 
-  
+  <div class="music-player-container">
+    <button class="music-toggle-btn" id="musicBtn" onclick="toggleMusic()" title="Bật/Tắt Nhạc">
+        🎵
+    </button>
+
+    <div id="sc-iframe-wrapper">
+        <iframe 
+            id="sc-player"
+            width="100%" 
+            height="120" 
+            scrolling="no" 
+            frameborder="no" 
+            allow="autoplay" 
+            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1149959719&color=%2300f0ff&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
+        </iframe>
+    </div>
+</div>
+    
 </section>
 
 <footer>
@@ -320,7 +396,20 @@ async function sendMsg() {
     chat.scrollTop = chat.scrollHeight;
 }
     
-  
+  function toggleMusic() {
+    const wrapper = document.getElementById("sc-iframe-wrapper");
+    const btn = document.getElementById("musicBtn");
+    
+    if (wrapper.style.display === "none" || wrapper.style.display === "") {
+        wrapper.style.display = "block";
+        btn.innerHTML = "✖"; // Đổi icon khi mở
+        btn.classList.add("playing");
+    } else {
+        wrapper.style.display = "none";
+        btn.innerHTML = "🎵"; // Đổi icon khi đóng
+        btn.classList.remove("playing");
+    }
+}
 
 </script>
 
