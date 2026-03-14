@@ -3,21 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon Catcher - Thực tế</title>
+    <title>Pokemon Catcher Pro</title>
     <style>
-        body { margin: 0; background: #2d3436; display: flex; flex-direction: column; align-items: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
-        canvas { background: url('https://img.freepik.com/free-vector/pixel-art-grass-background_52683-113063.jpg'); background-size: cover; border: 5px solid #ffcb05; border-radius: 15px; cursor: url('https://cur.cursors-4u.net/games/gam-13/gam1214.cur'), auto; }
-        .ui { color: white; text-align: center; padding: 10px; }
-        h1 { color: #ffcb05; text-shadow: 2px 2px #3b4cca; margin: 5px; }
+        body { 
+            margin: 0; 
+            background: #1a1a1a; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            height: 100vh; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            overflow: hidden; 
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+        h1 { 
+            color: #ffcb05; 
+            text-shadow: 3px 3px #3b4cca; 
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        .stats {
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 2px solid #ffcb05;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        canvas { 
+            /* Hình nền đồng cỏ pixel cực sạch */
+            background: url('https://iterminal.at/assets/images/posts/2018-05-18-pixel-art-grass/grass.png');
+            background-size: 200px; /* Làm họa tiết lặp lại nhìn đẹp hơn */
+            border: 8px solid #3b4cca; 
+            border-radius: 20px; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            cursor: crosshair;
+        }
     </style>
 </head>
 <body>
 
-    <div class="ui">
+    <div class="header">
         <h1>POKEMON GO WEB</h1>
-        <p>Bắt Pokemon hiếm để được nhiều điểm hơn!</p>
-        <h2>Điểm: <span id="score">0</span> | Thời gian: <span id="timer">30</span>s</h2>
+        <div class="stats">
+            Điểm: <span id="score" style="color: #00ff88;">0</span> | 
+            Thời gian: <span id="timer" style="color: #ff4757;">30</span>s
+        </div>
     </div>
+
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -26,41 +67,45 @@
         const scoreEl = document.getElementById("score");
         const timerEl = document.getElementById("timer");
 
-        canvas.width = 700;
-        canvas.height = 450;
+        canvas.width = 800;
+        canvas.height = 500;
 
         let score = 0;
         let timeLeft = 30;
         let pokemons = [];
         let gameActive = true;
 
-        // Định nghĩa danh sách Pokemon với link ảnh thật
         const pokeData = [
-            { name: "Pikachu", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png", size: 60, points: 10 },
-            { name: "Charmander", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png", size: 55, points: 15 },
-            { name: "Squirtle", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png", size: 55, points: 15 },
-            { name: "Mewtwo", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png", size: 80, points: 50 }
+            { id: 25, name: "Pikachu", points: 10, size: 70 },
+            { id: 4, name: "Charmander", points: 20, size: 65 },
+            { id: 7, name: "Squirtle", points: 20, size: 65 },
+            { id: 1, name: "Bulbasaur", points: 20, size: 65 },
+            { id: 150, name: "Mewtwo", points: 100, size: 90 },
+            { id: 151, name: "Mew", points: 200, size: 50 } // Mew bé tí, cực khó bắt
         ];
 
-        // Tải trước hình ảnh vào bộ nhớ
         const loadedImages = {};
         pokeData.forEach(p => {
             const img = new Image();
-            img.src = p.img;
+            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
             loadedImages[p.name] = img;
         });
+
+        const pokeballImg = new Image();
+        pokeballImg.src = "https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg";
 
         function spawn() {
             if (!gameActive) return;
             const type = pokeData[Math.floor(Math.random() * pokeData.length)];
             pokemons.push({
-                x: Math.random() * (canvas.width - 100) + 50,
-                y: Math.random() * (canvas.height - 100) + 50,
+                x: Math.random() * (canvas.width - 150) + 75,
+                y: Math.random() * (canvas.height - 150) + 75,
                 ...type,
-                life: 1500 + Math.random() * 2000,
-                spawnTime: Date.now()
+                life: 1200 + Math.random() * 1000,
+                spawnTime: Date.now(),
+                opacity: 0 // Hiệu ứng hiện hình
             });
-            setTimeout(spawn, 700);
+            setTimeout(spawn, 800);
         }
 
         function draw() {
@@ -71,9 +116,12 @@
                 const age = now - p.spawnTime;
                 if (age > p.life) return false;
 
-                // Vẽ hình ảnh Pokemon thay vì hình tròn
-                const img = loadedImages[p.name];
-                ctx.drawImage(img, p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                // Hiệu ứng hiện hình (fade in)
+                if (p.opacity < 1) p.opacity += 0.1;
+
+                ctx.globalAlpha = p.opacity;
+                ctx.drawImage(loadedImages[p.name], p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                ctx.globalAlpha = 1.0;
                 
                 return true;
             });
@@ -86,6 +134,9 @@
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
+
+            // Vẽ Pokeball tại điểm click
+            ctx.drawImage(pokeballImg, mouseX-20, mouseY-20, 40, 40);
 
             pokemons.forEach((p, index) => {
                 const dist = Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2);
@@ -103,7 +154,7 @@
             if (timeLeft <= 0) {
                 gameActive = false;
                 clearInterval(timer);
-                alert("Chúc mừng! Bạn đạt được: " + score + " điểm.");
+                alert("KẾT THÚC! Tổng điểm của bạn: " + score);
                 location.reload();
             }
         }, 1000);
