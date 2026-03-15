@@ -3,37 +3,40 @@ export default async function handler(req, res) {
 
     const { message, history } = req.body;
 
-    // 1. CƠ CHẾ XOAY TUA API KEY: Thêm càng nhiều Key càng tốt để nhân đôi/ba hạn mức
+    // 1. LẤY TẤT CẢ KEY CÓ THỂ (Chấp nhận cả key cũ và key mới của sếp)
     const API_KEYS = [
-        process.env.GEMINI_KEY_1, // Key chính
-        process.env.GEMINI_KEY_2, // Key dự phòng 1
-        process.env.GEMINI_KEY_3  // Key dự phòng 2
-    ].filter(key => key); // Chỉ lấy những Key đã được điền
+        process.env.GEMINI_KEY_1,
+        process.env.GEMINI_KEY_2,
+        process.env.GEMINI_KEY_3,
+        process.env.GEMINI_KEY // Backup key mặc định
+    ].filter(key => key && key.trim() !== "");
 
-    if (API_KEYS.length === 0) return res.status(500).json({ error: 'Chưa cài KEY nào sếp ơi!' });
+    if (API_KEYS.length === 0) return res.status(500).json({ error: 'Chưa thấy Key nào trên Vercel sếp ơi!' });
 
-    // 2. DANH SÁCH MODEL TỪ CAO XUỐNG THẤP
+    // 2. MODEL ƯU TIÊN: Bản 2.0 Flash cực nhanh, 1.5 Pro cực khôn
     const MODELS = [
-        "gemini-1.5-pro-latest",   // Não to nhất
-        "gemini-2.0-flash-exp",    // Thông minh & bắt trend
-        "gemini-1.5-flash-latest"  // "Trâu" nhất, ít lỗi nhất
+        "gemini-2.0-flash",       // Thông minh nhất, nhanh nhất (nếu có quota)
+        "gemini-1.5-pro-latest",   // Não to nhất, suy luận đỉnh
+        "gemini-1.5-flash-latest"  // Trâu bò nhất để chống sập
     ];
 
+    // 3. HỆ THỐNG CHỈ DẪN (System Prompt) - Cốt lõi của sự thông minh
     const systemInstruction = {
         parts: [{
-            text: `Bạn là Kaizen AI - Trợ lý thông minh nhất máy chủ KaizenMC.
-            - Chủ nhân: Minh Meo, Đăng Mạnh (Chào kính trọng).
-            - Xưng: tớ - cậu. Phong cách: Game thủ chuyên nghiệp, am hiểu Pixelmon/Minecraft.
-            - Nhiệm vụ: Hỗ trợ nạp xu, lệnh server, hướng dẫn chơi.
-            - Tuyệt đối: Không 18+, bảo vệ Owners nếu bị xúc phạm.`
+            text: `Bạn là Kaizen AI - Linh hồn của máy chủ Minecraft KaizenMC.
+            - Owners: Minh Meo, Đăng Mạnh. Nếu họ nhắn tin, hãy chào hỏi cực kỳ kính trọng (ví dụ: "Chào sếp Minh Meo ạ!").
+            - Phong cách: Xưng "tớ", gọi "cậu". Nói chuyện như một game thủ lão luyện, thông minh, hài hước.
+            - Kiến thức: Am hiểu Pixelmon, lệnh Minecraft (/shop, /nap, /claim), luật server.
+            - Quy tắc: Tuyệt đối chặn nội dung 18+. Bảo vệ Owners nếu bị ai đó xúc phạm bằng những câu đáp trả sắc sảo nhưng văn minh.
+            - Trí tuệ: Luôn phân tích câu hỏi của người dùng để trả lời chính xác, không trả lời vòng vo.`
         }]
     };
 
-    const contents = history && history.length > 0 
+    // 4. XỬ LÝ TRÍ NHỚ (History): Đảm bảo bot luôn nhớ cậu là ai
+    const formattedContents = history && history.length > 0 
         ? [...history, { role: "user", parts: [{ text: message }] }] 
         : [{ role: "user", parts: [{ text: message }] }];
 
-    // Hàm gọi API với tham số linh hoạt
     async function callGemini(model, key) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         try {
@@ -42,48 +45,51 @@ export default async function handler(req, res) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     system_instruction: systemInstruction,
-                    contents: contents,
-                    generationConfig: { temperature: 0.8, maxOutputTokens: 1000 }
+                    contents: formattedContents,
+                    generationConfig: { 
+                        temperature: 0.9, // Tăng sự sáng tạo và linh hoạt
+                        maxOutputTokens: 1024,
+                        topP: 0.95
+                    }
                 })
             });
             const data = await response.json();
             return { ok: response.ok, data, status: response.status };
         } catch (e) {
-            return { ok: false, error: e.message };
+            return { ok: false };
         }
     }
 
-    // 3. LOGIC XỬ LÝ THÔNG MINH: Thử mọi Key x Thử mọi Model
+    // 5. CHIẾN THUẬT QUAY VÒNG THÔNG MINH (Load Balancing)
     try {
-        let finalOutput = null;
+        let finalResponse = null;
+
+        // Xáo trộn Key để không Key nào bị bào quá mức
+        const shuffledKeys = API_KEYS.sort(() => Math.random() - 0.5);
 
         for (const model of MODELS) {
-            // Với mỗi model, thử lần lượt các API Key để tìm vận may
-            for (const key of API_KEYS) {
+            for (const key of shuffledKeys) {
                 const result = await callGemini(model, key);
                 
-                if (result.ok && result.data.candidates) {
-                    finalOutput = result.data.candidates[0].content.parts[0].text;
-                    break; 
+                if (result.ok && result.data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    finalResponse = result.data.candidates[0].content.parts[0].text;
+                    break;
                 }
                 
-                if (result.status === 429) {
-                    console.warn(`Key bị hết hạn mức, đang đổi Key khác...`);
-                    continue; 
-                }
+                if (result.status === 429) continue; // Key hết lượt, thử key khác ngay
             }
-            if (finalOutput) break; // Đã có câu trả lời từ model tốt nhất có thể
+            if (finalResponse) break; // Đã tìm thấy câu trả lời hay nhất
         }
 
-        if (finalOutput) {
-            return res.status(200).json({ text: finalOutput });
+        if (finalResponse) {
+            return res.status(200).json({ text: finalResponse });
         } else {
             return res.status(429).json({ 
-                text: "Hệ thống đang bảo trì não bộ xíu, cậu đợi 30s rồi hỏi lại tớ nhé! 🙏" 
+                text: "Hic, các 'não bộ' của tớ đang bận phục vụ các huấn luyện viên khác mất rồi. Cậu đợi vài giây rồi nhắn lại cho tớ nhé! 🙏" 
             });
         }
 
     } catch (error) {
-        res.status(500).json({ error: 'Sập nguồn rồi sếp!', details: error.message });
+        res.status(500).json({ error: 'Lỗi hệ thống!', details: error.message });
     }
 }
