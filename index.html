@@ -513,30 +513,60 @@ canvas,
     }
 }
        
-
-
-
-
-
-     :root {
-    /* 1. Mặc định (Hệ Nước/Băng) */
-    --neon-blue: #00f0ff; 
-    --neon-purple: #c300ff; 
-    --neon-pink: #ff00aa;
-    --border: rgba(255, 255, 255, 0.12); 
-    --glass: rgba(15, 23, 42, 0.82);
-    --bg-dark: #020617; 
-    transition: 0.5s;
+/* Animation nhịp đập */
+@keyframes music-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-blue); }
+    50% { transform: scale(1.1); box-shadow: 0 0 25px var(--neon-blue); }
+    100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-blue); }
 }
 
-/* Các hệ màu khác giữ nguyên data-theme như bạn đã viết... */
+/* Áp dụng vào nút */
+.music-toggle-btn {
+    animation: music-pulse 2s infinite ease-in-out;
+}
+        .music-toggle-btn:hover {
+    animation: rotate-border 1s linear infinite;
+}
+
+@keyframes rotate-border {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+/* ============================================================
+   HỆ THỐNG 20 HỆ MÀU POKÉMON - TRẠM ĐIỀU KHIỂN TRUNG TÂM
+   ============================================================ */
+
+:root {
+    /* 1. Mặc định (Hệ Nước/Băng) */
+    --neon-blue: #00f0ff; --neon-purple: #c300ff; --neon-pink: #ff00aa;
+    --border: rgba(255, 255, 255, 0.12); --glass: rgba(15, 23, 42, 0.82);
+    --bg-dark: #020617; transition: 0.5s;
+}
+
+/* Các hệ màu biến thể theo data-theme */
 [data-theme="fire"] { --neon-blue: #ff4d00; --neon-purple: #ffb700; --neon-pink: #ff0000; --glass: rgba(30, 10, 5, 0.85); --bg-dark: #1a0500; }
 [data-theme="grass"] { --neon-blue: #00ff88; --neon-purple: #9dff00; --neon-pink: #32a852; --glass: rgba(10, 30, 15, 0.85); --bg-dark: #051a05; }
+[data-theme="electric"] { --neon-blue: #ffff00; --neon-purple: #ffaa00; --neon-pink: #ffffff; --glass: rgba(25, 25, 0, 0.85); --bg-dark: #151500; }
+[data-theme="ghost"] { --neon-blue: #a333ff; --neon-purple: #6a00ff; --neon-pink: #ff00fb; --glass: rgba(15, 5, 30, 0.85); --bg-dark: #0a0015; }
+[data-theme="fairy"] { --neon-blue: #ffc0cb; --neon-purple: #ff69b4; --neon-pink: #da70d6; --glass: rgba(30, 15, 25, 0.85); --bg-dark: #1a0510; }
+[data-theme="dragon"] { --neon-blue: #7038f8; --neon-purple: #483d8b; --neon-pink: #ff4500; --glass: rgba(10, 10, 40, 0.85); --bg-dark: #050520; }
+[data-theme="psychic"] { --neon-blue: #f85888; --neon-purple: #c71585; --neon-pink: #ff1493; --glass: rgba(35, 10, 20, 0.85); --bg-dark: #1a050d; }
+[data-theme="poison"] { --neon-blue: #a040a0; --neon-purple: #800080; --neon-pink: #ba55d3; --glass: rgba(25, 5, 25, 0.85); --bg-dark: #150015; }
+[data-theme="dark"] { --neon-blue: #705848; --neon-purple: #2f4f4f; --neon-pink: #000000; --glass: rgba(20, 20, 20, 0.9); --bg-dark: #050505; }
+[data-theme="steel"] { --neon-blue: #b8b8d0; --neon-purple: #708090; --neon-pink: #ffffff; --glass: rgba(25, 25, 35, 0.85); --bg-dark: #10101a; }
+[data-theme="rock"] { --neon-blue: #b8a038; --neon-purple: #8b4513; --neon-pink: #d2b48c; --glass: rgba(30, 25, 10, 0.85); --bg-dark: #1a1505; }
+[data-theme="ground"] { --neon-blue: #e0c068; --neon-purple: #d2b48c; --neon-pink: #8b4513; --glass: rgba(35, 30, 15, 0.85); --bg-dark: #1c1808; }
+[data-theme="bug"] { --neon-blue: #a8b820; --neon-purple: #6b8e23; --neon-pink: #9acd32; --glass: rgba(25, 30, 10, 0.85); --bg-dark: #121805; }
+[data-theme="fighting"] { --neon-blue: #c03028; --neon-purple: #8b0000; --neon-pink: #ff4500; --glass: rgba(35, 10, 10, 0.85); --bg-dark: #1c0505; }
+[data-theme="flying"] { --neon-blue: #a890f0; --neon-purple: #483d8b; --neon-pink: #87ceeb; --glass: rgba(20, 20, 45, 0.85); --bg-dark: #0a0a20; }
+[data-theme="gold"] { --neon-blue: #ffd700; --neon-purple: #daa520; --neon-pink: #fff8dc; --glass: rgba(40, 35, 0, 0.85); --bg-dark: #1a1800; }
 [data-theme="matrix"] { --neon-blue: #00ff41; --neon-purple: #008f11; --neon-pink: #003b00; --glass: rgba(0, 15, 0, 0.9); --bg-dark: #000a00; }
-/* (Tương tự cho các hệ màu còn lại, bạn chỉ cần thêm --bg-dark cho mỗi hệ để đổi màu nền) */
+[data-theme="blood"] { --neon-blue: #ff0000; --neon-purple: #8b0000; --neon-pink: #310000; --glass: rgba(30, 0, 0, 0.9); --bg-dark: #120000; }
+[data-theme="vaporwave"] { --neon-blue: #00d4ff; --neon-purple: #ff00ff; --neon-pink: #fffb00; --glass: rgba(20, 0, 40, 0.8); --bg-dark: #0f001a; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
 
+
+    
 body {
     background-color: var(--bg-dark); /* Nền thay đổi theo hệ màu */
     color: white;
