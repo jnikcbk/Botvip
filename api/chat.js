@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     // Sử dụng Gemini 1.5 Flash để vừa nhanh vừa cực kỳ thông minh
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
 
     const systemInstruction = {
         role: "system",
