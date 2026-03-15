@@ -991,75 +991,83 @@ async function sendMsg() {
     chat.scrollTop = chat.scrollHeight;
 }
     
- let currentPlatform = 'sc'; // Mặc định là SoundCloud
+ let currentPlatform = 'yt'; // Đổi mặc định sang YT cho tiện tìm kiếm
 
 function setPlatform(pf) {
     currentPlatform = pf;
-    // Cập nhật giao diện nút
     document.querySelectorAll('.btn-platform').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + pf).classList.add('active');
+    const targetBtn = document.getElementById('btn-' + pf);
+    if (targetBtn) targetBtn.classList.add('active');
     
-    // Đổi placeholder cho dễ hiểu
     const input = document.getElementById('media-url-input');
-    if(pf === 'yt') input.placeholder = "Dán link YouTube (Ví dụ: watch?v=...)";
-    else if(pf === 'sp') input.placeholder = "Dán link Spotify (Bài hát/Playlist)";
-    else input.placeholder = "Dán link SoundCloud...";
-}
-
-function toggleMusicPanel() {
-    const panel = document.getElementById("music-panel");
-    const btn = document.getElementById("musicBtn");
-    if (panel.style.display === "none" || panel.style.display === "") {
-        panel.style.display = "block";
-        btn.innerHTML = "✖";
-    } else {
-        panel.style.display = "none";
-        btn.innerHTML = "🎵";
-    }
+    // Cập nhật placeholder linh hoạt hơn
+    const tips = {
+        'yt': "Nhập tên bài hát hoặc dán link YouTube...",
+        'sp': "Dán link bài hát/playlist Spotify...",
+        'sc': "Dán link SoundCloud..."
+    };
+    input.placeholder = tips[pf] || "Nhập nội dung...";
 }
 
 function playMedia() {
-    const url = document.getElementById("media-url-input").value.trim();
+    const inputVal = document.getElementById("media-url-input").value.trim();
     const container = document.getElementById("player-container");
     const wrapper = document.getElementById("media-wrapper");
     
-    if (!url) return alert("Vui lòng dán link!");
+    if (!inputVal) return alert("Vui lòng nhập tên bài hoặc dán link!");
 
     let iframeHtml = "";
 
     if (currentPlatform === 'yt') {
-        // Xử lý link YouTube để lấy ID
+        // KIỂM TRA LÀ LINK HAY TÊN BÀI HÁT
         let videoId = "";
-        if(url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
-        else if(url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
-        
-        if(videoId) {
-            iframeHtml = `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+        const match = inputVal.match(youtubeRegex);
+
+        if (match) {
+            // Nếu là link YouTube hợp lệ
+            videoId = match[1];
+            iframeHtml = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"></iframe>`;
+        } else {
+            // Nếu là tên bài hát (Không phải link) -> Dùng tính năng search của YouTube Embed
+            // Lưu ý: Tên bài hát cần được encode để đưa vào URL
+            const searchTerms = encodeURIComponent(inputVal);
+            // Thủ thuật dùng playlist để tìm kiếm bài hát đầu tiên
+            iframeHtml = `<iframe width="100%" height="200" src="https://www.youtube.com/embed?listType=search&list=${searchTerms}&autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,240,255,0.3);"></iframe>`;
         }
     } 
     else if (currentPlatform === 'sp') {
-        // Xử lý link Spotify (đổi link thường thành link embed)
-        let spUrl = url.replace("open.spotify.com/", "open.spotify.com/embed/");
-        iframeHtml = `<iframe src="${spUrl}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+        if (inputVal.includes("spotify.com")) {
+            let spUrl = inputVal.replace("open.spotify.com/", "open.spotify.com/embed/");
+            iframeHtml = `<iframe src="${spUrl}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media" style="border-radius:12px;"></iframe>`;
+        } else {
+            alert("Spotify chỉ hỗ trợ dán link trực tiếp!");
+        }
     } 
-    else {
-        // SoundCloud
-        iframeHtml = `<iframe width="100%" height="120" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%2300f0ff&auto_play=true"></iframe>`;
+    else if (currentPlatform === 'sc') {
+        if (inputVal.includes("soundcloud.com")) {
+            iframeHtml = `<iframe width="100%" height="150" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(inputVal)}&color=%2300f0ff&auto_play=true&hide_related=true&show_comments=false" style="border-radius:12px;"></iframe>`;
+        } else {
+            alert("SoundCloud chỉ hỗ trợ dán link trực tiếp!");
+        }
     }
 
     if (iframeHtml) {
         container.innerHTML = iframeHtml;
         wrapper.style.display = "block";
-    } else {
-        alert("Link không đúng định dạng!");
+        // Hiệu ứng mượt mà khi hiện trình phát
+        wrapper.style.animation = "fadeIn 0.5s ease";
     }
 }
 
-// Mặc định chọn SoundCloud khi load
-window.addEventListener('DOMContentLoaded', () => {
-    setPlatform('sc');
+// Thêm sự kiện nhấn Enter để chơi nhạc luôn cho tiện
+document.getElementById('media-url-input')?.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') playMedia();
 });
-    
+
+window.addEventListener('DOMContentLoaded', () => {
+    setPlatform('yt'); // Chuyển sang YT làm mặc định vì nó thông minh nhất
+});
 const POKEMON_ICONS = [
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
