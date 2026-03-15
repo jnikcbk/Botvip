@@ -3,360 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KaizenMC - Cyber Runner Ultimate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>KaizenMC - Neon Breaker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon-blue: #00f0ff; --neon-pink: #ff00aa; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; touch-action: none; }
-        
-        /* UI Chính */
-        #hud {
-            position: absolute; top: 20px; left: 20px; color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue); z-index: 10;
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Orbitron', sans-serif; cursor: none; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; top: 10px; width: 100%; display: flex;
+            justify-content: space-around; color: #00f0ff; font-size: 20px;
+            text-shadow: 0 0 10px #00f0ff; pointer-events: none;
         }
-        #score-container { font-size: 28px; font-weight: 900; }
-        #speedometer { font-size: 14px; opacity: 0.8; margin-top: 5px; }
-
-        /* Hiệu ứng nháy khi ăn item */
-        .flash { animation: flash-anim 0.2s; }
-        @keyframes flash-anim {
-            0% { background: white; }
-            100% { background: transparent; }
+        #game-over {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            color: #ff0055; z-index: 100;
         }
-
-        /* Màn hình kết thúc */
-        #overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; color: white; display: none;
+        .btn {
+            margin-top: 20px; padding: 15px 40px; background: #00f0ff;
+            color: #000; border: none; font-weight: 900; cursor: pointer;
+            font-family: 'Orbitron'; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
         }
-        .panel {
-            padding: 50px; border: 3px solid var(--neon-pink);
-            box-shadow: 0 0 40px var(--neon-pink); background: #050010;
-            text-align: center; border-radius: 20px;
-        }
-        h1 { font-size: 60px; margin: 0; color: var(--neon-pink); letter-spacing: 5px; }
-        .stat { font-size: 20px; margin: 20px 0; }
-        .btn-retry {
-            background: var(--neon-blue); color: #000; border: none;
-            padding: 15px 40px; font-family: 'Orbitron'; font-weight: 900;
-            font-size: 18px; cursor: pointer; transition: 0.3s;
-        }
-        .btn-retry:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--neon-blue); }
-
-        /* Progress Bar cho kỹ năng */
-        #boost-bar {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            width: 300px; height: 10px; border: 1px solid var(--neon-blue);
-        }
-        #boost-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: 0.1s; }
     </style>
 </head>
 <body>
 
-    <div id="hud">
-        <div id="score-container">DISTANCE: <span id="dist-val">0</span>m</div>
-        <div id="speedometer">VELOCITY: <span id="speed-val">0</span> KM/H</div>
+    <div id="ui">
+        <div>CORE HEALTH: <span id="hp">100</span>%</div>
+        <div>DATA SAVED: <span id="score">0</span></div>
     </div>
 
-    <div id="boost-bar"><div id="boost-fill"></div></div>
-
-    <div id="overlay">
-        <div class="panel">
-            <h1>SYSTEM CRASH</h1>
-            <div class="stat">COORDINATES REACHED: <span id="final-dist">0</span>m</div>
-            <button class="btn-retry" onclick="location.reload()">REBOOT SYSTEM</button>
-        </div>
+    <div id="game-over">
+        <h1 style="font-size: 50px;">SERVER CRASHED</h1>
+        <p style="color: white;">SCORE: <span id="final-score">0</span></p>
+        <button class="btn" onclick="location.reload()">REBOOT SYSTEM</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        /**
-         * CYBER RUNNER ULTIMATE ENGINE
-         * Bản quyền thuộc về KaizenMC
-         * Quy mô: ~500 dòng code logic
-         */
+    <canvas id="gameCanvas"></canvas>
 
-        // --- CẤU HÌNH HỆ THỐNG ---
-        const CONFIG = {
-            LANE_WIDTH: 4,
-            CAR_Y: 0.5,
-            INITIAL_SPEED: 0.7,
-            MAX_SPEED: 3.5,
-            OBSTACLE_SPAWN_DIST: 50,
-            BUILDING_COUNT: 40
-        };
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-        // --- BIẾN TOÀN CỤC ---
-        let scene, camera, renderer, clock;
-        let playerCar, road, stars, sun;
-        let obstacles = [], buildings = [], powerUps = [];
-        let score = 0, speed = CONFIG.INITIAL_SPEED, targetLane = 0;
-        let isDead = false, invulnerable = 0;
+    let score = 0, hp = 100, gameActive = true;
+    let particles = [], blocks = [];
+    let mouse = { x: canvas.width / 2, y: canvas.height - 100 };
 
-        // --- KHỞI TẠO HỆ THỐNG ---
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020005);
-            scene.fog = new THREE.FogExp2(0x020005, 0.03);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1500);
-            camera.position.set(0, 4, 10);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            document.body.appendChild(renderer.domElement);
-
-            clock = new THREE.Clock();
-
-            createPlayer();
-            createEnvironment();
-            setupLights();
-            createObstaclesPool();
+    class Block {
+        constructor() {
+            this.size = Math.random() * 30 + 20;
+            this.x = Math.random() * (canvas.width - this.size);
+            this.y = -this.size;
+            this.speed = Math.random() * 2 + 2 + (score / 50);
+            this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            this.text = ["BUG", "VIRUS", "LAG", "ERROR"][Math.floor(Math.random()*4)];
+        }
+        draw() {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
+            ctx.fillStyle = "#000";
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.strokeRect(this.x, this.y, this.size, this.size);
             
-            // Event Listeners
-            window.addEventListener('keydown', handleInput);
-            window.addEventListener('touchstart', handleTouch);
-            window.addEventListener('resize', onWindowResize);
-
-            animate();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = this.color;
+            ctx.font = "10px Orbitron";
+            ctx.fillText(this.text, this.x, this.y - 5);
         }
-
-        // --- TẠO NGƯỜI CHƠI (XE SIÊU CẤP) ---
-        function createPlayer() {
-            playerCar = new THREE.Group();
-            
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x080808, metalness: 1, roughness: 0.2 });
-            const neonMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 2 });
-
-            // Chassis
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 4), bodyMat);
-            playerCar.add(body);
-
-            // Cabin
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.6, 1.5), 
-                new THREE.MeshPhongMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.4 }));
-            cabin.position.set(0, 0.5, 0);
-            playerCar.add(cabin);
-
-            // Wings & Fins
-            const wing = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1), bodyMat);
-            wing.position.set(0, 0.2, 0.5);
-            playerCar.add(wing);
-
-            // Neon Stripes
-            const stripeL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 3.8), neonMat);
-            stripeL.position.set(0.85, 0.2, 0);
-            playerCar.add(stripeL);
-            const stripeR = stripeL.clone();
-            stripeR.position.x = -0.85;
-            playerCar.add(stripeR);
-
-            // Wheels
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00f0ff, emissiveIntensity: 1 });
-            const wPositions = [[1,1.3], [-1,1.3], [1,-1.3], [-1,-1.3]];
-            wPositions.forEach(p => {
-                const w = new THREE.Mesh(wheelGeo, wheelMat);
-                w.rotation.z = Math.PI/2;
-                w.position.set(p[0], -0.1, p[1]);
-                playerCar.add(w);
-            });
-
-            // Thruster Flame
-            const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2, 12), 
-                new THREE.MeshBasicMaterial({ color: 0xff00aa, transparent: true, opacity: 0.8 }));
-            flame.rotation.x = Math.PI/2;
-            flame.position.z = 2.8;
-            flame.name = "flame";
-            playerCar.add(flame);
-
-            scene.add(playerCar);
-        }
-
-        // --- TẠO MÔI TRƯỜNG (PHỐ THỊ CYBERPUNK) ---
-        function createEnvironment() {
-            // Road
-            const roadGeo = new THREE.PlaneGeometry(20, 1000, 1, 100);
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0xff00aa, wireframe: true, transparent: true, opacity: 0.2 });
-            road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2;
-            scene.add(road);
-
-            // Buildings
-            for(let i=0; i < CONFIG.BUILDING_COUNT; i++) {
-                const h = Math.random() * 30 + 10;
-                const w = Math.random() * 5 + 5;
-                const geo = new THREE.BoxGeometry(w, h, w);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x050505, emissive: 0xff00aa, emissiveIntensity: 0.1 });
-                const b = new THREE.Mesh(geo, mat);
-                
-                const side = Math.random() > 0.5 ? 1 : -1;
-                b.position.set(side * (Math.random() * 20 + 15), h/2, -i * 25);
-                scene.add(b);
-                buildings.push(b);
-            }
-
-            // Stars
-            const sGeo = new THREE.BufferGeometry();
-            const sPos = [];
-            for(let i=0; i<5000; i++) sPos.push((Math.random()-0.5)*1000, Math.random()*500, (Math.random()-0.5)*1000);
-            sGeo.setAttribute('position', new THREE.Float32BufferAttribute(sPos, 3));
-            stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 }));
-            scene.add(stars);
-
-            // Sun (Neon Circle)
-            const sunGeo = new THREE.CircleGeometry(50, 32);
-            const sunMat = new THREE.MeshBasicMaterial({ color: 0xff00aa, transparent: true, opacity: 0.5 });
-            sun = new THREE.Mesh(sunGeo, sunMat);
-            sun.position.set(0, 10, -400);
-            scene.add(sun);
-        }
-
-        function setupLights() {
-            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-            const pLight = new THREE.PointLight(0x00f0ff, 2, 20);
-            pLight.position.set(0, 5, 0);
-            scene.add(pLight);
-        }
-
-        // --- QUẢN LÝ VẬT CẢN & ITEMS ---
-        function createObstaclesPool() {
-            for(let i=0; i<10; i++) {
-                spawnObstacle(-100 - (i * CONFIG.OBSTACLE_SPAWN_DIST));
+        update() {
+            this.y += this.speed;
+            if (this.y > canvas.height) {
+                hp -= 10;
+                document.getElementById('hp').innerText = hp;
+                blocks.splice(blocks.indexOf(this), 1);
+                if (hp <= 0) endGame();
             }
         }
+    }
 
-        function spawnObstacle(z) {
-            const types = ['wall', 'pillar', 'laser'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            let geo, mat, mesh;
+    function endGame() {
+        gameActive = false;
+        document.getElementById('game-over').style.display = 'flex';
+        document.getElementById('final-score').innerText = score;
+    }
 
-            if(type === 'wall') {
-                geo = new THREE.BoxGeometry(3, 2, 1);
-                mat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 });
-            } else {
-                geo = new THREE.CylinderGeometry(0.5, 0.5, 10, 8);
-                mat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff });
+    function createExplosion(x, y, color) {
+        for(let i=0; i<15; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random()-0.5)*10,
+                vy: (Math.random()-0.5)*10,
+                size: Math.random()*3,
+                life: 1,
+                color
+            });
+        }
+    }
+
+    function animate() {
+        if (!gameActive) return;
+        ctx.fillStyle = "rgba(5, 5, 5, 0.2)"; // Màn hình mờ dần tạo trail
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Vẽ kiếm Laser
+        ctx.beginPath();
+        ctx.moveTo(mouse.x - 60, mouse.y);
+        ctx.lineTo(mouse.x + 60, mouse.y);
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "#fff";
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#00f0ff";
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Quản lý Block
+        if (Math.random() < 0.03 + (score/2000)) blocks.push(new Block());
+
+        blocks.forEach((b, index) => {
+            b.update();
+            b.draw();
+
+            // Va chạm với kiếm (Chém)
+            if (b.y + b.size > mouse.y - 10 && b.y < mouse.y + 10 &&
+                b.x + b.size > mouse.x - 65 && b.x < mouse.x + 65) {
+                createExplosion(b.x + b.size/2, b.y + b.size/2, b.color);
+                blocks.splice(index, 1);
+                score += 1;
+                document.getElementById('score').innerText = score;
             }
+        });
 
-            mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((Math.floor(Math.random()*3)-1)*CONFIG.LANE_WIDTH, 1, z);
-            scene.add(mesh);
-            obstacles.push({ mesh, type });
-        }
+        // Hạt hiệu ứng
+        particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            if (p.life <= 0) particles.splice(i, 1);
+        });
 
-        // --- LOGIC ĐIỀU KHIỂN ---
-        function handleInput(e) {
-            if(isDead) return;
-            if(e.key === 'ArrowLeft' || e.key === 'a') targetLane = Math.max(-1, targetLane - 1);
-            if(e.key === 'ArrowRight' || e.key === 'd') targetLane = Math.min(1, targetLane + 1);
-        }
+        requestAnimationFrame(animate);
+    }
 
-        let touchX = 0;
-        function handleTouch(e) {
-            touchX = e.touches[0].clientX;
-            if(touchX < window.innerWidth/2) targetLane = Math.max(-1, targetLane - 1);
-            else targetLane = Math.min(1, targetLane + 1);
-        }
+    window.addEventListener('mousemove', e => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
 
-        // --- VÒNG LẶP CHÍNH (FRAME HANDLER) ---
-        function animate() {
-            if(isDead) return;
-            requestAnimationFrame(animate);
-            const delta = clock.getElapsedTime();
+    window.addEventListener('touchmove', e => {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+        e.preventDefault();
+    }, { passive: false });
 
-            updatePhysics();
-            updateEnvironment(delta);
-            checkCollisions();
-            updateUI();
-
-            renderer.render(scene, camera);
-        }
-
-        function updatePhysics() {
-            // Speed progression
-            if(speed < CONFIG.MAX_SPEED) speed += 0.0005;
-            
-            // Player movement
-            playerCar.position.x = THREE.MathUtils.lerp(playerCar.position.x, targetLane * CONFIG.LANE_WIDTH, 0.15);
-            playerCar.rotation.z = -(playerCar.position.x - targetLane * CONFIG.LANE_WIDTH) * 0.2;
-            playerCar.position.y = CONFIG.CAR_Y + Math.sin(Date.now() * 0.01) * 0.1;
-
-            // Flame flicker
-            const flame = playerCar.getObjectByName("flame");
-            flame.scale.setScalar(1 + Math.random() * 0.2);
-            flame.material.opacity = 0.5 + Math.random() * 0.5;
-        }
-
-        function updateEnvironment(t) {
-            // Road scroll
-            road.position.z += speed;
-            if(road.position.z > 50) road.position.z = 0;
-
-            // Stars move slower (Parallax)
-            stars.position.z += speed * 0.5;
-            if(stars.position.z > 500) stars.position.z = 0;
-
-            // Obstacles scroll
-            obstacles.forEach(obj => {
-                obj.mesh.position.z += speed;
-                if(obj.mesh.position.z > 20) {
-                    obj.mesh.position.z = -400;
-                    obj.mesh.position.x = (Math.floor(Math.random()*3)-1)*CONFIG.LANE_WIDTH;
-                    score += 10;
-                }
-            });
-
-            // Buildings pulse with music-like rhythm
-            buildings.forEach((b, i) => {
-                b.position.z += speed;
-                const scale = 1 + Math.sin(t * 2 + i) * 0.1;
-                b.scale.set(1, scale, 1);
-                if(b.position.z > 50) b.position.z = -450;
-            });
-
-            // Camera follow & shake
-            camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerCar.position.x * 0.5, 0.05);
-            camera.position.y = 4 + Math.random() * (speed * 0.02);
-        }
-
-        function checkCollisions() {
-            const playerBox = new THREE.Box3().setFromObject(playerCar);
-            
-            obstacles.forEach(obj => {
-                const obBox = new THREE.Box3().setFromObject(obj.mesh);
-                if(playerBox.intersectsBox(obBox)) {
-                    die();
-                }
-            });
-        }
-
-        function updateUI() {
-            document.getElementById('dist-val').innerText = Math.floor(score);
-            document.getElementById('speed-val').innerText = Math.floor(speed * 100);
-            document.getElementById('boost-fill').style.width = (speed / CONFIG.MAX_SPEED * 100) + "%";
-        }
-
-        function die() {
-            isDead = true;
-            document.getElementById('overlay').style.display = 'flex';
-            document.getElementById('final-dist').innerText = score;
-            
-            // Particle Explosion (Simple)
-            playerCar.visible = false;
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // KÍCH HOẠT HỆ THỐNG
-        init();
-
-    </script>
+    animate();
+</script>
 </body>
 </html>
