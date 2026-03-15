@@ -2,184 +2,174 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>KALI_LINUX_KERNEL_v7.4.1</title>
+    <title>CENTRAL_INTELLIGENCE_AGENCY_OPERATOR</title>
     <style>
-        :root { --green: #00ff41; --dark: #0a0a0a; --red: #ff3e3e; }
-        body, html { margin: 0; padding: 0; background: #000; color: var(--green); font-family: 'Consolas', 'Courier New', monospace; overflow: hidden; height: 100vh; }
+        :root { --neon: #00ff41; --danger: #ff0000; --bg: #020202; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; text-transform: uppercase; }
+        
+        /* Scanline Effect */
+        body::after { content: ""; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                      linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); 
+                      background-size: 100% 3px, 3px 100%; pointer-events: none; z-index: 999; }
 
-        /* Hiệu ứng Matrix nền */
-        #matrix-bg { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
+        #os-container { display: grid; grid-template-columns: 250px 1fr 300px; grid-template-rows: 60px 1fr 200px; height: 100vh; gap: 5px; padding: 5px; box-sizing: border-box; }
+        .module { border: 1px solid var(--neon); background: rgba(0, 20, 0, 0.8); position: relative; overflow: hidden; }
+        .header { background: var(--neon); color: #000; font-size: 12px; font-weight: bold; padding: 2px 10px; }
 
-        /* Màn hình chính */
-        #desktop { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #0c1a0c 0%, #000 100%); }
+        /* Terminal */
+        #terminal { grid-area: 2 / 2 / 3 / 3; display: flex; flex-direction: column; }
+        #output { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.2; }
+        .input-area { display: flex; padding: 10px; border-top: 1px solid #004400; }
+        #cmd { background: transparent; border: none; color: var(--neon); outline: none; flex-grow: 1; font-family: inherit; }
 
-        /* Window Style */
-        .window {
-            position: absolute; background: rgba(0, 10, 0, 0.95);
-            border: 1px solid var(--green); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-            display: flex; flex-direction: column; min-width: 300px;
-        }
-        .window-header {
-            background: var(--green); color: #000; padding: 5px 10px;
-            cursor: move; display: flex; justify-content: space-between; font-weight: bold; font-size: 12px;
-        }
-        .window-content { padding: 15px; flex-grow: 1; overflow-y: auto; font-size: 14px; line-height: 1.4; }
+        /* Webcam Hack */
+        #target-view { grid-area: 2 / 3 / 3 / 4; position: relative; }
+        #webcam { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(2) brightness(0.8) sepia(1) hue-rotate(100deg); }
+        .overlay-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,0,0.1) 1px, rgba(0,255,0,0.1) 2px); }
 
-        /* Terminal cụ thể */
-        #terminal-content { height: 300px; color: var(--green); }
-        .input-line { display: flex; align-items: center; margin-top: 5px; }
-        #cmd-input { background: transparent; border: none; color: var(--green); outline: none; flex-grow: 1; font-family: inherit; font-size: 14px; }
+        /* Logs */
+        #threat-log { grid-area: 3 / 1 / 4 / 3; padding: 10px; font-size: 11px; color: #008800; }
 
-        /* Radar Scanner */
-        #radar { width: 150px; height: 150px; border: 2px solid var(--green); border-radius: 50%; position: relative; overflow: hidden; }
-        #radar-sweep {
-            position: absolute; width: 100%; height: 100%;
-            background: conic-gradient(from 0deg, rgba(0, 255, 65, 0.4), transparent 90deg);
-            animation: sweep 3s linear infinite; transform-origin: center;
-        }
-        @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* Stats */
+        #node-stats { grid-area: 1 / 1 / 2 / 4; display: flex; align-items: center; justify-content: space-around; font-size: 14px; }
 
-        /* Status Bar */
-        #taskbar {
-            position: absolute; bottom: 0; width: 100%; height: 30px;
-            background: rgba(0, 40, 0, 0.8); border-top: 1px solid var(--green);
-            display: flex; align-items: center; padding: 0 15px; font-size: 12px;
-        }
-
-        .cursor { display: inline-block; width: 8px; height: 15px; background: var(--green); animation: blink 0.8s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* Notification */
-        #alert {
-            position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            border: 2px solid var(--red); color: var(--red); padding: 20px;
-            background: rgba(20, 0, 0, 0.9); z-index: 1000; display: none; text-align: center;
-        }
+        .glitch-text { animation: glitch 1s infinite; }
+        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.7; transform: skewX(20deg); } 100% { opacity: 1; } }
+        
+        .critical { color: var(--danger); border-color: var(--danger); box-shadow: 0 0 10px var(--danger); }
     </style>
 </head>
 <body>
 
-<canvas id="matrix-bg"></canvas>
+<div id="os-container">
+    <div class="module" id="node-stats">
+        <span>ENCRYPTION: AES-256</span>
+        <span class="glitch-text" id="status-text">NODE STATUS: ACTIVE</span>
+        <span>UPLINK: 4.8 GBPS</span>
+        <span id="clock">00:00:00</span>
+    </div>
 
-<div id="desktop">
-    <div class="window" style="top: 50px; left: 50px; width: 600px;">
-        <div class="window-header"><span>TERMINAL v4.2 - KERNEL_DECRYPTOR</span><span>[X]</span></div>
-        <div class="window-content" id="terminal-content">
-            <div>[LOGIN] Authenticated as root...</div>
-            <div>[INFO] System secure. All proxy chains active.</div>
-            <div>[LOG] Gõ 'help' để xem danh sách công cụ.</div>
-            <div id="output"></div>
-            <div class="input-line">
-                <span>root@kali:~#&nbsp;</span>
-                <input type="text" id="cmd-input" autofocus>
-            </div>
+    <div class="module" id="file-sys">
+        <div class="header">FILESYSTEM</div>
+        <div style="padding:10px; font-size:12px;">
+            > ROOT<br>
+            &nbsp;&nbsp;> BIN<br>
+            &nbsp;&nbsp;> SECRET_DOCS<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;[PROJ_X.PDF]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;[PASS_LIST.TXT]<br>
+            &nbsp;&nbsp;> EXPLOITS
         </div>
     </div>
 
-    <div class="window" style="top: 50px; right: 50px; width: 200px;">
-        <div class="window-header"><span>NETWORK_RADAR</span></div>
-        <div class="window-content" style="display:flex; justify-content:center;">
-            <div id="radar"><div id="radar-sweep"></div></div>
+    <div class="module" id="terminal">
+        <div class="header">COMMAND_LINE_INTERFACE_v8.0</div>
+        <div id="output">
+            <div>[SYS] CHAO MUNG QUAY TRO LAI, AGENT.</div>
+            <div>[SYS] DANG KET NOI VOI VE TINH KH-11... OK.</div>
+            <div>[SYS] GO 'HELP' DE BAT DAU.</div>
+        </div>
+        <div class="input-area">
+            <span>#&nbsp;</span><input type="text" id="cmd" autofocus autocomplete="off">
         </div>
     </div>
 
-    <div class="window" style="bottom: 80px; left: 50px; width: 250px;">
-        <div class="window-header"><span>FILESYSTEM</span></div>
-        <div class="window-content" id="file-list" style="font-size: 12px;">
-            📁 system_logs<br>
-            📁 encrypted_vault<br>
-            📄 password_list.txt<br>
-            📄 secret_location.map
-        </div>
+    <div class="module" id="target-view">
+        <div class="header">TARGET_REMOTE_CAM</div>
+        <video id="webcam" autoplay playsinline></video>
+        <div class="overlay-grid"></div>
+        <div style="position:absolute; bottom:5px; left:5px; font-size:10px; color:red;">REC ● LIVE</div>
     </div>
 
-    <div id="alert">
-        <h2>⚠️ WARNING ⚠️</h2>
-        <p>PHÁT HIỆN TRUY VẾT TỪ CHÍNH PHỦ (IDS_DETECTED)</p>
-        <p>HÃY GÕ 'flush' ĐỂ XÓA DẤU VẾT NGAY LẬP TỨC!</p>
+    <div class="module" id="threat-log">
+        <div class="header">GLOBAL_THREAT_DETECTION</div>
+        <div id="log-content"></div>
     </div>
 
-    <div id="taskbar">
-        <span>STATUS: <span style="color:var(--green)">CONNECTED</span></span>
-        <span style="margin-left: 20px;">IP: 192.168.1.104</span>
-        <span style="margin-left: auto;" id="clock">00:00:00</span>
+    <div class="module" style="grid-area: 3 / 3 / 4 / 4;">
+        <div class="header">CORE_TEMP</div>
+        <canvas id="temp-chart" width="280" height="150"></canvas>
     </div>
 </div>
 
 <script>
-    // Matrix Background
-    const canvas = document.getElementById('matrix-bg');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const chars = "0123456789ABCDEF@#$%&";
-    const fontSize = 14;
-    const drops = Array(Math.floor(canvas.width/fontSize)).fill(1);
-    function drawMatrix() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#0F0"; ctx.font = fontSize + "px monospace";
-        drops.forEach((y, i) => {
-            const text = chars[Math.floor(Math.random()*chars.length)];
-            ctx.fillText(text, i*fontSize, y*fontSize);
-            if(y*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
-        });
-    }
-    setInterval(drawMatrix, 50);
-
-    // Terminal Logic
-    const input = document.getElementById('cmd-input');
+    const cmdInput = document.getElementById('cmd');
     const output = document.getElementById('output');
-    const alertBox = document.getElementById('alert');
+    const logContent = document.getElementById('log-content');
+    const statusText = document.getElementById('status-text');
 
-    const commands = {
-        'help': "Công cụ: ls, cat [file], nmap, crack, flush, clear",
-        'ls': "system_logs, encrypted_vault, password_list.txt, secret_location.map",
-        'nmap': "Đang quét mạng LAN... Tìm thấy IP 10.0.0.5 (Server trung tâm).",
-        'cat password_list.txt': "Admin:123456, CEO:Password2024, Secret:I_Love_AI",
-        'crack': "Bắt đầu bẻ khóa SSH... █▒▒▒▒▒▒▒▒▒ 10%... ĐANG TRUY XUẤT...",
-        'flush': "Đã xóa sạch dấu vết. Hệ thống an toàn.",
-        'clear': ""
-    };
+    // Bật Webcam (Giả lập hack camera mục tiêu)
+    async function initWebcam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('webcam').srcObject = stream;
+        } catch (e) {
+            console.log("No camera found");
+        }
+    }
+    initWebcam();
 
-    input.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') {
-            const cmd = input.value.toLowerCase().trim();
-            const line = document.createElement('div');
-            line.innerHTML = `<span style="color:#888">root@kali:~#</span> ${input.value}`;
-            output.appendChild(line);
+    // Âm thanh
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, dur) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq; gain.gain.value = 0.1;
+        osc.start(); setTimeout(() => osc.stop(), dur);
+    }
 
-            if(commands[cmd]) {
-                setTimeout(() => {
-                    const res = document.createElement('div');
-                    res.innerHTML = commands[cmd];
-                    output.appendChild(res);
-                }, 200);
-            } else if(cmd === 'clear') {
+    // Xử lý lệnh
+    cmdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const val = cmdInput.value.toLowerCase().trim();
+            const p = document.createElement('div');
+            p.innerHTML = `<span style="color:#666">#</span> ${val}`;
+            output.appendChild(p);
+            playBeep(400, 50);
+
+            if (val === 'help') {
+                print("LENH: SCAN (Quét), CRACK (Bẻ khóa), INFILTRATE (Xâm nhập), CLEAR");
+            } else if (val === 'scan') {
+                print("DANG QUET CAC NUT MANG LAN CAN...");
+                setTimeout(() => print("TIM THAY: 10.42.0.1 (FIREWALL)", "danger"), 1000);
+            } else if (val === 'crack') {
+                let i = 0;
+                const interval = setInterval(() => {
+                    print(`DECRYPTING BLOCK ${i}... OK`);
+                    i++; if(i > 5) { clearInterval(interval); print("MAT KHAU TIM THAY: 'SKYNET2026'", "neon"); }
+                }, 400);
+            } else if (val === 'infiltrate') {
+                document.getElementById('os-container').classList.add('critical');
+                statusText.innerText = "SYSTEM ALERT: TRACING IN PROGRESS!";
+                statusText.style.color = "red";
+                playBeep(200, 500);
+                print("CANH BAO: BAN DANG BI TRUY VET!", "critical");
+            } else if (val === 'clear') {
                 output.innerHTML = '';
-            } else {
-                const res = document.createElement('div');
-                res.innerHTML = "Lệnh không xác định. Gõ 'help'.";
-                output.appendChild(res);
             }
-            
-            input.value = '';
-            document.getElementById('terminal-content').scrollTop = 10000;
+
+            cmdInput.value = '';
+            output.scrollTop = output.scrollHeight;
         }
     });
 
-    // Random Government Trace Event
+    function print(txt, cls) {
+        const d = document.createElement('div');
+        if(cls) d.className = cls;
+        d.innerText = `> ${txt}`;
+        output.appendChild(d);
+    }
+
+    // Threat Log ngẫu nhiên
     setInterval(() => {
-        if(Math.random() > 0.85) {
-            alertBox.style.display = 'block';
-            setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
-        }
-    }, 15000);
+        const ips = ["142.250.190.46", "31.13.71.36", "172.217.18.14"];
+        const d = document.createElement('div');
+        d.innerText = `[${new Date().toLocaleTimeString()}] THREAT FROM ${ips[Math.floor(Math.random()*3)]} BLOCKED.`;
+        logContent.prepend(d);
+    }, 4000);
 
     // Clock
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-    }, 1000);
-
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
