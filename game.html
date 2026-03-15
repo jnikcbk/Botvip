@@ -163,19 +163,23 @@
             rings.push(ring);
         }
 
-        function handleKeyDown(e) {
-            if(e.code === 'Space') { isBoosting = true; targetSpeed = 2.0; }
-            if(e.key === 'w') rotation.x = -0.04;
-            if(e.key === 's') rotation.x = 0.04;
-            if(e.key === 'a') { rotation.z = 0.08; rotation.y = 0.02; }
-            if(e.key === 'd') { rotation.z = -0.08; rotation.y = -0.02; }
-        }
+       const keys = { w: false, s: false, a: false, d: false, space: false };
 
-        function handleKeyUp(e) {
-            if(e.code === 'Space') { isBoosting = false; targetSpeed = 0.3; }
-            rotation.x = 0; rotation.y = 0; rotation.z = 0;
-        }
+function handleKeyDown(e) {
+    if (e.code === 'Space') keys.space = true;
+    if (e.key.toLowerCase() === 'w') keys.w = true;
+    if (e.key.toLowerCase() === 's') keys.s = true;
+    if (e.key.toLowerCase() === 'a') keys.a = true;
+    if (e.key.toLowerCase() === 'd') keys.d = true;
+}
 
+function handleKeyUp(e) {
+    if (e.code === 'Space') keys.space = false;
+    if (e.key.toLowerCase() === 'w') keys.w = false;
+    if (e.key.toLowerCase() === 's') keys.s = false;
+    if (e.key.toLowerCase() === 'a') keys.a = false;
+    if (e.key.toLowerCase() === 'd') keys.d = false;
+}
         function animate() {
             requestAnimationFrame(animate);
 
