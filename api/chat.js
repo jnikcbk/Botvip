@@ -13,8 +13,11 @@ export default async function handler(req, res) {
 
     if (API_KEYS.length === 0) return res.status(500).json({ text: "Sếp quên gắn Key kìa, gắn đi tớ mới 'nảy số' được!" });
 
-    // MODEL CHIẾN NHẤT: Ưu tiên 2.0 Flash (Mới nhất) và 1.5 Pro (Khôn nhất)
-    const MODELS = ["gemini-2.0-flash", "gemini-1.5-pro-latest", "gemini-1.5-flash-latest"];
+    // 🚀 ĐÃ FIX: Chỉ dùng các bản Flash trâu bò nhất, dẹp ngay bản Pro bị khóa (0/0)
+    const MODELS = [
+        "gemini-1.5-flash", 
+        "gemini-1.5-flash-latest"
+    ];
 
     const systemInstruction = {
         parts: [{
