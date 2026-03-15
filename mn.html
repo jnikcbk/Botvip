@@ -3,214 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Chill Companion</title>
+    <title>The Secret Room - Escape Game</title>
     <style>
         :root {
-            --bg: #f8edeb;
-            --text: #4a4e69;
-            --accent: #ffb5a7;
+            --bg: #0d0d0d;
+            --text: #e0e0e0;
+            --accent: #ff003c;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--bg);
             color: var(--text);
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            transition: 0.5s;
         }
 
-        .container {
-            background: white;
+        .game-screen {
+            width: 90%;
+            max-width: 500px;
+            background: var(--glass);
+            border: 1px solid #333;
             padding: 30px;
-            border-radius: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
-            width: 320px;
-            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
-        /* Thú ảo */
-        .pet-stage {
-            font-size: 80px;
-            height: 120px;
+        /* Hình ảnh minh họa căn phòng bằng CSS */
+        .room-view {
+            height: 200px;
+            background: #1a1a1a;
+            border-radius: 5px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 80px;
+            border: 1px solid #444;
+            transition: 0.5s;
+        }
+
+        .dialog-box {
+            min-height: 80px;
             margin-bottom: 20px;
-            animation: bounce 2s infinite ease-in-out;
+            line-height: 1.5;
+            font-size: 16px;
+            color: #ccc;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        /* Thanh trạng thái */
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .progress-bar {
-            width: 80px;
-            height: 8px;
-            background: #eee;
-            border-radius: 10px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 100%;
-            transition: 0.3s;
-        }
-
-        /* Nút điều khiển */
-        .actions {
+        /* Nút lựa chọn */
+        .choices {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 25px;
         }
 
         button {
-            border: none;
+            background: transparent;
+            border: 1px solid #555;
+            color: #fff;
             padding: 12px;
-            border-radius: 15px;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-            background: var(--bg);
-            color: var(--text);
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
 
         button:hover {
-            filter: brightness(0.9);
-            transform: scale(1.05);
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
         }
 
-        /* Music Player */
-        .music-player {
-            background: #fdf0ee;
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px dashed var(--accent);
+        /* Túi đồ */
+        .inventory {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            font-size: 12px;
+            color: #666;
         }
 
-        .song-title {
-            font-size: 13px;
+        .inventory span {
+            color: var(--accent);
+            margin-left: 10px;
             font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
+        }
+
+        /* Hiệu ứng nháy đỏ khi sai */
+        .flash-error {
+            animation: flash 0.3s;
+        }
+        @keyframes flash {
+            50% { background: #500; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="pet-name" style="font-weight: 800; font-size: 20px;">MÈO BÉO</div>
+    <div class="game-screen">
+        <div class="room-view" id="visual">🚪</div>
         
-        <div class="pet-stage" id="pet-icon">🐱</div>
-
-        <div class="stats">
-            <div class="stat-item">
-                No bụng
-                <div class="progress-bar"><div id="hunger-bar" class="progress-fill"></div></div>
-            </div>
-            <div class="stat-item">
-                Hạnh phúc
-                <div class="progress-bar"><div id="happy-bar" class="progress-fill"></div></div>
-            </div>
+        <div class="dialog-box" id="text-display">
+            Bạn tỉnh dậy trong một căn phòng lạnh lẽo. Cửa chính đã khóa chặt. Có một chiếc hộp sáu và một bức thư trên bàn.
         </div>
 
-        <div class="actions">
-            <button onclick="feedPet()">🍕 Cho ăn</button>
-            <button onclick="petMe()">🖐 Vuốt ve</button>
-            <button onclick="changeTheme()">🌓 Đổi màu</button>
-            <button onclick="renamePet()">✏️ Đổi tên</button>
-        </div>
+        <div class="choices" id="choice-container">
+            </div>
 
-        <div class="music-player">
-            <span class="song-title">🎵 Đang phát: Chill Lofi Beats</span>
-            <button onclick="playMusic()" id="btn-music" style="width: 100%;">Phát nhạc trên YouTube</button>
+        <div class="inventory" id="inventory">
+            HÀNH TRANG: <span id="items">Chưa có gì</span>
         </div>
     </div>
 
     <script>
-        let hunger = 100;
-        let happiness = 100;
-        let isDarkMode = false;
+        let inventory = [];
+        const textDisplay = document.getElementById('text-display');
+        const choiceContainer = document.getElementById('choice-container');
+        const visual = document.getElementById('visual');
+        const itemsList = document.getElementById('items');
 
-        // Giảm chỉ số theo thời gian
-        setInterval(() => {
-            hunger = Math.max(0, hunger - 1);
-            happiness = Math.max(0, happiness - 0.5);
-            updateUI();
-            checkStatus();
-        }, 3000);
+        // Các trạng thái của trò chơi
+        const scenes = {
+            start: {
+                text: "Bạn đang ở giữa phòng. Cửa ra vào cần chìa khóa vàng. Trên bàn có một 'Bức thư' và một 'Hộp sắt' cũ.",
+                visual: "🪑",
+                choices: [
+                    { text: "Đọc bức thư", next: "readLetter" },
+                    { text: "Mở hộp sắt", next: "checkBox" }
+                ]
+            },
+            readLetter: {
+                text: "Bức thư viết: 'Mã số ẩn giấu trong số lượng cạnh của một hình tam giác và một hình vuông'.",
+                visual: "📜",
+                choices: [
+                    { text: "Quay lại", next: "start" }
+                ]
+            },
+            checkBox: {
+                text: "Hộp sắt yêu cầu mã số gồm 2 chữ số (Cạnh Tam Giác + Cạnh Hình Vuông).",
+                visual: "📦",
+                choices: [
+                    { text: "Nhập mã '34'", next: "openBox" },
+                    { text: "Nhập mã '77'", next: "failBox" },
+                    { text: "Quay lại", next: "start" }
+                ]
+            },
+            openBox: {
+                text: "Cạch! Hộp mở ra, bên trong có một 'Chìa khóa vàng'.",
+                visual: "🗝️",
+                onEnter: () => addInventory("Chìa khóa vàng"),
+                choices: [
+                    { text: "Đến cửa chính", next: "atDoor" }
+                ]
+            },
+            failBox: {
+                text: "Sai mã rồi. Có vẻ bạn chưa đọc kỹ gợi ý.",
+                visual: "❌",
+                choices: [
+                    { text: "Thử lại", next: "checkBox" }
+                ]
+            },
+            atDoor: {
+                text: "Bạn đứng trước cánh cửa gỗ nặng nề.",
+                visual: "🚪",
+                choices: [
+                    { text: "Dùng chìa khóa", next: "escape" },
+                    { text: "Quay lại bàn", next: "start" }
+                ]
+            },
+            escape: {
+                text: "Chúc mừng! Bạn đã thoát khỏi căn phòng bí ẩn.",
+                visual: "🌤️",
+                choices: [
+                    { text: "Chơi lại", next: "start", onEnter: () => inventory = [] }
+                ]
+            }
+        };
 
-        function updateUI() {
-            document.getElementById('hunger-bar').style.width = hunger + "%";
-            document.getElementById('happy-bar').style.width = happiness + "%";
-        }
-
-        function checkStatus() {
-            const pet = document.getElementById('pet-icon');
-            if (hunger < 20) pet.innerText = "😿";
-            else if (happiness < 20) pet.innerText = "😿";
-            else if (hunger > 80 && happiness > 80) pet.innerText = "😸";
-            else pet.innerText = "🐱";
-        }
-
-        function feedPet() {
-            hunger = Math.min(100, hunger + 20);
-            document.getElementById('pet-icon').innerText = "😋";
-            setTimeout(checkStatus, 1000);
-            updateUI();
-        }
-
-        function petMe() {
-            happiness = Math.min(100, happiness + 15);
-            document.getElementById('pet-icon').innerText = "🥰";
-            setTimeout(checkStatus, 1000);
-            updateUI();
-        }
-
-        function renamePet() {
-            const newName = prompt("Đặt tên mới cho thú cưng:");
-            if(newName) document.getElementById('pet-name').innerText = newName.toUpperCase();
-        }
-
-        function changeTheme() {
-            isDarkMode = !isDarkMode;
-            if (isDarkMode) {
-                document.documentElement.style.setProperty('--bg', '#2d3436');
-                document.documentElement.style.setProperty('--text', '#dfe6e9');
-                document.documentElement.style.setProperty('--accent', '#636e72');
-            } else {
-                document.documentElement.style.setProperty('--bg', '#f8edeb');
-                document.documentElement.style.setProperty('--text', '#4a4e69');
-                document.documentElement.style.setProperty('--accent', '#ffb5a7');
+        function addInventory(item) {
+            if (!inventory.includes(item)) {
+                inventory.push(item);
+                itemsList.innerText = inventory.join(", ");
             }
         }
 
-        // Tích hợp YouTube Music Tool
-        function playMusic() {
-            // Đây là nơi bạn có thể gọi API YouTube Music nếu muốn
-            // Ở đây mình sẽ giả lập hành động phát một playlist chill
-            alert("Đang chuẩn bị danh sách nhạc Chill cho bạn...");
+        function renderScene(sceneKey) {
+            const scene = scenes[sceneKey];
+            
+            // Hiệu ứng chữ máy đánh chữ
+            textDisplay.innerText = "";
+            let i = 0;
+            const typeWriter = setInterval(() => {
+                textDisplay.innerText += scene.text.charAt(i);
+                i++;
+                if (i >= scene.text.length) clearInterval(typeWriter);
+            }, 20);
+
+            visual.innerText = scene.visual;
+            choiceContainer.innerHTML = "";
+
+            if (scene.onEnter) scene.onEnter();
+
+            scene.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.innerText = choice.text;
+                btn.onclick = () => {
+                    if (sceneKey === 'atDoor' && choice.text === 'Dùng chìa khóa' && !inventory.includes('Chìa khóa vàng')) {
+                        alert("Bạn cần chìa khóa!");
+                    } else {
+                        renderScene(choice.next);
+                    }
+                };
+                choiceContainer.appendChild(btn);
+            });
         }
+
+        // Bắt đầu game
+        renderScene('start');
     </script>
 </body>
 </html>
