@@ -6,21 +6,24 @@
     <title>KaizenMC - Cinematic Jet 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; touch-action: none; cursor: crosshair; }
         #ui {
             position: absolute; top: 20px; left: 20px; color: #00f0ff;
             font-size: 18px; text-shadow: 0 0 10px #00f0ff; z-index: 10;
             background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.3);
+            pointer-events: none;
         }
         #speed-bar {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             width: 250px; height: 12px; border: 2px solid #00f0ff; border-radius: 6px;
             background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0,240,255,0.3); overflow: hidden;
+            pointer-events: none;
         }
         #speed-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00f0ff, #ff00aa); transition: 0.1s; }
         .controls-hint {
             position: absolute; bottom: 20px; left: 20px; color: white;
-            font-size: 11px; opacity: 0.5; pointer-events: none;
+            font-size: 11px; opacity: 0.6; pointer-events: none;
+            text-shadow: 1px 1px 2px black;
         }
         canvas { display: block; }
     </style>
@@ -36,24 +39,25 @@
     <div id="speed-bar"><div id="speed-fill"></div></div>
 
     <div class="controls-hint">
-        WASD: Lái máy bay | SPACE: Nitro | MOBILE: Chạm trái/phải màn hình
+        PC: Rê chuột để lái | SPACE: Nitro<br>
+        MOBILE: Vuốt màn hình để lái (Tự động Nitro)
     </div>
 
     <script>
         let scene, camera, renderer, jet, stars, engineLight;
         let rings = [];
         let score = 0, speed = 0.3, targetSpeed = 0.3;
-        let isBoosting = false;
         
-        // Quản lý phím bấm
-        const keys = { w: false, s: false, a: false, d: false, space: false };
-        // Lưu trữ góc quay hiện tại của máy bay
+        // --- HỆ THỐNG ĐIỀU KHIỂN MỚI ---
+        let mouseX = 0;
+        let mouseY = 0;
+        let isBoosting = false;
         let currentRotation = { x: 0, y: 0, z: 0 };
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020617); // Xanh đen sâu thẳm
-            scene.fog = new THREE.FogExp2(0x020617, 0.005); // Sương mù để không gian sâu hơn
+            scene.background = new THREE.Color(0x020617);
+            scene.fog = new THREE.FogExp2(0x020617, 0.005);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
             
@@ -63,18 +67,12 @@
             renderer.outputEncoding = THREE.sRGBEncoding;
             document.body.appendChild(renderer.domElement);
 
-            // --- 1. MÁY BAY CHIẾN ĐẤU ---
+            // --- TẠO MÁY BAY ---
             jet = new THREE.Group();
 
-            const metalMat = new THREE.MeshStandardMaterial({ 
-                color: 0x1e293b, metalness: 0.8, roughness: 0.3 // Màu xám titan
-            });
-            const neonMat = new THREE.MeshStandardMaterial({ 
-                color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 2 
-            });
-            const glassMat = new THREE.MeshPhongMaterial({ 
-                color: 0x000000, shininess: 100, opacity: 0.8, transparent: true 
-            });
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
+            const neonMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 2 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x000000, shininess: 100, opacity: 0.8, transparent: true });
 
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 5, 8), metalMat);
             body.rotation.x = Math.PI / 2;
@@ -113,135 +111,107 @@
 
             scene.add(jet);
 
-            // --- 2. ÁNH SÁNG ---
+            // --- ÁNH SÁNG ---
             scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-            scene.add(new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.6)); // Đèn màu Cyberpunk
-            
+            scene.add(new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.6));
             const sun = new THREE.DirectionalLight(0xffffff, 0.8);
             sun.position.set(50, 100, -50);
             scene.add(sun);
 
-            // --- 3. MÔI TRƯỜNG ---
+            // --- MÔI TRƯỜNG ---
             const starGeo = new THREE.BufferGeometry();
             const starPos = [];
-            for(let i=0; i<8000; i++) {
-                starPos.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
-            }
+            for(let i=0; i<8000; i++) starPos.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
             starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
             stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.6 }));
             scene.add(stars);
 
-            // Lưới Grid (Mặt đất ảo)
             const grid = new THREE.GridHelper(5000, 150, 0xff00aa, 0x050a15);
             grid.position.y = -80;
             scene.add(grid);
 
-            // Vòng Checkpoints
             for(let i=0; i<20; i++) createRing(i);
 
-            // --- SỰ KIỆN ĐIỀU KHIỂN ---
-            window.addEventListener('keydown', handleKeyDown);
-            window.addEventListener('keyup', handleKeyUp);
+            // --- BẮT SỰ KIỆN CHUỘT / CẢM ỨNG ---
+            window.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('touchmove', onPointerMove, { passive: false });
             
-            // Touch cho mobile (Chạm nửa trái/phải)
-            window.addEventListener('touchstart', (e) => {
-                const touchX = e.touches[0].clientX;
-                if(touchX < window.innerWidth/2) keys.a = true;
-                else keys.d = true;
-                keys.space = true; // Tự động tăng tốc khi chạm
-            });
-            window.addEventListener('touchend', () => { 
-                keys.a = false; keys.d = false; keys.space = false; 
-            });
+            // Tăng tốc bằng phím Space hoặc khi chạm Mobile
+            window.addEventListener('keydown', (e) => { if(e.code === 'Space') isBoosting = true; });
+            window.addEventListener('keyup', (e) => { if(e.code === 'Space') isBoosting = false; });
+            
+            window.addEventListener('touchstart', (e) => { isBoosting = true; onPointerMove(e); }, { passive: false });
+            window.addEventListener('touchend', () => { isBoosting = false; mouseX = 0; mouseY = 0; }); // Reset về giữa khi thả tay
 
             animate();
         }
 
         function createRing(i) {
-            const ringGeo = new THREE.TorusGeometry(6, 0.2, 16, 50);
-            const ringMat = new THREE.MeshStandardMaterial({ 
-                color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 1 
-            });
+            const ringGeo = new THREE.TorusGeometry(8, 0.3, 16, 50); // Mở rộng vòng tròn ra chút cho dễ chui
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 1 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.set((Math.random()-0.5)*400, (Math.random()-0.5)*200, -i * 200 - 150);
+            ring.position.set((Math.random()-0.5)*300, (Math.random()-0.5)*150, -i * 200 - 150);
             scene.add(ring);
             rings.push(ring);
         }
 
-        // Bắt phím
-        function handleKeyDown(e) {
-            if (e.code === 'Space') keys.space = true;
-            if (e.key.toLowerCase() === 'w') keys.w = true;
-            if (e.key.toLowerCase() === 's') keys.s = true;
-            if (e.key.toLowerCase() === 'a') keys.a = true;
-            if (e.key.toLowerCase() === 'd') keys.d = true;
-        }
+        // Chuyển đổi tọa độ chuột/touch thành tỉ lệ từ -1 đến 1
+        function onPointerMove(event) {
+            if(event.touches) event.preventDefault(); // Ngăn cuộn trang trên mobile
+            let clientX = event.touches ? event.touches[0].clientX : event.clientX;
+            let clientY = event.touches ? event.touches[0].clientY : event.clientY;
 
-        // Nhả phím
-        function handleKeyUp(e) {
-            if (e.code === 'Space') keys.space = false;
-            if (e.key.toLowerCase() === 'w') keys.w = false;
-            if (e.key.toLowerCase() === 's') keys.s = false;
-            if (e.key.toLowerCase() === 'a') keys.a = false;
-            if (e.key.toLowerCase() === 'd') keys.d = false;
+            mouseX = (clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(clientY / window.innerHeight) * 2 + 1; // Đảo ngược trục Y để vuốt lên = bay lên
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            // --- LOGIC LÁI MƯỢT MÀ (LERP) ---
-            let targetRotX = 0, targetRotZ = 0, targetYaw = 0;
+            // --- LOGIC LÁI BẰNG CHUỘT ---
+            // Chuột ở giữa màn hình = 0. Càng ra xa viền = xoay càng mạnh
+            let targetRotX = mouseY * -0.06; // Trục X (Ngóc lên/xuống)
+            let targetRotZ = mouseX * -0.6;  // Trục Z (Nghiêng cánh trái/phải)
+            let targetYaw = mouseX * -0.04;  // Trục Y (Quẹo đầu trái/phải)
 
-            if (keys.w) targetRotX = -0.05; // Ngóc lên
-            if (keys.s) targetRotX = 0.05;  // Chúc xuống
-            if (keys.a) { targetRotZ = 0.6; targetYaw = 0.03; }  // Nghiêng trái
-            if (keys.d) { targetRotZ = -0.6; targetYaw = -0.03; } // Nghiêng phải
-
-            // Áp dụng quán tính cho góc quay (0.05 là độ mượt)
+            // Áp dụng quán tính (Lerp) giúp máy bay không bị giật cục
             currentRotation.x = THREE.MathUtils.lerp(currentRotation.x, targetRotX, 0.05);
             currentRotation.z = THREE.MathUtils.lerp(currentRotation.z, targetRotZ, 0.05);
             currentRotation.y = THREE.MathUtils.lerp(currentRotation.y, targetYaw, 0.05);
 
             jet.rotation.x = currentRotation.x;
-            jet.rotation.y += currentRotation.y; // Y cộng dồn để quẹo liên tục
+            jet.rotation.y += currentRotation.y;
             jet.rotation.z = currentRotation.z;
 
-            // --- TỐC ĐỘ & NITRO ---
-            targetSpeed = keys.space ? 2.5 : 0.4;
+            // --- TỐC ĐỘ ---
+            targetSpeed = isBoosting ? 2.5 : 0.4;
             speed = THREE.MathUtils.lerp(speed, targetSpeed, 0.03);
             jet.translateZ(-speed);
 
-            // Hiệu ứng chớp nháy động cơ khi Nitro
-            engineLight.intensity = keys.space ? (10 + Math.random() * 5) : 3;
+            engineLight.intensity = isBoosting ? (10 + Math.random() * 5) : 3;
 
-            // --- CAMERA GTA 5 STYLE ---
-            // Đặt camera lùi về sau và hơi ngước lên
+            // --- CAMERA ---
             const offset = new THREE.Vector3(0, 3, 15);
             offset.applyQuaternion(jet.quaternion);
-            
-            // Lerp vị trí camera để tạo độ trễ (Delay đuổi theo)
             camera.position.lerp(jet.position.clone().add(offset), 0.1);
             
-            // Điểm nhìn của camera (phía trước mũi máy bay)
             const lookAtTarget = jet.position.clone().add(new THREE.Vector3(0, 0, -10).applyQuaternion(jet.quaternion));
             camera.lookAt(lookAtTarget);
 
-            // FOV Dynamic (Tăng góc nhìn khi tăng tốc)
-            camera.fov = THREE.MathUtils.lerp(camera.fov, keys.space ? 100 : 75, 0.05);
+            camera.fov = THREE.MathUtils.lerp(camera.fov, isBoosting ? 100 : 75, 0.05);
             camera.updateProjectionMatrix();
 
-            // Camera Shake (Rung lắc khi bay nhanh)
-            if (keys.space) {
+            if (isBoosting) {
                 camera.position.x += (Math.random() - 0.5) * 0.1;
                 camera.position.y += (Math.random() - 0.5) * 0.1;
             }
 
-            // --- KIỂM TRA VA CHẠM VÀ UI ---
+            // --- UI VÀ VA CHẠM ---
             document.getElementById('speed-fill').style.width = Math.min((speed / 2.5 * 100), 100) + "%";
-            document.getElementById('alt').innerText = Math.floor(jet.position.y + 1000); // Ảo hóa độ cao
+            document.getElementById('alt').innerText = Math.floor(jet.position.y + 1000);
 
             rings.forEach(ring => {
-                if(jet.position.distanceTo(ring.position) < 8) {
+                if(jet.position.distanceTo(ring.position) < 10) { // Tăng bán kính va chạm cho dễ ăn điểm
                     score += 100;
                     document.getElementById('score').innerText = score;
                     ring.position.z -= 2500; 
@@ -253,7 +223,6 @@
             renderer.render(scene, camera);
         }
 
-        // Tự động resize khi đổi cửa sổ
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
