@@ -3,253 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE SILENT MANIAC</title>
+    <title>THE ASYLUM - DARK DETECTIVE</title>
     <style>
         :root {
-            --red: #800000;
-            --dark-red: #330000;
-            --blood: #ff0000;
-            --bg: #050505;
+            --red: #ff0000;
+            --dark: #0a0a0a;
+            --gray: #222;
         }
 
         body {
-            background: var(--bg);
-            color: #ccc;
+            background: var(--dark);
+            color: #eee;
             font-family: 'Courier New', monospace;
             margin: 0;
-            overflow: hidden;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Hiệu ứng nhiễu màn hình (CRT Scanlines) */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 10;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+        /* Hiệu ứng màn hình nhiễu */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 100;
         }
 
-        .container {
-            width: 90%;
-            max-width: 600px;
-            z-index: 5;
-            padding: 20px;
-            border: 1px solid #222;
-            background: rgba(10, 0, 0, 0.9);
-            box-shadow: 0 0 50px rgba(0,0,0,1);
+        .game-wrapper {
+            width: 90%; max-width: 800px;
+            display: grid; grid-template-columns: 1fr 250px; gap: 20px;
         }
 
-        /* Khu vực hiển thị tâm linh */
+        .main-view {
+            background: #000; border: 2px solid var(--gray); padding: 20px;
+            position: relative; box-shadow: 0 0 30px rgba(0,0,0,1);
+        }
+
         #visual {
-            font-size: 100px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px var(--blood);
-            transition: all 0.1s;
-        }
-
-        /* Thanh Tâm lý (Sanity) */
-        .sanity-border {
-            width: 100%;
-            height: 4px;
-            background: #111;
-            margin-bottom: 20px;
-        }
-        #sanity-bar {
-            width: 100%;
-            height: 100%;
-            background: var(--red);
-            transition: width 0.5s;
-            box-shadow: 0 0 10px var(--blood);
+            font-size: 120px; height: 250px; display: flex;
+            align-items: center; justify-content: center;
+            text-shadow: 0 0 20px var(--red);
         }
 
         #dialog {
-            font-size: 18px;
-            min-height: 120px;
-            margin-bottom: 30px;
-            color: #999;
-            border-left: 3px solid var(--red);
-            padding-left: 15px;
+            font-size: 16px; min-height: 100px; border-top: 1px solid var(--gray);
+            padding-top: 15px; margin-top: 10px; color: #bbb;
         }
 
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        /* Sidebar: Inventory & Stats */
+        .sidebar {
+            background: #111; border: 1px solid var(--gray); padding: 15px;
+            display: flex; flex-direction: column; gap: 20px;
         }
 
+        .stat-label { font-size: 12px; color: var(--red); margin-bottom: 5px; }
+        .bar-bg { width: 100%; height: 10px; background: #000; border: 1px solid #333; }
+        .bar-fill { height: 100%; background: var(--red); transition: 0.5s; }
+
+        .item-slot {
+            font-size: 12px; padding: 5px; border-bottom: 1px solid #222;
+            color: #888; display: block;
+        }
+
+        /* Điều khiển */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         button {
-            background: transparent;
-            border: 1px solid var(--dark-red);
-            color: #666;
-            padding: 15px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: 0.3s;
-            text-transform: uppercase;
+            background: transparent; border: 1px solid #444; color: #aaa;
+            padding: 12px; cursor: pointer; transition: 0.2s; font-family: inherit;
         }
+        button:hover { color: #fff; border-color: var(--red); background: rgba(255,0,0,0.1); }
 
-        button:hover {
-            color: var(--blood);
-            border-color: var(--blood);
-            background: rgba(50, 0, 0, 0.2);
-            text-shadow: 0 0 5px var(--blood);
-        }
-
-        /* Hiệu ứng Glitch */
-        .glitch {
-            animation: glitch 0.2s infinite;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(2px, 0); }
-            50% { transform: translate(-2px, -1px); filter: hue-rotate(90deg); }
-            100% { transform: translate(1px, 1px); }
-        }
-
-        .dead {
-            color: var(--blood);
-            font-size: 40px;
-            font-weight: bold;
+        /* Hiệu ứng kinh dị */
+        .glitch { animation: shake 0.1s infinite; filter: invert(1); }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -2px); }
+            100% { transform: translate(0, 0); }
         }
     </style>
 </head>
 <body>
+    <div class="crt-overlay"></div>
 
-    <div class="container" id="game-ui">
-        <div id="visual">👁️</div>
-        
-        <div class="sanity-border">
-            <div id="sanity-bar"></div>
+    <div class="game-wrapper">
+        <div class="main-view">
+            <div id="visual">🏚️</div>
+            <div id="dialog">Khởi động hệ thống thám tử... Đang quét phòng...</div>
+            <div class="controls" id="choices"></div>
         </div>
 
-        <div id="dialog">...đang khởi động tiềm thức...</div>
-
-        <div class="btn-grid" id="choices">
+        <div class="sidebar">
+            <div>
+                <div class="stat-label">TÂM LÝ (SANITY)</div>
+                <div class="bar-bg"><div id="sanity-bar" class="bar-fill" style="width: 100%"></div></div>
             </div>
+            <div>
+                <div class="stat-label">HÀNH TRANG</div>
+                <div id="inventory-list">
+                    <span class="item-slot">- Trống -</span>
+                </div>
+            </div>
+            <div>
+                <div class="stat-label">MANH MỐI (LOGS)</div>
+                <div id="logs-list" style="font-size: 10px; color: #555;">- Chưa có -</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        let sanity = 100;
-        let hasKnife = false;
-        let hasKey = false;
-        
-        const visual = document.getElementById('visual');
-        const dialog = document.getElementById('dialog');
-        const choices = document.getElementById('choices');
-        const sanityBar = document.getElementById('sanity-bar');
-
-        // Giảm tâm lý theo thời gian
-        const sanityClock = setInterval(() => {
-            if(sanity > 0) {
-                sanity -= 2;
-                sanityBar.style.width = sanity + "%";
-                if(sanity < 30) visual.classList.add('glitch');
-            } else {
-                clearInterval(sanityClock);
-                gameOver("BẠN ĐÃ PHÁT ĐIÊN TRONG BÓNG TỐI.");
-            }
-        }, 3000);
+        let state = {
+            sanity: 100,
+            inv: [],
+            logs: [],
+            location: 'entrance',
+            stalkerDistance: 5 // Càng về 0 càng nguy hiểm
+        };
 
         const scenes = {
-            start: {
-                txt: "Bạn tỉnh lại trong căn hầm đẫm mùi rỉ sét. Một cái xác treo trên trần nhà. Trên sàn có một mảnh kính vỡ và một cánh cửa sắt.",
-                img: "⛓️",
+            entrance: {
+                txt: "Sảnh bệnh viện bỏ hoang. Không khí đặc quánh mùi hóa chất. Có một màn hình Camera cũ còn sáng và một hành lang tối tăm.",
+                vis: "🏥",
                 btns: [
-                    { t: "Nhặt mảnh kính", next: "getKnife" },
-                    { t: "Kiểm tra cái xác", next: "checkBody" }
+                    { t: "Xem Camera", next: 'cctv' },
+                    { t: "Đi vào Hành lang", next: 'hallway' }
                 ]
             },
-            getKnife: {
-                txt: "Mảnh kính rất sắc. Tay bạn rỉ máu, nhưng giờ bạn đã có vũ khí.",
-                img: "🔪",
-                onEnter: () => { hasKnife = true; sanity -= 10; },
-                btns: [{ t: "Quay lại", next: "start" }]
+            cctv: {
+                txt: "Màn hình nhiễu hạt. Bạn thấy một bóng người cầm rìu đang kéo lê thứ gì đó ở Phòng Cấp Cứu (Mã: 9-1-1).",
+                vis: "📺",
+                onEnter: () => addLog("Mã phòng cấp cứu: 911"),
+                btns: [{ t: "Quay lại", next: 'entrance' }]
             },
-            checkBody: {
-                txt: "Cái xác đột ngột mở mắt! Nó thì thầm: 'Mật mã là số người đã chết ở đây: 4-0-4'. Bạn thấy một chiếc hộp số trên ngực nó.",
-                img: "💀",
+            hallway: {
+                txt: "Hành lang dài hun hút. Tiếng nước nhỏ giọt đều đặn. Có tiếng bước chân nặng nề đằng sau bạn!",
+                vis: "👣",
+                onEnter: () => { state.stalkerDistance -= 1; },
                 btns: [
-                    { t: "Nhập 404", next: "openBox" },
-                    { t: "Bỏ chạy", next: "start" }
+                    { t: "Chạy thật nhanh", next: 'emergency' },
+                    { t: "Nấp vào tủ đồ", next: 'hide' }
                 ]
             },
-            openBox: {
-                txt: "Hộp mở ra. Bên trong là một chùm chìa khóa dính máu.",
-                img: "🔑",
-                onEnter: () => { hasKey = true; },
-                btns: [{ t: "Đến cửa sắt", next: "ironDoor" }]
+            hide: {
+                txt: "Bạn nín thở trong tủ. Kẻ đó đi ngang qua, hơi thở hắn phả vào khe cửa. Hắn đã đi xa.",
+                vis: "🚪",
+                onEnter: () => { state.stalkerDistance = 5; state.sanity -= 10; },
+                btns: [{ t: "Ra ngoài", next: 'emergency' }]
             },
-            ironDoor: {
-                txt: "Cửa sắt lạnh lẽo. Bạn nghe tiếng bước chân nặng nề đang tiến lại gần từ phía sau...",
-                img: "🚪",
+            emergency: {
+                txt: "Phòng Cấp Cứu. Cửa yêu cầu mã số 3 chữ số để khóa trái ngăn kẻ kia lại.",
+                vis: "🔐",
                 btns: [
-                    { t: "Dùng chìa khóa", next: "escape" },
-                    { t: "Quay lại chiến đấu", next: "fight" }
+                    { t: "Nhập 911", next: 'win' },
+                    { t: "Nhập 666", next: 'death' },
+                    { t: "Phá cửa", next: 'death' }
                 ]
             },
-            fight: {
-                txt: "Bạn lao vào bóng tối với mảnh kính. Nhưng thứ đó không phải con người. Nó bẻ gãy tay bạn trong nháy mắt.",
-                img: "🩸",
-                btns: [{ t: "CHẾT", next: "death" }]
+            win: {
+                txt: "Cửa đóng sập! Bạn đã tạm thời an toàn. Nhưng đây mới chỉ là tầng 1...",
+                vis: "🏆",
+                btns: [{ t: "Chơi lại", next: 'entrance', reset: true }]
             },
-            escape: {
-                txt: "Cửa mở! Bạn lao ra ngoài cánh đồng ngập ánh trăng. Bạn đã sống sót... hay đây chỉ là một giấc mơ khác?",
-                img: "🌕",
-                btns: [{ t: "KẾT THÚC", next: "start" }]
+            death: {
+                txt: "Hắn đã bắt được bạn. Cảm giác lạnh lẽo của lưỡi rìu là thứ cuối cùng bạn nhận thấy.",
+                vis: "🪓",
+                btns: [{ t: "HỒI SINH", next: 'entrance', reset: true }]
             }
         };
 
+        function addLog(msg) {
+            if(!state.logs.includes(msg)) {
+                state.logs.push(msg);
+                document.getElementById('logs-list').innerHTML = state.logs.map(l => `<div>• ${l}</div>`).join('');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('sanity-bar').style.width = state.sanity + "%";
+            if(state.stalkerDistance <= 1) {
+                document.getElementById('visual').classList.add('glitch');
+                document.getElementById('dialog').style.color = "var(--red)";
+            } else {
+                document.getElementById('visual').classList.remove('glitch');
+                document.getElementById('dialog').style.color = "#bbb";
+            }
+        }
+
         function render(key) {
-            const s = scenes[key];
-            if(key === 'death') return gameOver("BẠN ĐÃ BỊ XẺ THỊT.");
+            const scene = scenes[key];
+            if(scene.reset) {
+                state = { sanity: 100, inv: [], logs: [], location: 'entrance', stalkerDistance: 5 };
+                document.getElementById('logs-list').innerHTML = "- Chưa có -";
+            }
 
-            // Hiệu ứng chuyển cảnh
-            document.getElementById('game-ui').style.opacity = 0;
-            setTimeout(() => {
-                document.getElementById('game-ui').style.opacity = 1;
-                visual.innerText = s.img;
-                dialog.innerText = s.txt;
-                choices.innerHTML = "";
+            const vis = document.getElementById('visual');
+            const dial = document.getElementById('dialog');
+            const ctrl = document.getElementById('choices');
 
-                if(s.onEnter) s.onEnter();
+            vis.innerText = scene.vis;
+            dial.innerText = scene.txt;
+            ctrl.innerHTML = "";
 
-                s.btns.forEach(b => {
-                    const btn = document.createElement('button');
-                    btn.innerText = b.t;
-                    btn.onclick = () => {
-                        if(b.next === 'escape' && !hasKey) {
-                            dialog.innerText = "Cửa đã khóa. Tiếng bước chân gần hơn... gần hơn...";
-                            sanity -= 20;
-                        } else {
-                            render(b.next);
-                        }
-                    };
-                    choices.appendChild(btn);
-                });
-            }, 200);
+            if(scene.onEnter) scene.onEnter();
+
+            scene.btns.forEach(b => {
+                const btn = document.createElement('button');
+                btn.innerText = b.t;
+                btn.onclick = () => {
+                    state.sanity -= 2;
+                    updateUI();
+                    if(state.sanity <= 0) render('death');
+                    else render(b.next);
+                };
+                ctrl.appendChild(btn);
+            });
+            updateUI();
         }
 
-        function gameOver(msg) {
-            visual.innerText = "💀";
-            visual.classList.add('glitch');
-            dialog.innerHTML = `<span class="dead">${msg}</span>`;
-            choices.innerHTML = `<button onclick="location.reload()">HỒI SINH</button>`;
-            clearInterval(sanityClock);
-        }
+        // Khởi động
+        render('entrance');
 
-        render('start');
+        // Loop giảm sanity tự động
+        setInterval(() => {
+            if(state.sanity > 0) {
+                state.sanity -= 1;
+                updateUI();
+            }
+        }, 4000);
     </script>
 </body>
 </html>
