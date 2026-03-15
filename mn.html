@@ -123,57 +123,142 @@
             stalkerDistance: 5 // Càng về 0 càng nguy hiểm
         };
 
-        const scenes = {
-            entrance: {
-                txt: "Sảnh bệnh viện bỏ hoang. Không khí đặc quánh mùi hóa chất. Có một màn hình Camera cũ còn sáng và một hành lang tối tăm.",
-                vis: "🏥",
-                btns: [
-                    { t: "Xem Camera", next: 'cctv' },
-                    { t: "Đi vào Hành lang", next: 'hallway' }
-                ]
-            },
-            cctv: {
-                txt: "Màn hình nhiễu hạt. Bạn thấy một bóng người cầm rìu đang kéo lê thứ gì đó ở Phòng Cấp Cứu (Mã: 9-1-1).",
-                vis: "📺",
-                onEnter: () => addLog("Mã phòng cấp cứu: 911"),
-                btns: [{ t: "Quay lại", next: 'entrance' }]
-            },
-            hallway: {
-                txt: "Hành lang dài hun hút. Tiếng nước nhỏ giọt đều đặn. Có tiếng bước chân nặng nề đằng sau bạn!",
-                vis: "👣",
-                onEnter: () => { state.stalkerDistance -= 1; },
-                btns: [
-                    { t: "Chạy thật nhanh", next: 'emergency' },
-                    { t: "Nấp vào tủ đồ", next: 'hide' }
-                ]
-            },
-            hide: {
-                txt: "Bạn nín thở trong tủ. Kẻ đó đi ngang qua, hơi thở hắn phả vào khe cửa. Hắn đã đi xa.",
-                vis: "🚪",
-                onEnter: () => { state.stalkerDistance = 5; state.sanity -= 10; },
-                btns: [{ t: "Ra ngoài", next: 'emergency' }]
-            },
-            emergency: {
-                txt: "Phòng Cấp Cứu. Cửa yêu cầu mã số 3 chữ số để khóa trái ngăn kẻ kia lại.",
-                vis: "🔐",
-                btns: [
-                    { t: "Nhập 911", next: 'win' },
-                    { t: "Nhập 666", next: 'death' },
-                    { t: "Phá cửa", next: 'death' }
-                ]
-            },
-            win: {
-                txt: "Cửa đóng sập! Bạn đã tạm thời an toàn. Nhưng đây mới chỉ là tầng 1...",
-                vis: "🏆",
-                btns: [{ t: "Chơi lại", next: 'entrance', reset: true }]
-            },
-            death: {
-                txt: "Hắn đã bắt được bạn. Cảm giác lạnh lẽo của lưỡi rìu là thứ cuối cùng bạn nhận thấy.",
-                vis: "🪓",
-                btns: [{ t: "HỒI SINH", next: 'entrance', reset: true }]
-            }
-        };
+       const scenes = {
+    // ================= TẦNG 1: SẢNH VÀ HÀNH LANG (Scenes 1-10) =================
+    entrance: {
+        txt: "Sảnh bệnh viện. Mùi máu hòa lẫn mùi cồn. Có màn hình Camera và lối đi hành lang.",
+        vis: "🏥",
+        btns: [{ t: "Xem Camera", next: 'cctv' }, { t: "Hành lang tối", next: 'hallway_1' }]
+    },
+    cctv: {
+        txt: "Màn hình hiện lên dòng chữ đỏ: 'SỰ THẬT Ở TẦNG HẦM'. Mã phòng cấp cứu là 911.",
+        vis: "📺",
+        onEnter: () => addLog("Manh mối: Tầng hầm ẩn chứa bí mật. Mã: 911"),
+        btns: [{ t: "Quay lại", next: 'entrance' }]
+    },
+    hallway_1: {
+        txt: "Hành lang Tầng 1. Các tấm biển báo rơi vãi. Bạn thấy Phòng Bảo Vệ và Cầu Thang Máy.",
+        vis: "👣",
+        btns: [{ t: "Phòng Bảo Vệ", next: 'security_room' }, { t: "Cầu thang máy", next: 'elevator_broken' }]
+    },
+    security_room: {
+        txt: "Phòng bảo vệ nát bét. Có một chiếc 'Chìa khóa vạn năng' dính máu trên bàn.",
+        vis: "👮",
+        onEnter: () => addInv("Chìa khóa vạn năng"),
+        btns: [{ t: "Ra hành lang", next: 'hallway_1' }]
+    },
+    elevator_broken: {
+        txt: "Thang máy mất điện. Bạn phải tìm phòng kỹ thuật hoặc đi cầu thang bộ.",
+        vis: "🛗",
+        btns: [{ t: "Cầu thang bộ", next: 'staircase_down' }, { t: "Quay lại", next: 'hallway_1' }]
+    },
 
+    // ================= TẦNG HẦM: NHÀ XÁC & KỸ THUẬT (Scenes 11-25) =================
+    staircase_down: {
+        txt: "Cầu thang dẫn xuống tầng hầm. Bóng tối đặc quánh. Tiếng gầm gừ phát ra từ phía dưới.",
+        vis: "📉",
+        btns: [{ t: "Đi xuống", next: 'basement_hub' }, { t: "Chạy lên", next: 'hallway_1' }]
+    },
+    basement_hub: {
+        txt: "Tầng hầm. Rất lạnh. Bên trái là Nhà xác, bên phải là Phòng lò hơi.",
+        vis: "🧊",
+        btns: [{ t: "Nhà xác", next: 'morgue' }, { t: "Phòng lò hơi", next: 'boiler_room' }]
+    },
+    morgue: {
+        txt: "Hàng chục ngăn kéo đựng xác. Một cái đang rung lên bần bật.",
+        vis: "⚰️",
+        btns: [{ t: "Mở ngăn kéo", next: 'morgue_jump' }, { t: "Bỏ qua", next: 'basement_hub' }]
+    },
+    morgue_jump: {
+        txt: "Một cái xác không đầu lao ra! Bạn mất một lượng lớn tâm lý!",
+        vis: "🧟",
+        onEnter: () => { state.sanity -= 30; state.stalkerDistance -= 2; },
+        btns: [{ t: "Chạy thoát", next: 'basement_hub' }]
+    },
+    boiler_room: {
+        txt: "Phòng lò hơi. Hơi nước nóng phả ra mịt mù. Bạn thấy một cần gạt điện.",
+        vis: "🔥",
+        btns: [{ t: "Gạt cần điện", next: 'power_on' }, { t: "Quay lại", next: 'basement_hub' }]
+    },
+    power_on: {
+        txt: "Điện đã bật! Tiếng thang máy hoạt động trở lại ở phía trên.",
+        vis: "⚡",
+        onEnter: () => addLog("Điện đã được khôi phục."),
+        btns: [{ t: "Lên thang máy", next: 'elevator_active' }]
+    },
+
+    // ================= TẦNG 2: PHÒNG PHẪU THUẬT (Scenes 26-40) =================
+    elevator_active: {
+        txt: "Thang máy đưa bạn lên Tầng 2. Cửa mở ra trước Phòng Phẫu Thuật.",
+        vis: "🏥",
+        btns: [{ t: "Phòng Phẫu Thuật", next: 'surgery_room' }, { t: "Phòng Giám Đốc", next: 'director_office' }]
+    },
+    surgery_room: {
+        txt: "Bàn mổ còn vương máu tươi. Có một chiếc thẻ từ nhân viên ở đây.",
+        vis: "🔪",
+        onEnter: () => addInv("Thẻ từ Tầng 3"),
+        btns: [{ t: "Rời phòng", next: 'elevator_active' }]
+    },
+    director_office: {
+        txt: "Văn phòng sang trọng nhưng u ám. Trên tường là ảnh các bệnh nhân bị thí nghiệm.",
+        vis: "🖼️",
+        btns: [{ t: "Lục ngăn kéo", next: 'diary_found' }, { t: "Quay lại", next: 'elevator_active' }]
+    },
+    diary_found: {
+        txt: "Nhật ký viết: 'Vật thí nghiệm 049 đã sổng chuồng. Đừng bao giờ nấp trong tủ'.",
+        vis: "📖",
+        onEnter: () => addLog("Cảnh báo: Đừng nấp trong tủ!"),
+        btns: [{ t: "Tiếp tục", next: 'director_office' }]
+    },
+
+    // ================= TẦNG 3: SÂN THƯỢNG & KẾT THÚC (Scenes 41-50) =================
+    staircase_up: {
+        txt: "Lối lên tầng thượng. Kẻ sát nhân đang đứng ngay đầu cầu thang!",
+        vis: "👹",
+        btns: [
+            { t: "Dùng dao chiến đấu", next: 'fight_final' },
+            { t: "Chạy vào phòng bệnh", next: 'patient_room' }
+        ]
+    },
+    patient_room: {
+        txt: "Phòng bệnh nhân tâm thần. Có rất nhiều gương. Kẻ sát nhân bị nhầm lẫn bởi ảo ảnh.",
+        vis: "🪞",
+        btns: [{ t: "Lẻn ra ngoài", next: 'rooftop' }]
+    },
+    rooftop: {
+        txt: "Sân thượng. Gió thổi mạnh. Có một chiếc trực thăng cứu hộ đang tới!",
+        vis: "🚁",
+        btns: [{ t: "Lên trực thăng", next: 'win_perfect' }, { t: "Nhảy xuống", next: 'death_jump' }]
+    },
+
+    // ================= CÁC CẢNH TRẠNG THÁI (Kết thúc) =================
+    emergency: {
+        txt: "Phòng Cấp Cứu. Khóa cửa ngay!",
+        vis: "🔐",
+        btns: [{ t: "Mã 911", next: 'win_floor1' }, { t: "Mã 666", next: 'death' }]
+    },
+    win_floor1: {
+        txt: "Bạn đã vượt qua Tầng 1. Bóng tối phía trước vẫn đang chờ đợi...",
+        vis: "🌓",
+        btns: [{ t: "Tiếp tục Tầng hầm", next: 'staircase_down' }]
+    },
+    win_perfect: {
+        txt: "Bình minh ló rạng. Bạn là người duy nhất sống sót khỏi bệnh viện Asylum.",
+        vis: "🌅",
+        btns: [{ t: "CHƠI LẠI TỪ ĐẦU", next: 'entrance', reset: true }]
+    },
+    death: {
+        txt: "Hắn đã chẻ đôi người bạn. Bóng tối vĩnh hằng bắt đầu.",
+        vis: "🪓",
+        btns: [{ t: "HỒI SINH", next: 'entrance', reset: true }]
+    },
+    death_jump: {
+        txt: "Bạn thà chết tự do còn hơn bị hắn bắt. Cơ thể bạn tan nát dưới sân bê tông.",
+        vis: "⚰️",
+        btns: [{ t: "THỬ LẠI", next: 'entrance', reset: true }]
+    }
+};
+        
         function addLog(msg) {
             if(!state.logs.includes(msg)) {
                 state.logs.push(msg);
