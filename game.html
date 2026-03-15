@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KaizenMC - GTA 5 Pokemon Flight</title>
+    <title>KaizenMC - Super Jet 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; touch-action: none; }
@@ -11,190 +11,211 @@
             position: absolute; top: 20px; left: 20px; color: #00f0ff;
             font-size: 18px; text-shadow: 0 0 10px #00f0ff; z-index: 10;
         }
+        #speed-bar {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 10px; border: 2px solid #00f0ff; border-radius: 5px;
+        }
+        #speed-fill { width: 0%; height: 100%; background: #00f0ff; transition: 0.1s; }
         .controls-hint {
             position: absolute; bottom: 20px; left: 20px; color: white;
-            font-size: 12px; opacity: 0.6; pointer-events: none;
+            font-size: 11px; opacity: 0.5; pointer-events: none;
         }
-        /* Phím ảo cho Mobile */
-        .mobile-btns {
-            position: absolute; bottom: 30px; right: 30px; display: none; gap: 10px;
-        }
-        .btn {
-            width: 60px; height: 60px; background: rgba(0, 240, 255, 0.2);
-            border: 2px solid #00f0ff; border-radius: 50%; color: white;
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-        @media (max-width: 768px) { .mobile-btns { display: flex; flex-direction: column; } }
+        canvas { display: block; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="ui">
-        SPEED: <span id="speed">0</span> KM/H<br>
-        SCORE: <span id="score">0</span>
+        SCORE: <span id="score">0</span><br>
+        ALT: <span id="alt">500</span> FT
     </div>
 
+    <div id="speed-bar"><div id="speed-fill"></div></div>
+
     <div class="controls-hint">
-        PC: W/S (Lên/Xuống), A/D (Nghiêng), SPACE (Tăng tốc)<br>
-        MOBILE: Chạm giữ màn hình để lái
+        WASD: Lái máy bay | SPACE: Nitro (Tăng tốc) | MOBILE: Chạm giữ
     </div>
 
     <script>
-        let scene, camera, renderer, plane, stars;
+        let scene, camera, renderer, jet, stars, engineLight;
         let rings = [];
-        let score = 0;
-        let speed = 0;
-        let targetSpeed = 0.2;
+        let score = 0, speed = 0.3, targetSpeed = 0.3;
         let rotation = { x: 0, y: 0, z: 0 };
         let isBoosting = false;
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020617);
-            scene.fog = new THREE.FogExp2(0x020617, 0.01);
+            scene.background = new THREE.Color(0x02040a);
+            scene.fog = new THREE.FogExp2(0x02040a, 0.008);
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
             
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
+            // Bật hiệu ứng bóng đổ và ánh sáng chuẩn
+            renderer.outputEncoding = THREE.sRGBEncoding;
             document.body.appendChild(renderer.domElement);
 
-            // 1. Tạo "Máy bay" (Sử dụng một khối hình phi thuyền Neon)
-            const planeGroup = new THREE.Group();
-            
-            // Thân máy bay
-            const bodyGeo = new THREE.ConeGeometry(0.5, 3, 8);
-            bodyGeo.rotateX(Math.PI/2);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: 0x00f0ff, emissive: 0x00f0ff });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            planeGroup.add(body);
-const bodyMat = new THREE.MeshStandardMaterial({ 
-    color: 0x00f0ff, 
-    metalness: 0.8,   // Tạo độ bóng kim loại như GTA 5
-    roughness: 0.2,   // Làm bề mặt mượt mà hơn
-    emissive: 0x00f0ff, 
-    emissiveIntensity: 0.2 // Tự phát sáng nhẹ ở những phần góc cạnh
-});
-            // Cánh máy bay
-            const wingGeo = new THREE.BoxGeometry(4, 0.1, 1);
-            const wing = new THREE.Mesh(wingGeo, bodyMat);
-            planeGroup.add(wing);
+            // 1. TẠO MÁY BAY CHIẾN ĐẤU (NÂNG CẤP)
+            jet = new THREE.Group();
 
-            plane = planeGroup;
-            scene.add(plane);
-// 2. Hệ thống ánh sáng Cinematic (Nâng cấp)
-// Ánh sáng môi trường tạo màu nền (Xanh sâu)
-const ambientLight = new THREE.AmbientLight(0x020617, 1); 
-scene.add(ambientLight);
+            const metalMat = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50, metalness: 0.9, roughness: 0.2 
+            });
+            const neonMat = new THREE.MeshStandardMaterial({ 
+                color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 2 
+            });
+            const cockpitMat = new THREE.MeshPhongMaterial({ 
+                color: 0x000000, shininess: 100, opacity: 0.7, transparent: true 
+            });
 
-// HemisphereLight: Giả lập ánh sáng từ bầu trời (Cyan) và mặt đất (Magenta)
-// Giúp vật thể có khối và chiều sâu cực đẹp
-const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.6);
-scene.add(hemiLight);
+            // Thân máy bay (Fuselage)
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 5, 8), metalMat);
+            body.rotation.x = Math.PI / 2;
+            jet.add(body);
 
-// DirectionalLight: Đóng vai trò như "Mặt trời" tạo bóng đổ sắc nét
-const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-sunLight.position.set(10, 20, 10);
-sunLight.castShadow = true; // Bật bóng đổ nếu bạn có mặt đất
-scene.add(sunLight);
+            // Mũi máy bay (Nose)
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.5, 8), metalMat);
+            nose.position.z = -3.2;
+            nose.rotation.x = -Math.PI / 2;
+            jet.add(nose);
 
-// PointLight: Đặt một bóng đèn Neon ngay sau đuôi máy bay (Engine Glow)
-// Tạo hiệu ứng phát sáng khi máy bay di chuyển
-const engineLight = new THREE.PointLight(0x00f0ff, 2, 10);
-engineLight.position.set(0, 0, 2); 
-plane.add(engineLight); // Gắn trực tiếp vào máy bay để nó bay theo
+            // Buồng lái (Cockpit)
+            const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), cockpitMat);
+            cockpit.position.set(0, 0.4, -1.5);
+            cockpit.scale.set(1, 0.8, 2.5);
+            jet.add(cockpit);
 
-            // 3. Tạo bầu trời sao rộng lớn
+            // Cánh chính (Wings)
+            const wingGeo = new THREE.BoxGeometry(6, 0.05, 2);
+            const wings = new THREE.Mesh(wingGeo, metalMat);
+            wings.position.z = 0.5;
+            jet.add(wings);
+
+            // Cánh đuôi ngang (Stabilizers)
+            const tailHorizontal = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.05, 1), metalMat);
+            tailHorizontal.position.z = 2.2;
+            jet.add(tailHorizontal);
+
+            // Cánh đuôi đứng (Vertical Fin)
+            const tailVertical = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 0.8), metalMat);
+            tailVertical.position.set(0, 0.6, 2.2);
+            jet.add(tailVertical);
+
+            // Động cơ (Engine Glow)
+            const engine = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.2, 16), neonMat);
+            engine.rotation.x = Math.PI / 2;
+            engine.position.z = 2.5;
+            jet.add(engine);
+
+            engineLight = new THREE.PointLight(0x00f0ff, 5, 10);
+            engineLight.position.z = 3;
+            jet.add(engineLight);
+
+            scene.add(jet);
+
+            // 2. ÁNH SÁNG CINEMATIC
+            const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+            scene.add(ambient);
+
+            const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.5);
+            scene.add(hemiLight);
+
+            const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+            sun.position.set(50, 50, 50);
+            scene.add(sun);
+
+            // 3. MÔI TRƯỜNG
+            // Stars
             const starGeo = new THREE.BufferGeometry();
             const starPos = [];
-            for(let i=0; i<10000; i++) {
-                starPos.push((Math.random()-0.5)*1000, (Math.random()-0.5)*1000, (Math.random()-0.5)*1000);
+            for(let i=0; i<8000; i++) {
+                starPos.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
             }
             starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
+            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 }));
             scene.add(stars);
 
-            // 4. Tạo các vòng tròn Checkpoint (như GTA Flight School)
-            for(let i=0; i<20; i++) {
-                createRing(i);
-            }
+            // Lưới grid không gian cho cảm giác độ cao
+            const grid = new THREE.GridHelper(5000, 100, 0x00f0ff, 0x050a15);
+            grid.position.y = -100;
+            scene.add(grid);
 
-            // Điều khiển
+            // Checkpoints
+            for(let i=0; i<20; i++) createRing(i);
+
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
-            // Touch cho mobile
-            window.addEventListener('touchstart', () => { isBoosting = true; targetSpeed = 0.8; });
-            window.addEventListener('touchend', () => { isBoosting = false; targetSpeed = 0.2; });
+            window.addEventListener('touchstart', () => { isBoosting = true; targetSpeed = 1.5; });
+            window.addEventListener('touchend', () => { isBoosting = false; targetSpeed = 0.3; });
 
             animate();
         }
 
-        function createRing(index) {
-            const ringGeo = new THREE.TorusGeometry(4, 0.2, 16, 100);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0xffcb05 });
+        function createRing(i) {
+            const ringGeo = new THREE.TorusGeometry(5, 0.15, 16, 50);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xffcb05, transparent: true, opacity: 0.8 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            
-            // Đặt ngẫu nhiên trong không gian
-            ring.position.set(
-                (Math.random()-0.5)*200,
-                (Math.random()-0.5)*200,
-                -index * 100 - 50
-            );
+            ring.position.set((Math.random()-0.5)*300, (Math.random()-0.5)*150, -i * 150 - 100);
             scene.add(ring);
             rings.push(ring);
         }
 
         function handleKeyDown(e) {
-            if(e.code === 'Space') { isBoosting = true; targetSpeed = 1.2; }
-            if(e.key === 'w') rotation.x = -0.05; // Ngóc lên
-            if(e.key === 's') rotation.x = 0.05;  // Cắm xuống
-            if(e.key === 'a') { rotation.z = 0.1; rotation.y = 0.03; } // Nghiêng trái
-            if(e.key === 'd') { rotation.z = -0.1; rotation.y = -0.03; } // Nghiêng phải
+            if(e.code === 'Space') { isBoosting = true; targetSpeed = 2.0; }
+            if(e.key === 'w') rotation.x = -0.04;
+            if(e.key === 's') rotation.x = 0.04;
+            if(e.key === 'a') { rotation.z = 0.08; rotation.y = 0.02; }
+            if(e.key === 'd') { rotation.z = -0.08; rotation.y = -0.02; }
         }
 
         function handleKeyUp(e) {
             if(e.code === 'Space') { isBoosting = false; targetSpeed = 0.3; }
-            if(['w', 's'].includes(e.key)) rotation.x = 0;
-            if(['a', 'd'].includes(e.key)) { rotation.z = 0; rotation.y = 0; }
+            rotation.x = 0; rotation.y = 0; rotation.z = 0;
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            // 1. Vật lý máy bay
-            speed = THREE.MathUtils.lerp(speed, targetSpeed, 0.05);
+            // Vật lý & Tốc độ
+            speed = THREE.MathUtils.lerp(speed, targetSpeed, 0.03);
             
-            // Di chuyển theo hướng mũi máy bay
-            plane.rotation.x = THREE.MathUtils.lerp(plane.rotation.x, plane.rotation.x + rotation.x, 0.1);
-            plane.rotation.y += rotation.y;
-            plane.rotation.z = THREE.MathUtils.lerp(plane.rotation.z, rotation.z, 0.1);
+            // Xoay Jet mượt mà
+            jet.rotation.x = THREE.MathUtils.lerp(jet.rotation.x, jet.rotation.x + rotation.x, 0.1);
+            jet.rotation.y += rotation.y;
+            jet.rotation.z = THREE.MathUtils.lerp(jet.rotation.z, rotation.z, 0.1);
+            
+            jet.translateZ(-speed);
 
-            // Bay về phía trước
-            plane.translateZ(-speed);
+            // Camera GTA 5 Style + FOV dynamic
+            const baseFOV = 75;
+            camera.fov = THREE.MathUtils.lerp(camera.fov, isBoosting ? 95 : 75, 0.05);
+            camera.updateProjectionMatrix();
 
-            // 2. Camera bám đuôi (GTA 5 Style)
-            // Camera sẽ đứng sau phi thuyền một khoảng và nhìn về phía phi thuyền
-            const offset = new THREE.Vector3(0, 3, 10); // Khoảng cách sau lưng
-            offset.applyQuaternion(plane.quaternion);
-            camera.position.lerp(plane.position.clone().add(offset), 0.1);
-            camera.lookAt(plane.position);
+            const offset = new THREE.Vector3(0, 2.5, 12);
+            offset.applyQuaternion(jet.quaternion);
+            camera.position.lerp(jet.position.clone().add(offset), 0.15);
+            camera.lookAt(jet.position.clone().add(new THREE.Vector3(0,0,-5).applyQuaternion(jet.quaternion)));
 
-            // 3. Kiểm tra va chạm vòng tròn
-            rings.forEach((ring, index) => {
-                const dist = plane.position.distanceTo(ring.position);
-                if(dist < 5) {
+            // Hiệu ứng động cơ chớp tắt
+            engineLight.intensity = (isBoosting ? 10 : 3) + Math.random() * 2;
+
+            // UI
+            document.getElementById('speed-fill').style.width = (speed / 2 * 100) + "%";
+            document.getElementById('alt').innerText = Math.floor(jet.position.y + 500);
+
+            // Kiểm tra va chạm vòng
+            rings.forEach(ring => {
+                if(jet.position.distanceTo(ring.position) < 7) {
                     score += 100;
                     document.getElementById('score').innerText = score;
-                    // Chuyển vòng tròn ra xa để tiếp tục chơi
-                    ring.position.z -= 1000;
-                    ring.position.x = (Math.random()-0.5)*200;
+                    ring.position.z -= 2000; // Reset vòng ra xa
+                    ring.position.x = (Math.random()-0.5)*400;
                     ring.position.y = (Math.random()-0.5)*200;
                 }
             });
-
-            document.getElementById('speed').innerText = Math.floor(speed * 500);
 
             renderer.render(scene, camera);
         }
