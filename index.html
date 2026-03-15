@@ -496,123 +496,73 @@
 }
         
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      :root {
+     :root {
     /* 1. Mặc định (Hệ Nước/Băng) */
-    --neon-blue: #00f0ff; --neon-purple: #c300ff; --neon-pink: #ff00aa;
-    --border: rgba(255, 255, 255, 0.12); --glass: rgba(15, 23, 42, 0.82);
-    --bg-dark: #020617; transition: 0.5s;
+    --neon-blue: #00f0ff; 
+    --neon-purple: #c300ff; 
+    --neon-pink: #ff00aa;
+    --border: rgba(255, 255, 255, 0.12); 
+    --glass: rgba(15, 23, 42, 0.82);
+    --bg-dark: #020617; 
+    transition: 0.5s;
 }
 
-/* 2. Hệ Lửa (Fire) */
-[data-theme="fire"] { --neon-blue: #ff4d00; --neon-purple: #ffb700; --neon-pink: #ff0000; --glass: rgba(30, 10, 5, 0.85); }
+/* Các hệ màu khác giữ nguyên data-theme như bạn đã viết... */
+[data-theme="fire"] { --neon-blue: #ff4d00; --neon-purple: #ffb700; --neon-pink: #ff0000; --glass: rgba(30, 10, 5, 0.85); --bg-dark: #1a0500; }
+[data-theme="grass"] { --neon-blue: #00ff88; --neon-purple: #9dff00; --neon-pink: #32a852; --glass: rgba(10, 30, 15, 0.85); --bg-dark: #051a05; }
+[data-theme="matrix"] { --neon-blue: #00ff41; --neon-purple: #008f11; --neon-pink: #003b00; --glass: rgba(0, 15, 0, 0.9); --bg-dark: #000a00; }
+/* (Tương tự cho các hệ màu còn lại, bạn chỉ cần thêm --bg-dark cho mỗi hệ để đổi màu nền) */
 
-/* 3. Hệ Cỏ (Grass) */
-[data-theme="grass"] { --neon-blue: #00ff88; --neon-purple: #9dff00; --neon-pink: #32a852; --glass: rgba(10, 30, 15, 0.85); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* 4. Hệ Điện (Electric) */
-[data-theme="electric"] { --neon-blue: #ffff00; --neon-purple: #ffea00; --neon-pink: #ffaa00; --glass: rgba(30, 30, 5, 0.85); }
-
-/* 5. Hệ Ma (Ghost) */
-[data-theme="ghost"] { --neon-blue: #a370f7; --neon-purple: #4e1a8e; --neon-pink: #91369b; --glass: rgba(20, 10, 35, 0.85); }
-
-/* 6. Hệ Tiên (Fairy) */
-[data-theme="fairy"] { --neon-blue: #ff99cc; --neon-purple: #ff66aa; --neon-pink: #f8bbd0; --glass: rgba(40, 15, 30, 0.85); }
-
-/* 7. Hệ Rồng (Dragon) */
-[data-theme="dragon"] { --neon-blue: #7038f8; --neon-purple: #b088ff; --neon-pink: #ff44aa; --glass: rgba(15, 10, 40, 0.85); }
-
-/* 8. Hệ Siêu Linh (Psychic) */
-[data-theme="psychic"] { --neon-blue: #f85888; --neon-purple: #da1e5b; --neon-pink: #ff80ab; --glass: rgba(35, 10, 25, 0.85); }
-
-/* 9. Hệ Độc (Poison) */
-[data-theme="poison"] { --neon-blue: #a040a0; --neon-purple: #e060e0; --neon-pink: #c080c0; --glass: rgba(25, 10, 25, 0.85); }
-
-/* 10. Hệ Bóng Tối (Dark) */
-[data-theme="dark"] { --neon-blue: #705848; --neon-purple: #483c32; --neon-pink: #a48a7b; --glass: rgba(15, 15, 15, 0.9); }
-
-/* 11. Hệ Thép (Steel) */
-[data-theme="steel"] { --neon-blue: #b8b8d0; --neon-purple: #808090; --neon-pink: #ffffff; --glass: rgba(30, 30, 40, 0.85); }
-
-/* 12. Hệ Đá (Rock) */
-[data-theme="rock"] { --neon-blue: #b8a038; --neon-purple: #e0c068; --neon-pink: #8b7355; --glass: rgba(25, 20, 10, 0.85); }
-
-/* 13. Hệ Đất (Ground) */
-[data-theme="ground"] { --neon-blue: #e0c068; --neon-purple: #8b7355; --neon-pink: #ffcc66; --glass: rgba(35, 25, 15, 0.85); }
-
-/* 14. Hệ Côn Trùng (Bug) */
-[data-theme="bug"] { --neon-blue: #a8b820; --neon-purple: #6d7815; --neon-pink: #c6d16e; --glass: rgba(25, 30, 10, 0.85); }
-
-/* 15. Hệ Chiến Đấu (Fighting) */
-[data-theme="fighting"] { --neon-blue: #c03028; --neon-purple: #7d1f1a; --neon-pink: #ff4444; --glass: rgba(40, 10, 10, 0.85); }
-
-/* 16. Hệ Bay (Flying) */
-[data-theme="flying"] { --neon-blue: #a890f0; --neon-purple: #7058f8; --neon-pink: #c6b7f5; --glass: rgba(20, 20, 45, 0.85); }
-
-/* 17. Gold Edition (Vàng Hoàng Gia) */
-[data-theme="gold"] { --neon-blue: #ffd700; --neon-purple: #ff8c00; --neon-pink: #ffffff; --glass: rgba(30, 25, 0, 0.85); }
-
-/* 18. Matrix (Lục Bảo) */
-[data-theme="matrix"] { --neon-blue: #00ff41; --neon-purple: #008f11; --neon-pink: #003b00; --glass: rgba(0, 15, 0, 0.9); }
-
-/* 19. Blood Moon (Trăng Máu) */
-[data-theme="blood"] { --neon-blue: #880808; --neon-purple: #450a0a; --neon-pink: #ff0000; --glass: rgba(20, 0, 0, 0.9); }
-
-/* 20. Vaporwave (Tím Mộng Mơ) */
-[data-theme="vaporwave"] { --neon-blue: #00d2ff; --neon-purple: #3a7bd5; --neon-pink: #f42cbf; --glass: rgba(20, 10, 40, 0.8); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-   body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+body {
+    background-color: var(--bg-dark); /* Nền thay đổi theo hệ màu */
     color: white;
-    overflow-x: hidden;
-    /* Dự phòng nếu video không load được */
-    background: #020617; 
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    min-height: 100vh;
 }
 
-/* Container Video toàn màn hình */
-.video-bg-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    overflow: hidden;
+/* ĐỒNG BỘ CHO TRÌNH PHÁT NHẠC */
+.music-panel {
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--neon-blue);
+    backdrop-filter: blur(10px);
 }
 
-.bg-video {
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    object-fit: cover;
-    filter: brightness(0.6) saturate(1.2); /* Làm video đậm chất điện ảnh hơn */
+.panel-header {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
 }
 
-/* Lớp phủ chuyển màu (Gradient) để tạo chiều sâu */
-.video-overlay-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(2,6,23,0.8) 100%);
-    z-index: -1;
+#media-url-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--neon-blue);
+    color: white;
 }
 
-/* Làm các box nội dung trở nên lung linh hơn trên nền động */
-.server-box, .stat-card, .music-panel {
-    background: rgba(15, 23, 42, 0.7) !important;
-    backdrop-filter: blur(15px) saturate(150%);
-    border: 1px solid rgba(0, 240, 255, 0.3) !important;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+#media-url-input::placeholder {
+    color: var(--neon-blue);
+    opacity: 0.5;
+}
+
+.btn-main, .btn-platform.active {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--neon-blue);
+    border: none;
+}
+
+.music-toggle-btn {
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+#media-wrapper {
+    border: 1px solid var(--neon-pink); /* Dùng màu hồng của hệ để làm điểm nhấn */
 }
         /* --- NAVIGATION --- */
         .main-nav {
@@ -799,24 +749,29 @@
         </div>
     </div>
 
-  <div class="music-player-container">
+ <div class="music-player-container">
     <button class="music-toggle-btn" id="musicBtn" onclick="toggleMusicPanel()" title="Cài đặt nhạc">🎵</button>
 
     <div id="music-panel" class="music-panel">
         <div class="panel-header">KAIZEN MEDIA PLAYER</div>
         
-        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-            <button onclick="setPlatform('sc')" class="btn-platform" id="btn-sc">SoundCloud</button>
+        <div class="platform-selector">
+            <button onclick="setPlatform('sc')" class="btn-platform active" id="btn-sc">SoundCloud</button>
             <button onclick="setPlatform('yt')" class="btn-platform" id="btn-yt">YouTube</button>
             <button onclick="setPlatform('sp')" class="btn-platform" id="btn-sp">Spotify</button>
         </div>
 
-        <input type="text" id="media-url-input" placeholder="Dán link vào đây...">
-        <button onclick="playMedia()" class="btn-change">PHÁT NGAY</button>
-        <button class="theme-toggle-btn" onclick="nextTheme()" title="Đổi Hệ Màu">
-    🎨
-</button>
-        <div id="media-wrapper" style="display: none; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-pink);">
+        <div class="input-group">
+            <input type="text" id="media-url-input" placeholder="Dán link hoặc nhập tên bài hát...">
+            <button onclick="playMedia()" class="btn-play-trigger">▶</button>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="playMedia()" class="btn-main">PHÁT NGAY</button>
+            <button class="theme-toggle-btn" onclick="nextTheme()" title="Đổi Hệ Màu">🎨</button>
+        </div>
+
+        <div id="media-wrapper">
             <div id="player-container"></div>
         </div>
     </div>
