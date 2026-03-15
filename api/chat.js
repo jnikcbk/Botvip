@@ -1,95 +1,73 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ message: 'Chỉ POST thôi sếp!' });
+    if (req.method !== 'POST') return res.status(405).json({ message: 'POST đi sếp!' });
 
     const { message, history } = req.body;
 
-    // 1. LẤY TẤT CẢ KEY CÓ THỂ (Chấp nhận cả key cũ và key mới của sếp)
+    // 1. Quét sạch Key (Không sót cái nào)
     const API_KEYS = [
         process.env.GEMINI_KEY_1,
         process.env.GEMINI_KEY_2,
         process.env.GEMINI_KEY_3,
-        process.env.GEMINI_KEY // Backup key mặc định
+        process.env.GEMINI_KEY
     ].filter(key => key && key.trim() !== "");
 
-    if (API_KEYS.length === 0) return res.status(500).json({ error: 'Chưa thấy Key nào trên Vercel sếp ơi!' });
+    if (API_KEYS.length === 0) return res.status(500).json({ text: "Sếp quên chưa gắn Key vào Vercel rồi!" });
 
-    // 2. MODEL ƯU TIÊN: Bản 2.0 Flash cực nhanh, 1.5 Pro cực khôn
-    const MODELS = [
-        "gemini-2.0-flash",       // Thông minh nhất, nhanh nhất (nếu có quota)
-        "gemini-1.5-pro-latest",   // Não to nhất, suy luận đỉnh
-        "gemini-1.5-flash-latest"  // Trâu bò nhất để chống sập
-    ];
+    // 2. Thứ tự ưu tiên: Flash trước để ổn định, Pro sau để cân não
+    const MODELS = ["gemini-1.5-flash-latest", "gemini-1.5-pro-latest", "gemini-2.0-flash"];
 
-    // 3. HỆ THỐNG CHỈ DẪN (System Prompt) - Cốt lõi của sự thông minh
+    // 3. System Prompt: Cực kỳ chi tiết để bot không "ngáo"
     const systemInstruction = {
         parts: [{
-            text: `Bạn là Kaizen AI - Linh hồn của máy chủ Minecraft KaizenMC.
-            - Owners: Minh Meo, Đăng Mạnh. Nếu họ nhắn tin, hãy chào hỏi cực kỳ kính trọng (ví dụ: "Chào sếp Minh Meo ạ!").
-            - Phong cách: Xưng "tớ", gọi "cậu". Nói chuyện như một game thủ lão luyện, thông minh, hài hước.
-            - Kiến thức: Am hiểu Pixelmon, lệnh Minecraft (/shop, /nap, /claim), luật server.
-            - Quy tắc: Tuyệt đối chặn nội dung 18+. Bảo vệ Owners nếu bị ai đó xúc phạm bằng những câu đáp trả sắc sảo nhưng văn minh.
-            - Trí tuệ: Luôn phân tích câu hỏi của người dùng để trả lời chính xác, không trả lời vòng vo.`
+            text: `Bạn là Kaizen AI - Linh hồn của KaizenMC. 
+            - Chủ nhân: Minh Meo, Đăng Mạnh (Phải cực kỳ tôn trọng). 
+            - Đối tượng: Người chơi Minecraft/Pixelmon.
+            - Tính cách: Thông minh, hài hước, dùng icon ⚔️, 💎, 🔥.
+            - Kiến thức: Thành thạo mọi lệnh server và mẹo săn Pokemon.
+            - Quy tắc: Không trả lời nội dung xấu. Nếu bị chửi, hãy đáp trả khôn ngoan để bảo vệ server.`
         }]
     };
 
-    // 4. XỬ LÝ TRÍ NHỚ (History): Đảm bảo bot luôn nhớ cậu là ai
-    const formattedContents = history && history.length > 0 
-        ? [...history, { role: "user", parts: [{ text: message }] }] 
-        : [{ role: "user", parts: [{ text: message }] }];
+    // Chỉ gửi 8 câu gần nhất để bot không bị nặng đầu (quá tải token)
+    const context = history ? history.slice(-8) : [];
+    const payload = {
+        system_instruction: systemInstruction,
+        contents: [...context, { role: "user", parts: [{ text: message }] }],
+        generationConfig: { temperature: 0.9, maxOutputTokens: 800, topP: 0.9 }
+    };
 
-    async function callGemini(model, key) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    system_instruction: systemInstruction,
-                    contents: formattedContents,
-                    generationConfig: { 
-                        temperature: 0.9, // Tăng sự sáng tạo và linh hoạt
-                        maxOutputTokens: 1024,
-                        topP: 0.95
-                    }
-                })
-            });
-            const data = await response.json();
-            return { ok: response.ok, data, status: response.status };
-        } catch (e) {
-            return { ok: false };
-        }
-    }
-
-    // 5. CHIẾN THUẬT QUAY VÒNG THÔNG MINH (Load Balancing)
     try {
-        let finalResponse = null;
-
-        // Xáo trộn Key để không Key nào bị bào quá mức
+        let finalReply = null;
+        // Xáo trộn Key để dùng đều
         const shuffledKeys = API_KEYS.sort(() => Math.random() - 0.5);
 
         for (const model of MODELS) {
             for (const key of shuffledKeys) {
-                const result = await callGemini(model, key);
-                
-                if (result.ok && result.data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    finalResponse = result.data.candidates[0].content.parts[0].text;
-                    break;
-                }
-                
-                if (result.status === 429) continue; // Key hết lượt, thử key khác ngay
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const data = await response.json();
+                    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        finalReply = data.candidates[0].content.parts[0].text;
+                        break;
+                    }
+                } catch (e) { continue; } // Thử Key/Model tiếp theo ngay lập tức
             }
-            if (finalResponse) break; // Đã tìm thấy câu trả lời hay nhất
+            if (finalReply) break;
         }
 
-        if (finalResponse) {
-            return res.status(200).json({ text: finalResponse });
-        } else {
-            return res.status(429).json({ 
-                text: "Hic, các 'não bộ' của tớ đang bận phục vụ các huấn luyện viên khác mất rồi. Cậu đợi vài giây rồi nhắn lại cho tớ nhé! 🙏" 
-            });
+        // Nếu tất cả đều thất bại, trả về một câu nhập vai thay vì báo lỗi kỹ thuật
+        if (!finalReply) {
+            finalReply = "⚡ Tớ đang bận nâng cấp sức mạnh một chút, cậu nhắn lại cho tớ sau vài giây nhé, tớ sẽ trả lời ngay! ⚔️";
         }
+
+        return res.status(200).json({ text: finalReply });
 
     } catch (error) {
-        res.status(500).json({ error: 'Lỗi hệ thống!', details: error.message });
+        res.status(200).json({ text: "Hic, có chút trục trặc, sếp đợi tớ xíu nhé!" });
     }
 }
