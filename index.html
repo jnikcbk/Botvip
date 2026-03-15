@@ -11,6 +11,63 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        .poke-card:hover h3 {
+    text-shadow: 
+        0 0 10px #fff,
+        0 0 20px var(--c),
+        0 0 60px var(--c);
+    transition: 0.3s;
+}
+        /* 1. Neon cho Tên Pokémon (Rực rỡ theo hệ) */
+.poke-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: #fff; /* Để màu chữ trắng cho dễ đọc */
+    letter-spacing: 2px;
+    margin: 10px 0 5px;
+    font-weight: 900;
+    font-size: 18px;
+    /* Hiệu ứng tỏa sáng đa tầng */
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px var(--c),
+        0 0 20px var(--c),
+        0 0 40px var(--c);
+    text-transform: uppercase;
+}
+
+/* 2. Neon cho Mô tả (Sáng mờ ảo) */
+.poke-card p {
+    color: #fff;
+    font-size: 11px;
+    margin-bottom: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+    font-family: 'Cormorant', serif;
+    /* Neon dịu hơn để không bị lóa mắt */
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px var(--c);
+    opacity: 0.9;
+}
+
+/* 3. Neon cho Sao Rarity (Vàng kim rực rỡ) */
+.card-rarity {
+    color: #fff; /* Chữ trắng ở lõi */
+    font-size: 20px;
+    letter-spacing: 3px;
+    margin-top: auto;
+    /* Đổ bóng vàng kim cực mạnh */
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #ffd700,
+        0 0 20px #ffaa00,
+        0 0 30px #ffaa00;
+    animation: star-glow 2s infinite alternate; /* Sao nhấp nháy */
+}
+
+/* Hiệu ứng nhấp nháy cho sao thêm sinh động */
+@keyframes star-glow {
+    from { transform: scale(1); opacity: 0.8; }
+    to { transform: scale(1.1); opacity: 1; }
+}
 /* --- TRÌNH PHÁT NHẠC: FIX TRIỆT ĐỂ LỖI BẤM --- */
 .music-player-container {
     position: fixed;
