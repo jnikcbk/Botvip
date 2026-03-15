@@ -70,7 +70,13 @@
             const bodyMat = new THREE.MeshPhongMaterial({ color: 0x00f0ff, emissive: 0x00f0ff });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             planeGroup.add(body);
-
+const bodyMat = new THREE.MeshStandardMaterial({ 
+    color: 0x00f0ff, 
+    metalness: 0.8,   // Tạo độ bóng kim loại như GTA 5
+    roughness: 0.2,   // Làm bề mặt mượt mà hơn
+    emissive: 0x00f0ff, 
+    emissiveIntensity: 0.2 // Tự phát sáng nhẹ ở những phần góc cạnh
+});
             // Cánh máy bay
             const wingGeo = new THREE.BoxGeometry(4, 0.1, 1);
             const wing = new THREE.Mesh(wingGeo, bodyMat);
@@ -78,12 +84,27 @@
 
             plane = planeGroup;
             scene.add(plane);
+// 2. Hệ thống ánh sáng Cinematic (Nâng cấp)
+// Ánh sáng môi trường tạo màu nền (Xanh sâu)
+const ambientLight = new THREE.AmbientLight(0x020617, 1); 
+scene.add(ambientLight);
 
-            // 2. Ánh sáng
-            const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(5, 5, 5);
-            scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040));
+// HemisphereLight: Giả lập ánh sáng từ bầu trời (Cyan) và mặt đất (Magenta)
+// Giúp vật thể có khối và chiều sâu cực đẹp
+const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.6);
+scene.add(hemiLight);
+
+// DirectionalLight: Đóng vai trò như "Mặt trời" tạo bóng đổ sắc nét
+const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+sunLight.position.set(10, 20, 10);
+sunLight.castShadow = true; // Bật bóng đổ nếu bạn có mặt đất
+scene.add(sunLight);
+
+// PointLight: Đặt một bóng đèn Neon ngay sau đuôi máy bay (Engine Glow)
+// Tạo hiệu ứng phát sáng khi máy bay di chuyển
+const engineLight = new THREE.PointLight(0x00f0ff, 2, 10);
+engineLight.position.set(0, 0, 2); 
+plane.add(engineLight); // Gắn trực tiếp vào máy bay để nó bay theo
 
             // 3. Tạo bầu trời sao rộng lớn
             const starGeo = new THREE.BufferGeometry();
