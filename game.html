@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KaizenMC - Super Jet 3D</title>
+    <title>KaizenMC - Cinematic Jet 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; touch-action: none; }
         #ui {
             position: absolute; top: 20px; left: 20px; color: #00f0ff;
             font-size: 18px; text-shadow: 0 0 10px #00f0ff; z-index: 10;
+            background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.3);
         }
         #speed-bar {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 10px; border: 2px solid #00f0ff; border-radius: 5px;
+            width: 250px; height: 12px; border: 2px solid #00f0ff; border-radius: 6px;
+            background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0,240,255,0.3); overflow: hidden;
         }
-        #speed-fill { width: 0%; height: 100%; background: #00f0ff; transition: 0.1s; }
+        #speed-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00f0ff, #ff00aa); transition: 0.1s; }
         .controls-hint {
             position: absolute; bottom: 20px; left: 20px; color: white;
             font-size: 11px; opacity: 0.5; pointer-events: none;
@@ -27,84 +29,79 @@
 <body>
 
     <div id="ui">
-        SCORE: <span id="score">0</span><br>
+        SCORE: <span id="score" style="color:#ff00aa">0</span><br>
         ALT: <span id="alt">500</span> FT
     </div>
 
     <div id="speed-bar"><div id="speed-fill"></div></div>
 
     <div class="controls-hint">
-        WASD: Lái máy bay | SPACE: Nitro (Tăng tốc) | MOBILE: Chạm giữ
+        WASD: Lái máy bay | SPACE: Nitro | MOBILE: Chạm trái/phải màn hình
     </div>
 
     <script>
         let scene, camera, renderer, jet, stars, engineLight;
         let rings = [];
         let score = 0, speed = 0.3, targetSpeed = 0.3;
-        let rotation = { x: 0, y: 0, z: 0 };
         let isBoosting = false;
+        
+        // Quản lý phím bấm
+        const keys = { w: false, s: false, a: false, d: false, space: false };
+        // Lưu trữ góc quay hiện tại của máy bay
+        let currentRotation = { x: 0, y: 0, z: 0 };
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x02040a);
-            scene.fog = new THREE.FogExp2(0x02040a, 0.008);
+            scene.background = new THREE.Color(0x020617); // Xanh đen sâu thẳm
+            scene.fog = new THREE.FogExp2(0x020617, 0.005); // Sương mù để không gian sâu hơn
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
             
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            // Bật hiệu ứng bóng đổ và ánh sáng chuẩn
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputEncoding = THREE.sRGBEncoding;
             document.body.appendChild(renderer.domElement);
 
-            // 1. TẠO MÁY BAY CHIẾN ĐẤU (NÂNG CẤP)
+            // --- 1. MÁY BAY CHIẾN ĐẤU ---
             jet = new THREE.Group();
 
             const metalMat = new THREE.MeshStandardMaterial({ 
-                color: 0x2c3e50, metalness: 0.9, roughness: 0.2 
+                color: 0x1e293b, metalness: 0.8, roughness: 0.3 // Màu xám titan
             });
             const neonMat = new THREE.MeshStandardMaterial({ 
                 color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 2 
             });
-            const cockpitMat = new THREE.MeshPhongMaterial({ 
-                color: 0x000000, shininess: 100, opacity: 0.7, transparent: true 
+            const glassMat = new THREE.MeshPhongMaterial({ 
+                color: 0x000000, shininess: 100, opacity: 0.8, transparent: true 
             });
 
-            // Thân máy bay (Fuselage)
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 5, 8), metalMat);
             body.rotation.x = Math.PI / 2;
             jet.add(body);
 
-            // Mũi máy bay (Nose)
             const nose = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.5, 8), metalMat);
             nose.position.z = -3.2;
             nose.rotation.x = -Math.PI / 2;
             jet.add(nose);
 
-            // Buồng lái (Cockpit)
-            const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), cockpitMat);
+            const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), glassMat);
             cockpit.position.set(0, 0.4, -1.5);
             cockpit.scale.set(1, 0.8, 2.5);
             jet.add(cockpit);
 
-            // Cánh chính (Wings)
-            const wingGeo = new THREE.BoxGeometry(6, 0.05, 2);
-            const wings = new THREE.Mesh(wingGeo, metalMat);
+            const wings = new THREE.Mesh(new THREE.BoxGeometry(6, 0.05, 2), metalMat);
             wings.position.z = 0.5;
             jet.add(wings);
 
-            // Cánh đuôi ngang (Stabilizers)
             const tailHorizontal = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.05, 1), metalMat);
             tailHorizontal.position.z = 2.2;
             jet.add(tailHorizontal);
 
-            // Cánh đuôi đứng (Vertical Fin)
             const tailVertical = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 0.8), metalMat);
             tailVertical.position.set(0, 0.6, 2.2);
             jet.add(tailVertical);
 
-            // Động cơ (Engine Glow)
             const engine = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.2, 16), neonMat);
             engine.rotation.x = Math.PI / 2;
             engine.position.z = 2.5;
@@ -116,114 +113,147 @@
 
             scene.add(jet);
 
-            // 2. ÁNH SÁNG CINEMATIC
-            const ambient = new THREE.AmbientLight(0xffffff, 0.2);
-            scene.add(ambient);
-
-            const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.5);
-            scene.add(hemiLight);
-
+            // --- 2. ÁNH SÁNG ---
+            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+            scene.add(new THREE.HemisphereLight(0x00f0ff, 0xff00aa, 0.6)); // Đèn màu Cyberpunk
+            
             const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-            sun.position.set(50, 50, 50);
+            sun.position.set(50, 100, -50);
             scene.add(sun);
 
-            // 3. MÔI TRƯỜNG
-            // Stars
+            // --- 3. MÔI TRƯỜNG ---
             const starGeo = new THREE.BufferGeometry();
             const starPos = [];
             for(let i=0; i<8000; i++) {
                 starPos.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
             }
             starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 }));
+            stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.6 }));
             scene.add(stars);
 
-            // Lưới grid không gian cho cảm giác độ cao
-            const grid = new THREE.GridHelper(5000, 100, 0x00f0ff, 0x050a15);
-            grid.position.y = -100;
+            // Lưới Grid (Mặt đất ảo)
+            const grid = new THREE.GridHelper(5000, 150, 0xff00aa, 0x050a15);
+            grid.position.y = -80;
             scene.add(grid);
 
-            // Checkpoints
+            // Vòng Checkpoints
             for(let i=0; i<20; i++) createRing(i);
 
+            // --- SỰ KIỆN ĐIỀU KHIỂN ---
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
-            window.addEventListener('touchstart', () => { isBoosting = true; targetSpeed = 1.5; });
-            window.addEventListener('touchend', () => { isBoosting = false; targetSpeed = 0.3; });
+            
+            // Touch cho mobile (Chạm nửa trái/phải)
+            window.addEventListener('touchstart', (e) => {
+                const touchX = e.touches[0].clientX;
+                if(touchX < window.innerWidth/2) keys.a = true;
+                else keys.d = true;
+                keys.space = true; // Tự động tăng tốc khi chạm
+            });
+            window.addEventListener('touchend', () => { 
+                keys.a = false; keys.d = false; keys.space = false; 
+            });
 
             animate();
         }
 
         function createRing(i) {
-            const ringGeo = new THREE.TorusGeometry(5, 0.15, 16, 50);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0xffcb05, transparent: true, opacity: 0.8 });
+            const ringGeo = new THREE.TorusGeometry(6, 0.2, 16, 50);
+            const ringMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 1 
+            });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.set((Math.random()-0.5)*300, (Math.random()-0.5)*150, -i * 150 - 100);
+            ring.position.set((Math.random()-0.5)*400, (Math.random()-0.5)*200, -i * 200 - 150);
             scene.add(ring);
             rings.push(ring);
         }
 
-       const keys = { w: false, s: false, a: false, d: false, space: false };
+        // Bắt phím
+        function handleKeyDown(e) {
+            if (e.code === 'Space') keys.space = true;
+            if (e.key.toLowerCase() === 'w') keys.w = true;
+            if (e.key.toLowerCase() === 's') keys.s = true;
+            if (e.key.toLowerCase() === 'a') keys.a = true;
+            if (e.key.toLowerCase() === 'd') keys.d = true;
+        }
 
-function handleKeyDown(e) {
-    if (e.code === 'Space') keys.space = true;
-    if (e.key.toLowerCase() === 'w') keys.w = true;
-    if (e.key.toLowerCase() === 's') keys.s = true;
-    if (e.key.toLowerCase() === 'a') keys.a = true;
-    if (e.key.toLowerCase() === 'd') keys.d = true;
-}
+        // Nhả phím
+        function handleKeyUp(e) {
+            if (e.code === 'Space') keys.space = false;
+            if (e.key.toLowerCase() === 'w') keys.w = false;
+            if (e.key.toLowerCase() === 's') keys.s = false;
+            if (e.key.toLowerCase() === 'a') keys.a = false;
+            if (e.key.toLowerCase() === 'd') keys.d = false;
+        }
 
-function handleKeyUp(e) {
-    if (e.code === 'Space') keys.space = false;
-    if (e.key.toLowerCase() === 'w') keys.w = false;
-    if (e.key.toLowerCase() === 's') keys.s = false;
-    if (e.key.toLowerCase() === 'a') keys.a = false;
-    if (e.key.toLowerCase() === 'd') keys.d = false;
-}
         function animate() {
             requestAnimationFrame(animate);
 
-            // Vật lý & Tốc độ
+            // --- LOGIC LÁI MƯỢT MÀ (LERP) ---
+            let targetRotX = 0, targetRotZ = 0, targetYaw = 0;
+
+            if (keys.w) targetRotX = -0.05; // Ngóc lên
+            if (keys.s) targetRotX = 0.05;  // Chúc xuống
+            if (keys.a) { targetRotZ = 0.6; targetYaw = 0.03; }  // Nghiêng trái
+            if (keys.d) { targetRotZ = -0.6; targetYaw = -0.03; } // Nghiêng phải
+
+            // Áp dụng quán tính cho góc quay (0.05 là độ mượt)
+            currentRotation.x = THREE.MathUtils.lerp(currentRotation.x, targetRotX, 0.05);
+            currentRotation.z = THREE.MathUtils.lerp(currentRotation.z, targetRotZ, 0.05);
+            currentRotation.y = THREE.MathUtils.lerp(currentRotation.y, targetYaw, 0.05);
+
+            jet.rotation.x = currentRotation.x;
+            jet.rotation.y += currentRotation.y; // Y cộng dồn để quẹo liên tục
+            jet.rotation.z = currentRotation.z;
+
+            // --- TỐC ĐỘ & NITRO ---
+            targetSpeed = keys.space ? 2.5 : 0.4;
             speed = THREE.MathUtils.lerp(speed, targetSpeed, 0.03);
-            
-            // Xoay Jet mượt mà
-            jet.rotation.x = THREE.MathUtils.lerp(jet.rotation.x, jet.rotation.x + rotation.x, 0.1);
-            jet.rotation.y += rotation.y;
-            jet.rotation.z = THREE.MathUtils.lerp(jet.rotation.z, rotation.z, 0.1);
-            
             jet.translateZ(-speed);
 
-            // Camera GTA 5 Style + FOV dynamic
-            const baseFOV = 75;
-            camera.fov = THREE.MathUtils.lerp(camera.fov, isBoosting ? 95 : 75, 0.05);
+            // Hiệu ứng chớp nháy động cơ khi Nitro
+            engineLight.intensity = keys.space ? (10 + Math.random() * 5) : 3;
+
+            // --- CAMERA GTA 5 STYLE ---
+            // Đặt camera lùi về sau và hơi ngước lên
+            const offset = new THREE.Vector3(0, 3, 15);
+            offset.applyQuaternion(jet.quaternion);
+            
+            // Lerp vị trí camera để tạo độ trễ (Delay đuổi theo)
+            camera.position.lerp(jet.position.clone().add(offset), 0.1);
+            
+            // Điểm nhìn của camera (phía trước mũi máy bay)
+            const lookAtTarget = jet.position.clone().add(new THREE.Vector3(0, 0, -10).applyQuaternion(jet.quaternion));
+            camera.lookAt(lookAtTarget);
+
+            // FOV Dynamic (Tăng góc nhìn khi tăng tốc)
+            camera.fov = THREE.MathUtils.lerp(camera.fov, keys.space ? 100 : 75, 0.05);
             camera.updateProjectionMatrix();
 
-            const offset = new THREE.Vector3(0, 2.5, 12);
-            offset.applyQuaternion(jet.quaternion);
-            camera.position.lerp(jet.position.clone().add(offset), 0.15);
-            camera.lookAt(jet.position.clone().add(new THREE.Vector3(0,0,-5).applyQuaternion(jet.quaternion)));
+            // Camera Shake (Rung lắc khi bay nhanh)
+            if (keys.space) {
+                camera.position.x += (Math.random() - 0.5) * 0.1;
+                camera.position.y += (Math.random() - 0.5) * 0.1;
+            }
 
-            // Hiệu ứng động cơ chớp tắt
-            engineLight.intensity = (isBoosting ? 10 : 3) + Math.random() * 2;
+            // --- KIỂM TRA VA CHẠM VÀ UI ---
+            document.getElementById('speed-fill').style.width = Math.min((speed / 2.5 * 100), 100) + "%";
+            document.getElementById('alt').innerText = Math.floor(jet.position.y + 1000); // Ảo hóa độ cao
 
-            // UI
-            document.getElementById('speed-fill').style.width = (speed / 2 * 100) + "%";
-            document.getElementById('alt').innerText = Math.floor(jet.position.y + 500);
-
-            // Kiểm tra va chạm vòng
             rings.forEach(ring => {
-                if(jet.position.distanceTo(ring.position) < 7) {
+                if(jet.position.distanceTo(ring.position) < 8) {
                     score += 100;
                     document.getElementById('score').innerText = score;
-                    ring.position.z -= 2000; // Reset vòng ra xa
-                    ring.position.x = (Math.random()-0.5)*400;
-                    ring.position.y = (Math.random()-0.5)*200;
+                    ring.position.z -= 2500; 
+                    ring.position.x = jet.position.x + (Math.random()-0.5)*500;
+                    ring.position.y = jet.position.y + (Math.random()-0.5)*300;
                 }
             });
 
             renderer.render(scene, camera);
         }
 
+        // Tự động resize khi đổi cửa sổ
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
