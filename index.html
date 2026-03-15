@@ -463,39 +463,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-.music-toggle-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--glass);
-    border: 1px solid var(--neon-blue);
-    color: var(--neon-blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    transition: 0.3s;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-}
 
-.music-toggle-btn:hover {
-    transform: scale(1.1);
-    background: var(--neon-blue);
-    color: #000;
-}
-
-.music-toggle-btn.playing {
-    animation: pulse-blue 2s infinite;
-}
-
-@keyframes pulse-blue {
-    0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(0, 240, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
-}
-        
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
      :root {
     /* 1. Mặc định (Hệ Nước/Băng) */
     --neon-blue: #00f0ff; 
@@ -524,22 +492,46 @@ body {
 }
 
 /* ĐỒNG BỘ CHO TRÌNH PHÁT NHẠC */
+/* --- ĐỒNG BỘ TRÌNH PHÁT NHẠC --- */
 .music-panel {
+    display: none; /* Mặc định ẩn, JS sẽ điều khiển */
+    position: fixed;
+    bottom: 90px; /* Đẩy lên trên nút 🎵 một chút */
+    left: 20px;
+    width: 320px;
     background: var(--glass);
-    border: 1px solid var(--neon-blue);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--neon-blue);
-    backdrop-filter: blur(10px);
+    border: 2px solid var(--neon-blue); /* Viền đồng bộ theo hệ */
+    border-radius: 16px;
+    padding: 15px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 15px var(--neon-blue);
+    z-index: 10001; /* Phải cực cao để không bị các hiệu ứng che khuất */
+    transition: all 0.3s ease;
 }
 
 .panel-header {
     color: var(--neon-blue);
     text-shadow: 0 0 10px var(--neon-blue);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 12px;
 }
 
 #media-url-input {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--neon-blue);
     color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.3s;
+}
+
+#media-url-input:focus {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 10px var(--neon-pink);
 }
 
 #media-url-input::placeholder {
@@ -547,22 +539,50 @@ body {
     opacity: 0.5;
 }
 
+/* Các nút bấm */
 .btn-main, .btn-platform.active {
     background: var(--neon-blue);
-    color: var(--bg-dark);
+    color: var(--bg-dark) !important; /* Đảm bảo chữ tương phản tốt với nền màu */
     box-shadow: 0 0 15px var(--neon-blue);
     border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-main:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
 }
 
 .music-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 55px;
+    height: 55px;
     background: var(--glass);
-    border: 1px solid var(--neon-blue);
+    border: 2px solid var(--neon-blue);
     color: var(--neon-blue);
-    box-shadow: 0 0 15px var(--neon-blue);
+    box-shadow: 0 0 20px var(--neon-blue);
+    z-index: 10002; /* Luôn trên cùng */
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 22px;
+    transition: 0.3s;
 }
 
 #media-wrapper {
-    border: 1px solid var(--neon-pink); /* Dùng màu hồng của hệ để làm điểm nhấn */
+    margin-top: 15px;
+    border: 1px solid var(--neon-pink);
+    border-radius: 10px;
+    overflow: hidden;
+    background: black;
+}
+
+/* Quan trọng: Fix lỗi hào quang chuột đè lên nút */
+#mouse-glow {
+    pointer-events: none !important;
 }
         /* --- NAVIGATION --- */
         .main-nav {
