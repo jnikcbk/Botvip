@@ -10,9 +10,9 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Lỗi: GEMINI_KEY chưa được thiết lập.' });
     }
 
-    // Sử dụng Gemini 1.5 Flash để vừa nhanh vừa cực kỳ thông minh
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
-
+   const MODEL_ID = "gemini-2.0-flash"; 
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${API_KEY}`;
+    
     const systemInstruction = {
         role: "system",
         parts: [{
