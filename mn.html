@@ -2,150 +2,149 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>CENTRAL_INTELLIGENCE_AGENCY_OPERATOR</title>
+    <title>TERMINAL_KALI_OS_v9.2.0_STABLE</title>
     <style>
-        :root { --neon: #00ff41; --danger: #ff0000; --bg: #020202; }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; text-transform: uppercase; }
+        :root { --neon: #00ff41; --danger: #ff0000; --bg: #050505; --dim: #004400; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Consolas', monospace; overflow: hidden; height: 100vh; font-size: 13px; }
         
-        /* Scanline Effect */
-        body::after { content: ""; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                      linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); 
-                      background-size: 100% 3px, 3px 100%; pointer-events: none; z-index: 999; }
+        /* Hiệu ứng nhiễu CRT */
+        .crt::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; }
+        
+        #layout { display: grid; grid-template-columns: 200px 1fr; grid-template-rows: 1fr 180px; height: 100vh; gap: 2px; background: #111; }
+        .module { background: var(--bg); border: 1px solid var(--dim); display: flex; flex-direction: column; overflow: hidden; }
+        .title { background: var(--dim); color: var(--neon); padding: 2px 8px; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
 
-        #os-container { display: grid; grid-template-columns: 250px 1fr 300px; grid-template-rows: 60px 1fr 200px; height: 100vh; gap: 5px; padding: 5px; box-sizing: border-box; }
-        .module { border: 1px solid var(--neon); background: rgba(0, 20, 0, 0.8); position: relative; overflow: hidden; }
-        .header { background: var(--neon); color: #000; font-size: 12px; font-weight: bold; padding: 2px 10px; }
-
-        /* Terminal */
-        #terminal { grid-area: 2 / 2 / 3 / 3; display: flex; flex-direction: column; }
-        #output { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.2; }
-        .input-area { display: flex; padding: 10px; border-top: 1px solid #004400; }
+        /* Terminal chính */
+        #main-terminal { grid-area: 1 / 2 / 2 / 3; }
+        #output { flex-grow: 1; padding: 15px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+        .input-line { display: flex; padding: 10px; background: #080808; border-top: 1px solid var(--dim); }
         #cmd { background: transparent; border: none; color: var(--neon); outline: none; flex-grow: 1; font-family: inherit; }
+        .prompt { color: #888; margin-right: 10px; }
 
-        /* Webcam Hack */
-        #target-view { grid-area: 2 / 3 / 3 / 4; position: relative; }
-        #webcam { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(2) brightness(0.8) sepia(1) hue-rotate(100deg); }
-        .overlay-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,0,0.1) 1px, rgba(0,255,0,0.1) 2px); }
+        /* Sidebar & Bottom */
+        #sidebar { grid-area: 1 / 1 / 3 / 2; padding: 10px; font-size: 11px; }
+        #bottom-panel { grid-area: 2 / 2 / 3 / 3; padding: 10px; color: #008800; font-size: 11px; }
 
-        /* Logs */
-        #threat-log { grid-area: 3 / 1 / 4 / 3; padding: 10px; font-size: 11px; color: #008800; }
-
-        /* Stats */
-        #node-stats { grid-area: 1 / 1 / 2 / 4; display: flex; align-items: center; justify-content: space-around; font-size: 14px; }
-
-        .glitch-text { animation: glitch 1s infinite; }
-        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.7; transform: skewX(20deg); } 100% { opacity: 1; } }
+        /* Tiện ích */
+        .success { color: var(--neon); font-weight: bold; }
+        .error { color: var(--danger); }
+        .warning { color: #ffaa00; }
+        .cmd-hint { color: #00ffff; }
         
-        .critical { color: var(--danger); border-color: var(--danger); box-shadow: 0 0 10px var(--danger); }
+        #scanline { width: 100%; height: 100px; background: linear-gradient(0deg, transparent, rgba(0, 255, 65, 0.05), transparent); position: absolute; top: -100px; animation: scan 4s linear infinite; pointer-events: none; }
+        @keyframes scan { from { top: -100px; } to { top: 100vh; } }
     </style>
 </head>
-<body>
+<body class="crt">
+    <div id="scanline"></div>
+    <div id="layout">
+        <div class="module" id="sidebar">
+            <div class="title">SYSTEM_FILES</div>
+            <div style="margin-top:10px;">
+                📂 /root<br>
+                &nbsp;📄 .bashrc<br>
+                📂 /exploits<br>
+                &nbsp;📄 ddos_v2.py<br>
+                &nbsp;📄 wifi_crack.sh<br>
+                📂 /logs<br>
+                &nbsp;📄 access.log<br>
+                📂 /secret<br>
+                &nbsp;📄 pass.db (LOCKED)
+            </div>
+            <div class="title" style="margin-top:20px;">NETWORK_NODES</div>
+            <div id="node-list" style="color:#004400; font-size:9px; line-height:1.5;"></div>
+        </div>
 
-<div id="os-container">
-    <div class="module" id="node-stats">
-        <span>ENCRYPTION: AES-256</span>
-        <span class="glitch-text" id="status-text">NODE STATUS: ACTIVE</span>
-        <span>UPLINK: 4.8 GBPS</span>
-        <span id="clock">00:00:00</span>
-    </div>
+        <div class="module" id="main-terminal">
+            <div class="title">CORE_KERNEL_TERMINAL_v9.2.0</div>
+            <div id="output"></div>
+            <div class="input-line">
+                <span class="prompt">root@kali:~#</span>
+                <input type="text" id="cmd" autofocus spellcheck="false" autocomplete="off">
+            </div>
+        </div>
 
-    <div class="module" id="file-sys">
-        <div class="header">FILESYSTEM</div>
-        <div style="padding:10px; font-size:12px;">
-            > ROOT<br>
-            &nbsp;&nbsp;> BIN<br>
-            &nbsp;&nbsp;> SECRET_DOCS<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;[PROJ_X.PDF]<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;[PASS_LIST.TXT]<br>
-            &nbsp;&nbsp;> EXPLOITS
+        <div class="module" id="bottom-panel">
+            <div class="title">LIVE_SYSTEM_LOGS</div>
+            <div id="live-logs"></div>
         </div>
     </div>
-
-    <div class="module" id="terminal">
-        <div class="header">COMMAND_LINE_INTERFACE_v8.0</div>
-        <div id="output">
-            <div>[SYS] CHAO MUNG QUAY TRO LAI, AGENT.</div>
-            <div>[SYS] DANG KET NOI VOI VE TINH KH-11... OK.</div>
-            <div>[SYS] GO 'HELP' DE BAT DAU.</div>
-        </div>
-        <div class="input-area">
-            <span>#&nbsp;</span><input type="text" id="cmd" autofocus autocomplete="off">
-        </div>
-    </div>
-
-    <div class="module" id="target-view">
-        <div class="header">TARGET_REMOTE_CAM</div>
-        <video id="webcam" autoplay playsinline></video>
-        <div class="overlay-grid"></div>
-        <div style="position:absolute; bottom:5px; left:5px; font-size:10px; color:red;">REC ● LIVE</div>
-    </div>
-
-    <div class="module" id="threat-log">
-        <div class="header">GLOBAL_THREAT_DETECTION</div>
-        <div id="log-content"></div>
-    </div>
-
-    <div class="module" style="grid-area: 3 / 3 / 4 / 4;">
-        <div class="header">CORE_TEMP</div>
-        <canvas id="temp-chart" width="280" height="150"></canvas>
-    </div>
-</div>
 
 <script>
     const cmdInput = document.getElementById('cmd');
     const output = document.getElementById('output');
-    const logContent = document.getElementById('log-content');
-    const statusText = document.getElementById('status-text');
+    const liveLogs = document.getElementById('live-logs');
+    
+    // Khởi tạo thông tin hệ thống
+    const systemInfo = [
+        "Initializing Kali Linux Kernel 9.2.0-amd64...",
+        "Loading Network Drivers... [OK]",
+        "Mounting Filesystems... [OK]",
+        "Starting ProxyChains-NG v4.11... [OK]",
+        "Welcome to the Central Node. Unauthorized access is prohibited.",
+        "Gõ 'help' để xem danh sách lệnh mở rộng."
+    ];
 
-    // Bật Webcam (Giả lập hack camera mục tiêu)
-    async function initWebcam() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('webcam').srcObject = stream;
-        } catch (e) {
-            console.log("No camera found");
-        }
-    }
-    initWebcam();
+    systemInfo.forEach((text, i) => {
+        setTimeout(() => print(text), i * 200);
+    });
 
-    // Âm thanh
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, dur) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.value = freq; gain.gain.value = 0.1;
-        osc.start(); setTimeout(() => osc.stop(), dur);
-    }
+    // Danh sách lệnh chi tiết
+    const commandRepo = {
+        'help': `DANH SÁCH LỆNH HỆ THỐNG:
+--------------------------------------------------
+[DI CHUYỂN]
+  ls      : Danh sách file
+  cd      : Chuyển thư mục
+  pwd     : Vị trí hiện tại
 
-    // Xử lý lệnh
+[TẤN CÔNG & QUÉT]
+  nmap    : Quét cổng mục tiêu
+  wifi    : Quét mạng WiFi xung quanh
+  brute   : Tấn công Brute Force vào pass.db
+  whois   : Kiểm tra thông tin IP mục tiêu
+
+[HỆ THỐNG]
+  top     : Xem các tiến trình đang chạy
+  neofetch: Xem thông tin hệ điều hành
+  clear   : Xóa màn hình
+  rm      : Xóa file/logs
+  wipe    : Xóa sạch dấu vết hệ thống (Stealth mode)
+
+[HÀNH ĐỘNG]
+  decrypt : Giải mã dữ liệu
+  exit    : Thoát hệ thống`,
+
+        'ls': "drwxr-xr-x  root  root  /root\ndrwxr-xr-x  root  root  /exploits\ndrwxr-xr-x  root  root  /logs\n-rw-r--r--  root  root  pass.db",
+        'pwd': "/home/root",
+        'neofetch': "OS: Kali Linux v9.2.0\nKernel: 5.10.0-kali-amd64\nShell: bash 5.1.4\nCPU: Intel i9-12900K (16) @ 5.2GHz\nMemory: 32GB / 64GB\nUptime: 2 days, 4 hours",
+        'top': "PID  USER  PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n 842 root  20   0  156432  24521  12453 R  12.4   0.1   0:04.22 nmap\n 901 root  20   0   45231   5421   2311 S   4.2   0.0   0:01.05 proxychains\n 124 root  20   0       0      0      0 S   0.0   0.0   0:00.00 kernel_worker",
+        'whois': "Domain: hidden-vault.gov\nIP: 104.26.11.231\nOrg: Federal Data Center\nCountry: US\nStatus: PROTECTED",
+        'wifi': "CH  ESSID             BSSID              SIGNAL\n06  TP-LINK_EXT       00:11:22:33:44:55  -45dB\n11  GOV_INTERNAL_5G   AA:BB:CC:DD:EE:FF  -82dB\n01  HOTEL_WIFI        12:34:56:78:90:AB  -20dB",
+        'wipe': "Deleting access logs...\nZeroing free space...\nSpoofing MAC address...\n[SUCCESS] Hệ thống đã ở chế độ ẩn danh tuyệt đối.",
+    };
+
     cmdInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const val = cmdInput.value.toLowerCase().trim();
-            const p = document.createElement('div');
-            p.innerHTML = `<span style="color:#666">#</span> ${val}`;
-            output.appendChild(p);
-            playBeep(400, 50);
+            const fullCmd = cmdInput.value.trim();
+            const [cmd, arg] = fullCmd.toLowerCase().split(' ');
+            
+            print(`root@kali:~# ${fullCmd}`, 'prompt-text');
 
-            if (val === 'help') {
-                print("LENH: SCAN (Quét), CRACK (Bẻ khóa), INFILTRATE (Xâm nhập), CLEAR");
-            } else if (val === 'scan') {
-                print("DANG QUET CAC NUT MANG LAN CAN...");
-                setTimeout(() => print("TIM THAY: 10.42.0.1 (FIREWALL)", "danger"), 1000);
-            } else if (val === 'crack') {
-                let i = 0;
-                const interval = setInterval(() => {
-                    print(`DECRYPTING BLOCK ${i}... OK`);
-                    i++; if(i > 5) { clearInterval(interval); print("MAT KHAU TIM THAY: 'SKYNET2026'", "neon"); }
-                }, 400);
-            } else if (val === 'infiltrate') {
-                document.getElementById('os-container').classList.add('critical');
-                statusText.innerText = "SYSTEM ALERT: TRACING IN PROGRESS!";
-                statusText.style.color = "red";
-                playBeep(200, 500);
-                print("CANH BAO: BAN DANG BI TRUY VET!", "critical");
-            } else if (val === 'clear') {
+            if (cmd === 'clear') {
                 output.innerHTML = '';
+            } else if (cmd === 'nmap') {
+                runNmap();
+            } else if (cmd === 'brute') {
+                runBrute();
+            } else if (cmd === 'decrypt') {
+                runDecrypt();
+            } else if (commandRepo[cmd]) {
+                print(commandRepo[cmd]);
+            } else if (cmd === '') {
+                // Do nothing
+            } else {
+                print(`bash: ${cmd}: command not found. Gõ 'help' để xem danh sách.`, 'error');
             }
 
             cmdInput.value = '';
@@ -153,23 +152,75 @@
         }
     });
 
-    function print(txt, cls) {
-        const d = document.createElement('div');
-        if(cls) d.className = cls;
-        d.innerText = `> ${txt}`;
-        output.appendChild(d);
+    function print(text, className = '') {
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        output.appendChild(div);
+        output.scrollTop = output.scrollHeight;
     }
 
-    // Threat Log ngẫu nhiên
-    setInterval(() => {
-        const ips = ["142.250.190.46", "31.13.71.36", "172.217.18.14"];
-        const d = document.createElement('div');
-        d.innerText = `[${new Date().toLocaleTimeString()}] THREAT FROM ${ips[Math.floor(Math.random()*3)]} BLOCKED.`;
-        logContent.prepend(d);
-    }, 4000);
+    // Lệnh NMAP (Giả lập quét cổng)
+    function runNmap() {
+        print("Starting Nmap 7.91 ( https://nmap.org ) at 2026-03-15...");
+        setTimeout(() => print("Scanning 104.26.11.231..."), 500);
+        setTimeout(() => {
+            print("PORT     STATE  SERVICE\n22/tcp   open   ssh\n80/tcp   open   http\n443/tcp  open   https\n3389/tcp closed ms-wbt-server", "success");
+        }, 1500);
+    }
 
-    // Clock
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    // Lệnh BRUTE (Giả lập bẻ khóa mật khẩu)
+    function runBrute() {
+        print("Bắt đầu Brute Force pass.db sử dụng wordlist 'rockyou.txt'...");
+        let count = 0;
+        const interval = setInterval(() => {
+            print(`Attempt ${count*123}: testing '${Math.random().toString(36).substring(7)}'...`);
+            count++;
+            if(count > 10) {
+                clearInterval(interval);
+                print("--------------------------------------------------", "warning");
+                print("[FOUND] PASSWORD: 'admin_password_99'", "success");
+            }
+        }, 200);
+    }
+
+    // Lệnh DECRYPT
+    function runDecrypt() {
+        print("Đang tải module giải mã RSA-4096...");
+        setTimeout(() => {
+            let dots = "";
+            const i = setInterval(() => {
+                dots += ".";
+                print("Decrypting block " + Math.random().toString(16).slice(2, 10).toUpperCase() + dots);
+                if(dots.length > 5) {
+                    clearInterval(i);
+                    print("GIẢI MÃ HOÀN TẤT. TRUY XUẤT NỘI DUNG: 'Dự án X sẽ bắt đầu tại tọa độ 21.0285° N, 105.8542° E'", "success");
+                }
+            }, 300);
+        }, 1000);
+    }
+
+    // LIVE LOGS (Chạy ngẫu nhiên ở bảng dưới)
+    setInterval(() => {
+        const events = [
+            "[INFO] Connection established from 127.0.0.1",
+            "[WARN] Failed login attempt on SSH port",
+            "[DEBUG] Packet received: SEQ=1241 ACK=0",
+            "[SYSTEM] Memory clean-up... Done",
+            "[ALERT] Incoming request on hidden port 8888"
+        ];
+        const log = document.createElement('div');
+        log.textContent = `[${new Date().toLocaleTimeString()}] ${events[Math.floor(Math.random()*events.length)]}`;
+        liveLogs.prepend(log);
+        if(liveLogs.childNodes.length > 10) liveLogs.lastChild.remove();
+    }, 2000);
+
+    // Network Node Generator
+    for(let i=0; i<15; i++) {
+        const node = document.createElement('div');
+        node.textContent = `NODE_${Math.floor(Math.random()*1000)}: [${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.0.1]`;
+        document.getElementById('node-list').appendChild(node);
+    }
 </script>
 </body>
 </html>
