@@ -1,164 +1,114 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KaizenMC - Neon Breaker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <title>KaizenMC - 3D Multiworld</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Orbitron', sans-serif; cursor: none; }
-        canvas { display: block; }
-        #ui {
-            position: absolute; top: 10px; width: 100%; display: flex;
-            justify-content: space-around; color: #00f0ff; font-size: 20px;
-            text-shadow: 0 0 10px #00f0ff; pointer-events: none;
-        }
-        #game-over {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            color: #ff0055; z-index: 100;
-        }
-        .btn {
-            margin-top: 20px; padding: 15px 40px; background: #00f0ff;
-            color: #000; border: none; font-weight: 900; cursor: pointer;
-            font-family: 'Orbitron'; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-        }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #00f0ff; pointer-events: none; }
+        #chat-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #555; }
     </style>
 </head>
 <body>
-
     <div id="ui">
-        <div>CORE HEALTH: <span id="hp">100</span>%</div>
-        <div>DATA SAVED: <span id="score">0</span></div>
+        <h1>KAIZEN 3D REAL-TIME</h1>
+        <p>Dùng WASD để di chuyển | Mouse để xoay</p>
+        <p>ONLINE: <span id="peer-count">1</span></p>
     </div>
+    <div id="chat-hint">Mọi người đang ở trong cùng một không gian số...</div>
 
-    <div id="game-over">
-        <h1 style="font-size: 50px;">SERVER CRASHED</h1>
-        <p style="color: white;">SCORE: <span id="final-score">0</span></p>
-        <button class="btn" onclick="location.reload()">REBOOT SYSTEM</button>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 
-    <canvas id="gameCanvas"></canvas>
+    <script>
+        // 1. THIẾT LẬP KẾT NỐI (CHƠI CHUNG)
+        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+        const world = gun.get('kaizen-mc-3d-world');
+        const myId = Math.random().toString(36).substr(2, 9);
+        const players = {};
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+        // 2. KHỞI TẠO 3D ENGINE
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 10, 50);
 
-    let score = 0, hp = 100, gameActive = true;
-    let particles = [], blocks = [];
-    let mouse = { x: canvas.width / 2, y: canvas.height - 100 };
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-    class Block {
-        constructor() {
-            this.size = Math.random() * 30 + 20;
-            this.x = Math.random() * (canvas.width - this.size);
-            this.y = -this.size;
-            this.speed = Math.random() * 2 + 2 + (score / 50);
-            this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-            this.text = ["BUG", "VIRUS", "LAG", "ERROR"][Math.floor(Math.random()*4)];
+        // Nền lưới Cyber
+        const grid = new THREE.GridHelper(100, 50, 0xff00aa, 0x222222);
+        scene.add(grid);
+
+        // Ánh sáng
+        const light = new THREE.PointLight(0x00f0ff, 1, 100);
+        light.position.set(0, 10, 0);
+        scene.add(light);
+
+        // 3. TẠO NHÂN VẬT (CỦA MÌNH)
+        const createPlayerMesh = (color = 0x00f0ff) => {
+            const group = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color, wireframe: true }));
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            head.position.y = 0.8;
+            group.add(body, head);
+            return group;
+        };
+
+        const myMesh = createPlayerMesh(0x00f0ff);
+        scene.add(myMesh);
+        camera.position.set(0, 5, 10);
+        camera.lookAt(myMesh.position);
+
+        // 4. LOGIC DI CHUYỂN
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        function updateMovement() {
+            let moved = false;
+            if (keys['w']) { myMesh.position.z -= 0.1; moved = true; }
+            if (keys['s']) { myMesh.position.z += 0.1; moved = true; }
+            if (keys['a']) { myMesh.position.x -= 0.1; moved = true; }
+            if (keys['d']) { myMesh.position.x += 0.1; moved = true; }
+
+            if (moved) {
+                // Gửi vị trí lên hệ thống để người khác thấy
+                world.get(myId).put({ x: myMesh.position.x, z: myMesh.position.z });
+            }
+            camera.position.lerp(new THREE.Vector3(myMesh.position.x, 5, myMesh.position.z + 10), 0.1);
         }
-        draw() {
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = this.color;
-            ctx.fillStyle = "#000";
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = 2;
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.strokeRect(this.x, this.y, this.size, this.size);
+
+        // 5. ĐỒNG BỘ CÁC NGƯỜI CHƠI KHÁC
+        world.map().once((data, id) => {
+            if (id === myId) return;
+            if (!players[id]) {
+                players[id] = createPlayerMesh(0xff00aa);
+                scene.add(players[id]);
+            }
+            players[id].position.x = data.x;
+            players[id].position.z = data.z;
+        });
+
+        // 6. RENDER LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            updateMovement();
             
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = this.color;
-            ctx.font = "10px Orbitron";
-            ctx.fillText(this.text, this.x, this.y - 5);
+            // Hiệu ứng xoay nhẹ cho các player khác nhìn cho "bay bổng"
+            Object.values(players).forEach(p => p.rotation.y += 0.01);
+            myMesh.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
         }
-        update() {
-            this.y += this.speed;
-            if (this.y > canvas.height) {
-                hp -= 10;
-                document.getElementById('hp').innerText = hp;
-                blocks.splice(blocks.indexOf(this), 1);
-                if (hp <= 0) endGame();
-            }
-        }
-    }
 
-    function endGame() {
-        gameActive = false;
-        document.getElementById('game-over').style.display = 'flex';
-        document.getElementById('final-score').innerText = score;
-    }
+        animate();
 
-    function createExplosion(x, y, color) {
-        for(let i=0; i<15; i++) {
-            particles.push({
-                x, y,
-                vx: (Math.random()-0.5)*10,
-                vy: (Math.random()-0.5)*10,
-                size: Math.random()*3,
-                life: 1,
-                color
-            });
-        }
-    }
-
-    function animate() {
-        if (!gameActive) return;
-        ctx.fillStyle = "rgba(5, 5, 5, 0.2)"; // Màn hình mờ dần tạo trail
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Vẽ kiếm Laser
-        ctx.beginPath();
-        ctx.moveTo(mouse.x - 60, mouse.y);
-        ctx.lineTo(mouse.x + 60, mouse.y);
-        ctx.lineWidth = 8;
-        ctx.strokeStyle = "#fff";
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = "#00f0ff";
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Quản lý Block
-        if (Math.random() < 0.03 + (score/2000)) blocks.push(new Block());
-
-        blocks.forEach((b, index) => {
-            b.update();
-            b.draw();
-
-            // Va chạm với kiếm (Chém)
-            if (b.y + b.size > mouse.y - 10 && b.y < mouse.y + 10 &&
-                b.x + b.size > mouse.x - 65 && b.x < mouse.x + 65) {
-                createExplosion(b.x + b.size/2, b.y + b.size/2, b.color);
-                blocks.splice(index, 1);
-                score += 1;
-                document.getElementById('score').innerText = score;
-            }
+        // Fix co giãn màn hình
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Hạt hiệu ứng
-        particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, p.size, p.size);
-            if (p.life <= 0) particles.splice(i, 1);
-        });
-
-        requestAnimationFrame(animate);
-    }
-
-    window.addEventListener('mousemove', e => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    });
-
-    window.addEventListener('touchmove', e => {
-        mouse.x = e.touches[0].clientX;
-        mouse.y = e.touches[0].clientY;
-        e.preventDefault();
-    }, { passive: false });
-
-    animate();
-</script>
+    </script>
 </body>
 </html>
