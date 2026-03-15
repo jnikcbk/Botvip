@@ -1170,15 +1170,20 @@ function checkUserStatus() {
 // Chạy hàm kiểm tra ngay khi load web
 window.onload = checkUserStatus;
 
+// Mảng lưu lịch sử chat để bot có trí nhớ
+let chatHistory = [];
+
 async function sendMsg() {
     const input = document.getElementById("msgInput");
     const chat = document.getElementById("chatArea");
     const text = input.value.trim();
     if (!text) return;
 
+    // 1. Hiển thị tin nhắn của người dùng
     chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
     input.value = "";
 
+    // 2. Tạo hiệu ứng đang suy nghĩ
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
     aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
@@ -1189,35 +1194,42 @@ async function sendMsg() {
         const response = await fetch('/api/chat', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text })
+            // Gửi cả tin nhắn mới và lịch sử chat cũ lên
+            body: JSON.stringify({ 
+                message: text,
+                history: chatHistory 
+            })
         });
 
-        // Đọc dữ liệu từ server
         const data = await response.json();
-        console.log("Dữ liệu từ Vercel:", data); // F12 để xem cái này nếu lỗi
 
-        // Kiểm tra xem có lỗi từ file chat.js trả về không
         if (data.error) {
-            aiDiv.innerHTML = `❌ Lỗi: ${data.error}`;
+            aiDiv.innerHTML = `❌ <b>Lỗi:</b> ${data.error}`;
             return;
         }
 
-        // Kiểm tra cấu trúc dữ liệu của Gemini
-        if (data.candidates && data.candidates[0].content) {
-            const botReply = data.candidates[0].content.parts[0].text;
+        // 3. Nhận phản hồi từ Backend (Dùng data.text đã được rút gọn)
+        if (data.text) {
+            const botReply = data.text;
             aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
+
+            // 4. Lưu vào lịch sử chat (Để lần sau bot nhớ mình đã nói gì)
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            chatHistory.push({ role: "model", parts: [{ text: botReply }] });
+
+            // Giới hạn lịch sử khoảng 10 câu gần nhất để tránh quá tải
+            if (chatHistory.length > 20) chatHistory.splice(0, 2);
+            
         } else {
-            // Trường hợp này thường là do Key bị lỗi nhưng server vẫn trả về 200
-            aiDiv.innerHTML = `❌ Lỗi: Cấu trúc dữ liệu AI không khớp. Check Console!`;
-            console.error("Cấu trúc lạ:", data);
+            aiDiv.innerHTML = `❌ Lỗi: Server không trả về văn bản.`;
+            console.error("Dữ liệu lạ:", data);
         }
     } catch (e) {
         console.error("Lỗi Fetch:", e);
-        aiDiv.innerHTML = `❌ Lỗi kết nối server! Hãy chắc chắn đã Deploy lên Vercel.`;
+        aiDiv.innerHTML = `❌ Lỗi kết nối! Kiểm tra mạng hoặc Vercel Logs nhé sếp.`;
     }
     chat.scrollTop = chat.scrollHeight;
 }
-    
  let currentPlatform = 'yt'; // Đổi mặc định sang YT cho tiện tìm kiếm
 
 function setPlatform(pf) {
