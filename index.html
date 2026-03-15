@@ -334,76 +334,115 @@ canvas,
     0%, 100% { box-shadow: 0 0 15px var(--neon-blue); }
     50% { box-shadow: 0 0 35px var(--neon-blue); }
 }
-        .pokemon-cards-container {
+        /* ============================================================
+   THIẾT KẾ 3 THẺ POKÉMON - GIAO DIỆN HIỆN ĐẠI
+   ============================================================ */
+
+.pokemon-cards-container {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 35px; /* Tăng khoảng cách giữa các thẻ */
     flex-wrap: wrap;
-    padding: 50px 20px;
-    perspective: 1000px; /* Tạo chiều sâu cho không gian 3D */
+    padding: 60px 20px;
+    perspective: 1500px; /* Tăng chiều sâu cho không gian 3D */
+    z-index: 10;
+    position: relative;
 }
 
 .poke-card {
-    width: 280px;
-    height: 400px;
+    width: 300px; /* Tăng nhẹ kích thước cho vừa mắt */
+    height: 420px;
     position: relative;
-    transition: transform 0.1s ease-out;
-    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out; /* Phục vụ cho hiệu ứng JS xoay */
+    transform-style: preserve-3d; /* Giữ không gian 3D cho các lớp bên trong */
     cursor: pointer;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.4)); /* Bóng đổ nhẹ ở ngoài cùng */
 }
 
 .card-inner {
     width: 100%;
     height: 100%;
-    background: var(--glass);
-    border: 2px solid var(--border);
-    border-radius: 20px;
+    /* Gộp Glassmorphism vào để trông trong suốt */
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.08); /* Viền cực mảnh */
+    border-radius: 25px; /* Bo góc nhiều hơn cho mềm mại */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start; /* Sắp xếp từ trên xuống */
+    padding: 30px;
     text-align: center;
     overflow: hidden;
     position: relative;
+    transition: all 0.4s ease; /* Hiệu ứng mượt khi hover */
+    z-index: 2;
 }
 
-.poke-card img {
-    width: 180px;
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-    margin-bottom: 15px;
-    z-index: 2;
+/* Tư duy Logic: Hiệu ứng khi hover chính vào Inner Card */
+.poke-card:hover .card-inner {
+    /* Phát sáng theo màu của thẻ (--c sẽ được lấy từ JS/Class hệ) */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px var(--c);
+    border-color: var(--c);
+    transform: translateZ(20px); /* Đẩy nhẹ về phía người xem */
+}
+
+/* Khu vực ảnh Pokémon */
+.card-inner img {
+    width: 190px;
+    height: 190px;
+    object-fit: contain; /* Đảm bảo ảnh không bị bóp méo */
+    margin-bottom: 20px;
+    z-index: 3;
+    /* Hiệu ứng bóng đổ mềm hơn */
+    filter: drop-shadow(0 15px 15px rgba(0,0,0,0.6));
 }
 
 /* Ánh kim phản chiếu trên thẻ */
 .card-glare {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);
+    /* Gradient ánh kim tinh tế */
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
     pointer-events: none;
-    z-index: 3;
+    z-index: 5; /* Nằm trên ảnh một chút */
+    transition: opacity 0.4s ease;
 }
 
-/* Màu sắc riêng cho từng hệ */
+/* Các lớp hệ - Màu sắc được tinh chỉnh */
 .card-fire { --c: #ff4d00; }
 .card-water { --c: #00f0ff; }
 .card-grass { --c: #00ff88; }
 
-.poke-card:hover .card-inner {
-    border-color: var(--c);
-    box-shadow: 0 0 30px var(--c);
-}
-
+/* Tiêu đề Pokémon */
 .poke-card h3 {
-    color: var(--c);
+    font-family: 'Orbitron', sans-serif;
+    color: var(--c); /* Màu theo hệ */
     letter-spacing: 2px;
-    margin: 10px 0;
+    margin: 10px 0 5px;
+    font-weight: 900;
+    font-size: 18px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 15px var(--c);
 }
 
+/* Mô tả */
+.poke-card p {
+    color: #e2e8f0;
+    font-size: 13px;
+    margin-bottom: 20px;
+    font-weight: 300;
+    opacity: 0.9;
+    line-height: 1.5;
+    font-family: 'Cormorant', serif;
+}
+
+/* Số sao rarity */
 .card-rarity {
     color: #ffd700;
-    font-size: 20px;
-    margin-top: 10px;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffd700;
+    margin-top: auto; /* Đẩy xuống dưới cùng */
 }
         /* --- SPACE METEORS --- */
 .meteor {
@@ -1260,7 +1299,7 @@ window.addEventListener('DOMContentLoaded', getSincereGreeting);
 
 // Cứ 4 giây lại có một ngôi sao rơi
 setInterval(createSpaceMeteor, 4000);
-    const allPokeCards = document.querySelectorAll('.poke-card');
+   const allPokeCards = document.querySelectorAll('.poke-card');
 
 allPokeCards.forEach(card => {
     card.addEventListener('mousemove', (e) => {
