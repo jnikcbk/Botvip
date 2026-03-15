@@ -11,57 +11,61 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-/* ============================================================
-   TRÌNH PHÁT NHẠC KAIZEN - ĐỒNG BỘ 20 HỆ MÀU (BẢN FIX CLICK)
-   ============================================================ */
-
-/* --- TRÌNH PHÁT NHẠC (BẢN SỬA LỖI LIỆT NÚT) --- */
+/* --- TRÌNH PHÁT NHẠC: FIX TRIỆT ĐỂ LỖI BẤM --- */
 .music-player-container {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    /* Số này là mức cao nhất để vượt qua tất cả hiệu ứng Pokemon/Sao rơi */
-    z-index: 2147483647 !important; 
+    /* Dùng số z-index lớn nhất để đảm bảo nằm trên cùng */
+    z-index: 999999999 !important; 
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-start;
     gap: 12px;
-    pointer-events: none; /* Vùng trống xung quanh không cản trở click */
+    /* Vùng container bao quanh nút phải 'trong suốt' với chuột để không cản trở nội dung dưới */
+    pointer-events: none; 
 }
 
 .music-toggle-btn {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     background: var(--glass);
-    border: 3px solid var(--neon-blue);
+    border: 2px solid var(--neon-blue);
     color: var(--neon-blue);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer !important; /* Hiện hình bàn tay khi di chuột vào */
-    font-size: 24px;
+    /* QUAN TRỌNG: Nút phải nhận pointer-events */
+    pointer-events: auto !important; 
+    cursor: pointer !important;
+    font-size: 22px;
+    box-shadow: 0 0 15px var(--neon-blue);
     transition: 0.3s;
-    box-shadow: 0 0 20px var(--neon-blue);
-    pointer-events: auto !important; /* BẮT BUỘC PHẢI NHẬN CLICK */
 }
 
 .music-panel {
-    display: none; /* Mặc định ẩn */
-    width: 320px;
+    display: none; /* Mặc định ẩn, JS sẽ bật lên */
+    width: 300px;
     background: var(--glass);
-    border: 2px solid var(--neon-blue);
-    border-radius: 16px;
+    border: 1px solid var(--neon-blue);
+    border-radius: 12px;
     padding: 15px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    pointer-events: auto !important; /* BẮT BUỘC PHẢI NHẬN CLICK */
+    backdrop-filter: blur(15px);
+    /* Bảng cũng phải nhận pointer-events để bấm được các nút bên trong */
+    pointer-events: auto !important; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* VÔ HIỆU HÓA CÁC LỚP ĐÈ LÊN NÚT */
-#mouse-glow, .meteor, .pokemon-fallback, canvas, .radar-line {
-    pointer-events: none !important; 
-    z-index: -1 !important; /* Đẩy xuống dưới cùng */
+/* --- TƯ DUY LOGIC: PHẢI CẤM CÁC THỨ KHÁC ĐÈ LÊN --- */
+/* Tất cả hiệu ứng nền PHẢI có pointer-events: none */
+#mouse-glow, 
+.meteor, 
+.pokemon-fallback, 
+canvas, 
+.radar-line {
+    pointer-events: none !important;
+    z-index: -1 !important; /* Đẩy hết xuống dưới cùng */
 }
 @keyframes musicSlideUp {
     from { opacity: 0; transform: translateY(30px) scale(0.9); }
@@ -1273,7 +1277,22 @@ async function updateFooterIP() {
     }
 }
 
-
+// --- HÀM ĐIỀU KHIỂN BẬT/TẮT BẢNG NHẠC ---
+function toggleMusicPanel() {
+    const panel = document.getElementById("music-panel");
+    const btn = document.getElementById("musicBtn");
+    
+    // Kiểm tra xem bảng đang ẩn hay hiện
+    if (panel.style.display === "none" || panel.style.display === "") {
+        panel.style.display = "block"; // Hiện bảng
+        panel.style.animation = "musicSlideUp 0.4s ease-out"; // Thêm hiệu ứng bay lên
+        btn.innerHTML = "✖"; // Đổi icon thành dấu X
+    } else {
+        panel.style.display = "none"; // Ẩn bảng
+        btn.innerHTML = "🎵"; // Đổi lại icon nốt nhạc
+    }
+}
+    
 </script>
 
 </body>
