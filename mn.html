@@ -2,183 +2,202 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>ULTIMATE_WARFARE_CONSOLE_v10</title>
+    <title>WORLD_DOMINATION_CORE_v99</title>
     <style>
-        :root { --neon: #00ff41; --danger: #ff0000; --warn: #ffff00; --bg: #020202; }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Consolas', monospace; overflow: hidden; height: 100vh; }
+        :root { --red: #ff0000; --gold: #ffcc00; --bg: #050000; --neon: #00ff41; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--red); font-family: 'Courier New', monospace; overflow: hidden; height: 100vh; }
 
-        /* Hiệu ứng rung màn hình khi tấn công */
-        .shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(0, 0); } }
-
-        /* Giao diện chính */
-        #war-room { display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 1fr 200px; height: 100vh; gap: 5px; padding: 5px; }
-        .box { border: 1px solid var(--neon); background: rgba(0, 15, 0, 0.9); position: relative; overflow: hidden; }
-        .header { background: var(--neon); color: #000; font-size: 11px; font-weight: bold; padding: 3px 10px; }
-
-        #console { grid-area: 1 / 2 / 2 / 3; display: flex; flex-direction: column; }
-        #log-stream { flex-grow: 1; padding: 20px; overflow-y: auto; font-size: 14px; scroll-behavior: smooth; }
-        .input-box { display: flex; padding: 15px; background: #000; border-top: 1px solid var(--neon); }
-        #cmd { background: transparent; border: none; color: var(--neon); outline: none; flex-grow: 1; font-family: inherit; font-size: 16px; }
-
-        /* Radar & Stats */
-        #side-panel { grid-area: 1 / 1 / 3 / 2; display: flex; flex-direction: column; gap: 5px; }
-        .stat-row { padding: 10px; border-bottom: 1px solid #003300; font-size: 12px; }
-        .bar-bg { width: 100%; height: 5px; background: #002200; margin-top: 5px; }
-        .bar-fill { height: 100%; background: var(--neon); width: 0%; transition: 0.3s; }
-
-        /* Overlay khi tấn công cực mạnh */
-        #attack-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.1); z-index: 100; pointer-events: none;
-            display: none; border: 5px solid var(--danger);
+        /* Hiệu ứng nhiễu sóng nặng khi tấn công */
+        .glitch-mode { animation: noise 0.2s infinite; filter: contrast(200%) brightness(1.5); }
+        @keyframes noise {
+            0% { transform: translate(2px,1px) skew(0deg); }
+            50% { transform: translate(-2px,-1px) skew(2deg); filter: hue-rotate(90deg); }
+            100% { transform: translate(1px,2px) skew(-1deg); }
         }
 
-        .danger-text { color: var(--danger); text-shadow: 0 0 10px var(--danger); font-weight: bold; }
-        .loading-bar { color: var(--warn); }
+        #main-ui { display: grid; grid-template-columns: 350px 1fr 350px; grid-template-rows: 80px 1fr 250px; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
+        .module { border: 2px solid var(--red); background: rgba(20, 0, 0, 0.9); position: relative; box-shadow: inset 0 0 20px rgba(255,0,0,0.2); }
+        .header { background: var(--red); color: #000; font-weight: bold; padding: 5px; text-align: center; font-size: 14px; letter-spacing: 3px; }
+
+        /* Terminal chính */
+        #war-console { grid-area: 2 / 2 / 3 / 3; display: flex; flex-direction: column; border-color: var(--gold); }
+        #output { flex-grow: 1; padding: 20px; overflow-y: auto; font-size: 16px; color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+        .input-line { display: flex; padding: 15px; background: #1a0000; border-top: 2px solid var(--gold); }
+        #cmd { background: transparent; border: none; color: #fff; outline: none; flex-grow: 1; font-family: inherit; font-size: 18px; }
+
+        /* Satellite Feed */
+        #sat-view { grid-area: 2 / 3 / 3 / 4; position: relative; }
+        #map-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; filter: sepia(1) hue-rotate(-50deg) saturate(5); }
+        .scanning-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--red); animation: scan 3s linear infinite; box-shadow: 0 0 15px var(--red); }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        /* Danger Alert */
+        #alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.3); display: none; z-index: 1000;
+            pointer-events: none; align-items: center; justify-content: center;
+        }
+        #alert-text { font-size: 100px; font-weight: bold; color: white; text-shadow: 0 0 30px red; animation: blink 0.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .btn-launch { background: var(--red); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="attack-overlay"></div>
+<div id="alert-overlay"><div id="alert-text">CRITICAL THREAT</div></div>
 
-<div id="war-room">
-    <div id="side-panel">
-        <div class="box" style="flex-grow: 1;">
-            <div class="header">NETWORK_RESOURCES</div>
-            <div class="stat-row">BOTNET NODES: <span id="nodes">12,402</span></div>
-            <div class="stat-row">POWER: <div class="bar-bg"><div id="power-bar" class="bar-fill"></div></div></div>
-            <div class="stat-row">THREAT LEVEL: <span style="color:red">CRITICAL</span></div>
-            <div id="target-info" style="padding:10px; font-size:10px;">
-                TARGET: 157.240.22.35<br>LOC: NORTH_AMERICA<br>DEFENSE: FIREEYE_v4
-            </div>
-        </div>
-        <div class="box" style="height: 200px;">
-            <div class="header">ATTACK_MAP</div>
-            <canvas id="map-canvas" style="width:100%; height:100%;"></canvas>
+<div id="main-ui">
+    <div class="module" style="grid-area: 1 / 1 / 2 / 4; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-color: var(--gold);">
+        <h1 style="color: var(--gold); margin: 0;">GLOBAL DEFENSE INTERFACE - ADMIRAL LEVEL</h1>
+        <div id="status">STATUS: <span id="sys-status" style="color:var(--neon)">SECURE</span></div>
+        <div id="timer">COORD: 38.8977° N, 77.0365° W</div>
+    </div>
+
+    <div class="module" id="system-stats">
+        <div class="header">HARDWARE_OVERRIDE</div>
+        <div style="padding: 15px; font-size: 12px; line-height: 2;">
+            CPU_LOAD: <span id="cpu">45</span>% <br>
+            NET_INFILTRATION: 98.2% <br>
+            GRID_CONTROL: ACTIVE <br>
+            SATELLITES: 14 ONLINE <br>
+            <hr>
+            <button class="btn-launch" onclick="runNuclear()">KÍCH HOẠT HẠT NHÂN</button>
         </div>
     </div>
 
-    <div class="box" id="console">
-        <div class="header">CENTRAL_WARFARE_COMMAND_v10.4</div>
-        <div id="log-stream">
-            <div>[READY] SYSTEM ONLINE. STANDING BY FOR COMMANDS.</div>
-            <div>[TIP] Gõ 'attack --global' để bắt đầu tấn công hạt nhân mạng.</div>
+    <div class="module" id="war-console">
+        <div class="header">SUPREME_COMMAND_TERMINAL</div>
+        <div id="output">
+            <div>[AUTHORIZATION SUCCESSFUL]</div>
+            <div>[SYSTEM] CHÀO MỪNG ĐẠI TƯỚNG. CÁC ĐƠN VỊ ĐANG CHỜ LỆNH.</div>
+            <div>[SYS] GÕ 'HELP' ĐỂ XEM CÁC GIAO THỨC TỐI THƯỢNG.</div>
         </div>
-        <div class="input-box">
-            <span style="margin-right:10px;">▶</span>
-            <input type="text" id="cmd" autofocus spellcheck="false" autocomplete="off">
+        <div class="input-line">
+            <span style="color:var(--gold); margin-right: 10px;">ROOT@DOOMSDAY:~#</span>
+            <input type="text" id="cmd" autofocus autocomplete="off" spellcheck="false">
         </div>
     </div>
 
-    <div class="box" id="live-feed">
-        <div class="header">TARGET_DATA_LEAK</div>
-        <div id="leak-content" style="padding:10px; font-size:10px; color:#008800;"></div>
+    <div class="module" id="sat-view">
+        <div class="header">SATELLITE_SURVEILLANCE</div>
+        <img id="map-img" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=TARGET_LOCKED" alt="map">
+        <div class="scanning-line"></div>
+        <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:10px;">TARGET: CAPITAL_CITY</div>
+    </div>
+
+    <div class="module" style="grid-area: 3 / 1 / 4 / 3; padding: 10px;">
+        <div class="header">GLOBAL_LOGS</div>
+        <div id="logs" style="font-size: 11px; height: 180px; overflow: hidden;"></div>
+    </div>
+
+    <div class="module" style="grid-area: 3 / 3 / 4 / 4;">
+        <div class="header">THREAT_LEVEL</div>
+        <div id="threat-circle" style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold;">
+            DEFCON 5
+        </div>
     </div>
 </div>
 
 <script>
     const cmdInput = document.getElementById('cmd');
-    const logStream = document.getElementById('log-stream');
-    const overlay = document.getElementById('attack-overlay');
-    const powerBar = document.getElementById('power-bar');
+    const output = document.getElementById('output');
+    const alertOverlay = document.getElementById('alert-overlay');
+    const logs = document.getElementById('logs');
+    const threatDisplay = document.getElementById('threat-circle');
 
-    // Âm thanh giả lập (Beep)
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(f, d, v) {
-        const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = f; g.gain.value = v || 0.1;
-        o.start(); setTimeout(() => o.stop(), d);
+    // Âm thanh báo động
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSiren(freq, type, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq + 500, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        gain.gain.value = 0.1;
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
     cmdInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const val = cmdInput.value.trim().toLowerCase();
-            print(`guest@warfare:~$ ${val}`, 'white');
+            const val = cmdInput.value.toLowerCase().trim();
+            print(`> EXECUTING: ${val}`, 'white');
 
-            if (val === 'attack --global') {
-                executeUltimateAttack();
-            } else if (val === 'inject --sql') {
-                executeSQLInjection();
-            } else if (val === 'overload') {
-                executeOverload();
-            } else if (val === 'help') {
-                print("LỆNH CHIẾN TRANH: attack --global, inject --sql, overload, clear, self-destruct");
-            } else if (val === 'clear') {
-                logStream.innerHTML = '';
+            if (val === 'help') {
+                print("--- GIAO THỨC CHIẾN TRANH TỐI THƯỢNG ---");
+                print("protocol --zero : Đánh sập lưới điện toàn cầu");
+                print("satellite --hijack : Chiếm quyền vệ tinh quân sự");
+                print("nuclear --launch : KÍCH HOẠT VŨ KHÍ HẠT NHÂN");
+                print("status --overload : Ép xung toàn bộ máy chủ mục tiêu");
+            } else if (val === 'protocol --zero') {
+                runZero();
+            } else if (val === 'nuclear --launch') {
+                runNuclear();
+            } else if (val === 'satellite --hijack') {
+                runSatellite();
             } else {
-                print("LENH KHONG HOP LE. TRUY CAP BI TU CHOI.", "danger-text");
+                print("ERROR: ACCESS DENIED. CHƯA ĐƯỢC CẤP QUYỀN.", "red");
             }
             cmdInput.value = '';
-            logStream.scrollTop = logStream.scrollHeight;
+            output.scrollTop = output.scrollHeight;
         }
     });
 
-    function print(t, cls) {
+    function print(t, color) {
         const d = document.createElement('div');
-        if(cls) d.className = cls;
+        if(color) d.style.color = color;
         d.innerHTML = `[${new Date().toLocaleTimeString()}] ${t}`;
-        logStream.appendChild(d);
+        output.appendChild(d);
     }
 
-    // TẤN CÔNG MẠNH NHẤT
-    function executeUltimateAttack() {
-        print("KÍCH HOẠT GIAO THỨC TẤN CÔNG TOÀN CẦU...", "danger-text");
-        document.body.classList.add('shake');
-        overlay.style.display = 'block';
-        beep(200, 1000, 0.2);
-
-        let p = 0;
+    function runZero() {
+        print("KHỞI ĐỘNG GIAO THỨC ZERO...", "red");
+        threatDisplay.innerText = "DEFCON 2";
+        threatDisplay.style.color = "orange";
+        playSiren(200, 'sawtooth', 2);
+        let i = 0;
         const interval = setInterval(() => {
-            p += 5;
-            powerBar.style.width = p + "%";
-            print(`SENDING UDP_FLOOD PACKETS TO TARGET... [${p}%]`, "loading-bar");
-            if(p >= 100) {
-                clearInterval(interval);
-                print("MỤC TIÊU ĐÃ SẬP. KẾT NỐI BỊ NGẮT QUÃNG HOÀN TOÀN.", "danger-text");
-                document.body.classList.remove('shake');
-                overlay.style.display = 'none';
-                beep(800, 200, 0.3);
-            }
-        }, 150);
+            print(`SẬP MẠNG LƯỚI KHU VỰC ${100+i}... DONE`);
+            i += 10;
+            if(i > 100) { clearInterval(interval); print("TOÀN BỘ MỤC TIÊU ĐÃ MẤT ĐIỆN.", "var(--neon)"); }
+        }, 300);
     }
 
-    function executeSQLInjection() {
-        print("STARTING SQLMAP BYPASS...");
-        setTimeout(() => {
-            print("FOUND VULNERABILITY: 'id' parameter is injectable!");
-            print("DUMPING DATABASE: USERS, PASSWORDS, CREDIT_CARDS...");
-            const leak = document.getElementById('leak-content');
-            const data = ["root:admin123", "ceo:goldman_sachs", "db_master:999999"];
-            data.forEach(d => {
-                const div = document.createElement('div');
-                div.innerText = `LEAKED: ${d}`;
-                leak.prepend(div);
-            });
+    function runNuclear() {
+        alertOverlay.style.display = 'flex';
+        document.body.classList.add('glitch-mode');
+        threatDisplay.innerText = "DEFCON 1";
+        threatDisplay.style.color = "red";
+        print("CẢNH BÁO: TÊN LỬA HẠT NHÂN ĐÃ ĐƯỢC KÍCH HOẠT!", "red");
+        
+        let count = 10;
+        const timer = setInterval(() => {
+            playSiren(600, 'square', 0.2);
+            print(`COUNTDOWN TO IMPACT: ${count}...`, "red");
+            count--;
+            if(count < 0) {
+                clearInterval(timer);
+                print("MISSILES LAUNCHED. WORLD REBOOTING...", "white");
+                setTimeout(() => { location.reload(); }, 3000);
+            }
         }, 1000);
     }
 
-    function executeOverload() {
-        print("WARNING: SYSTEM OVERLOAD INITIATED.", "danger-text");
-        let i = 0;
-        const inv = setInterval(() => {
-            print(`CORE_TEMP: ${80 + i}°C`, "danger-text");
-            i += 5;
-            if(i > 50) {
-                clearInterval(inv);
-                print("CORE MELTDOWN SUCCESSFUL. TARGET HARDWARE DESTROYED.", "danger-text");
-            }
-        }, 200);
+    function runSatellite() {
+        print("ĐANG CHIẾM QUYỀN VỆ TINH KH-11...");
+        setTimeout(() => {
+            print("KẾT NỐI THÀNH CÔNG. ĐANG NHẮM BẮN LASER...", "var(--neon)");
+            document.getElementById('map-img').style.filter = "none";
+        }, 2000);
     }
 
-    // Hiệu ứng log rác chạy liên tục
+    // Live Logs rác
     setInterval(() => {
-        if(Math.random() > 0.7) {
-            const lines = ["SYN_FLOOD_DETECTED", "REROUTING_VIA_PROXY", "ENCRYPTING_TUNNEL", "HANDSHAKE_FAILED"];
-            print(lines[Math.floor(Math.random()*lines.length)], "dim-text");
-        }
-    }, 3000);
+        const d = document.createElement('div');
+        d.innerText = `[LOG] INTERCEPTED DATA FROM NODE_${Math.random().toString(16).slice(2,6).toUpperCase()}: 0x${Math.random().toString(16).slice(2,10)}`;
+        logs.prepend(d);
+    }, 1000);
 </script>
 </body>
 </html>
