@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Arcade Mini</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --bg: #0a0a0c;
+            --card: #15151e;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif; /* Cần font style game */
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Menu */
+        .nav {
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav button {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .nav button.active {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* Game Container */
+        .game-box {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .hidden { display: none; }
+
+        /* GAME 1: CLICKER */
+        #click-area {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(var(--neon-pink), transparent);
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 40px;
+            user-select: none;
+            transition: 0.1s;
+            border: 4px solid var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        #click-area:active { transform: scale(0.9); }
+
+        /* GAME 2: MEMORY */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: #252535;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .card.flipped { background: var(--neon-blue); color: black; }
+
+        /* GAME 3: SNAKE */
+        canvas {
+            background: #000;
+            border: 2px solid #333;
+            margin-top: 10px;
+        }
+
+        .btn-main {
+            background: var(--neon-pink);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <button onclick="switchGame('clicker')" id="nav-clicker" class="active">Tốc Độ</button>
+        <button onclick="switchGame('memory')" id="nav-memory">Ghi Nhớ</button>
+        <button onclick="switchGame('snake')" id="nav-snake">Rắn</button>
+    </div>
+
+    <div id="clicker" class="game-box">
+        <h2>CLICK SPEED</h2>
+        <p>Click nhanh nhất trong 10s!</p>
+        <div id="click-timer">Thời gian: 10s</div>
+        <div id="click-score">Điểm: 0</div>
+        <div id="click-area" onclick="handleButtonClick()">TAP!</div>
+        <button class="btn-main" onclick="startClicker()">BẮT ĐẦU</button>
+    </div>
+
+    <div id="memory" class="game-box hidden">
+        <h2>MEMORY MATCH</h2>
+        <p>Tìm các cặp hình giống nhau</p>
+        <div class="memory-grid" id="memory-grid"></div>
+        <button class="btn-main" onclick="startMemory()">CHƠI MỚI</button>
+    </div>
+
+    <div id="snake" class="game-box hidden">
+        <h2>MINI SNAKE</h2>
+        <div id="snake-score">Điểm: 0</div>
+        <canvas id="snakeCanvas" width="300" height="300"></canvas>
+        <p style="font-size: 12px; color: #888;">Dùng các phím mũi tên hoặc WASD</p>
+        <button class="btn-main" onclick="startSnake()">CHƠI</button>
+    </div>
+
+    <script>
+        function switchGame(id) {
+            document.querySelectorAll('.game-box').forEach(b => b.classList.add('hidden'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById('nav-' + id).classList.add('active');
+        }
+
+        // --- LOGIC CLICKER ---
+        let clickScore = 0;
+        let clickActive = false;
+        let clickTimeLeft = 10;
+        let clickInterval;
+
+        function startClicker() {
+            clickScore = 0;
+            clickTimeLeft = 10;
+            clickActive = true;
+            document.getElementById('click-score').innerText = "Điểm: 0";
+            document.getElementById('click-timer').innerText = "Thời gian: 10s";
+            
+            clearInterval(clickInterval);
+            clickInterval = setInterval(() => {
+                clickTimeLeft--;
+                document.getElementById('click-timer').innerText = `Thời gian: ${clickTimeLeft}s`;
+                if(clickTimeLeft <= 0) {
+                    clearInterval(clickInterval);
+                    clickActive = false;
+                    alert("Kết thúc! Điểm của bạn: " + clickScore);
+                }
+            }, 1000);
+        }
+
+        function handleButtonClick() {
+            if(clickActive) {
+                clickScore++;
+                document.getElementById('click-score').innerText = "Điểm: " + clickScore;
+            }
+        }
+
+        // --- LOGIC MEMORY ---
+        const emojis = ['🚀', '👾', '💎', '🔥', '🌈', '🍀', '🐱', '🍎'];
+        let cards = [...emojis, ...emojis];
+        let flippedCards = [];
+        let matchedCount = 0;
+
+        function startMemory() {
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+            matchedCount = 0;
+            cards.sort(() => Math.random() - 0.5);
+            
+            cards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.value = emoji;
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+                card.classList.add('flipped');
+                card.innerText = card.dataset.value;
+                flippedCards.push(card);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
+            }
+        }
+
+        function checkMatch() {
+            if (flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
+                matchedCount += 2;
+                if(matchedCount === cards.length) alert("Bạn đã thắng!");
+            } else {
+                flippedCards.forEach(c => {
+                    c.classList.remove('flipped');
+                    c.innerText = '';
+                });
+            }
+            flippedCards = [];
+        }
+
+        // --- LOGIC SNAKE ---
+        const canvas = document.getElementById("snakeCanvas");
+        const ctx = canvas.getContext("2d");
+        let snake, food, dx, dy, snakeScore, snakeInterval;
+
+        function startSnake() {
+            snake = [{x: 150, y: 150}];
+            food = {x: 0, y: 0};
+            dx = 10; dy = 0;
+            snakeScore = 0;
+            createFood();
+            clearInterval(snakeInterval);
+            snakeInterval = setInterval(moveSnake, 100);
+        }
+
+        function createFood() {
+            food.x = Math.floor(Math.random() * 29) * 10;
+            food.y = Math.floor(Math.random() * 29) * 10;
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            
+            if (head.x < 0 || head.x >= 300 || head.y < 0 || head.y >= 300 || snake.some(s => s.x === head.x && s.y === head.y)) {
+                clearInterval(snakeInterval);
+                alert("Game Over! Điểm: " + snakeScore);
+                return;
+            }
+
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                snakeScore += 10;
+                document.getElementById('snake-score').innerText = "Điểm: " + snakeScore;
+                createFood();
+            } else {
+                snake.pop();
+            }
+            drawSnake();
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, 300, 300);
+            ctx.fillStyle = "#00f3ff";
+            snake.forEach(s => ctx.fillRect(s.x, s.y, 9, 9));
+            ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(food.x, food.y, 9, 9);
+        }
+
+        window.addEventListener("keydown", e => {
+            if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -10; }
+            if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 10; }
+            if (e.key === "ArrowLeft" && dx === 0) { dx = -10; dy = 0; }
+            if (e.key === "ArrowRight" && dx === 0) { dx = 10; dy = 0; }
+        });
+
+        // Khởi tạo mặc định
+        startMemory();
+    </script>
+</body>
+</html>
