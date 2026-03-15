@@ -11,48 +11,91 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-        /* Container chứa các hạt thời tiết */
+
+        .weather-btns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.weather-btns button {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.weather-btns button:hover {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: translateY(-2px);
+}
+      /* Container thời tiết */
 #weather-container {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    pointer-events: none; /* Không cản trở click */
-    z-index: 5; /* Nằm dưới Card nhưng trên nền */
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
 }
 
-/* Hạt mưa */
+/* --- HIỆU ỨNG MƯA (Tối ưu độ mảnh và mờ) --- */
 .drop {
     position: absolute;
-    background: rgba(255, 255, 255, 0.3);
-    width: 2px; height: 15px;
-    top: -20px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6));
+    width: 1px; /* Mảnh hơn nhìn sẽ sang hơn */
+    height: 60px; /* Dài hơn tạo cảm giác tốc độ */
+    top: -100px;
+    filter: blur(0.5px);
     animation: fall linear infinite;
 }
 
 @keyframes fall {
-    to { transform: translateY(100vh); }
+    to { transform: translateY(110vh) translateX(20px); } /* Rơi hơi chéo cho tự nhiên */
 }
 
-/* Hiệu ứng chớp (Bão) */
+/* --- HIỆU ỨNG BÃO (Lightning rực rỡ hơn) --- */
 .lightning {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: white;
+    /* Gradient tỏa sáng từ trên xuống */
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.8), transparent);
     opacity: 0;
-    z-index: 4;
+    z-index: 9999; /* Chớp lên trên cả thẻ bài */
     pointer-events: none;
 }
 
 .flash-animation {
-    animation: flash 3s infinite;
+    animation: flash-pro 5s infinite;
 }
 
-@keyframes flash {
-    0%, 90%, 100% { opacity: 0; }
-    92% { opacity: 0.3; }
-    94% { opacity: 0.1; }
-    96% { opacity: 0.5; }
+@keyframes flash-pro {
+    0%, 92%, 98%, 100% { opacity: 0; }
+    94% { opacity: 0.6; filter: brightness(1.5); }
+    96% { opacity: 0.2; }
+}
+
+/* --- HIỆU ỨNG NẮNG (Hạt bụi sáng - Sunbeams) --- */
+.sun-particle {
+    position: absolute;
+    background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float-sun 4s infinite ease-in-out;
+}
+
+@keyframes float-sun {
+    0% { transform: translateY(0) scale(0); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
 }
         .pokemon-cards-container {
     /* Cho phép phản chiếu hiển thị bên dưới */
@@ -1441,17 +1484,24 @@ function toggleMusicPanel() {
 }
     function setWeather(type) {
     const container = document.getElementById('weather-container') || createWeatherContainer();
-    container.innerHTML = ''; // Xóa hiệu ứng cũ
-    document.body.classList.remove('storm-mode');
-
+    container.innerHTML = ''; 
+    
     if (type === 'rain' || type === 'storm') {
-        // Tạo 100 hạt mưa
-        for (let i = 0; i < 100; i++) {
+        // Tạo 120 hạt mưa cho dày hơn
+        for (let i = 0; i < 120; i++) {
             const drop = document.createElement('div');
             drop.className = 'drop';
-            drop.style.left = Math.random() * 100 + 'vw';
-            drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
-            drop.style.opacity = Math.random();
+            
+            // Tư duy ngẫu nhiên:
+            const left = Math.random() * 100 + 'vw';
+            const delay = Math.random() * 2 + 's';
+            const duration = (Math.random() * 0.3 + 0.4) + 's'; // Rơi cực nhanh
+            const opacity = Math.random() * 0.5;
+            
+            drop.style.left = left;
+            drop.style.animationDelay = delay;
+            drop.style.animationDuration = duration;
+            drop.style.opacity = opacity;
             container.appendChild(drop);
         }
     }
@@ -1460,21 +1510,25 @@ function toggleMusicPanel() {
         const flash = document.createElement('div');
         flash.className = 'lightning flash-animation';
         container.appendChild(flash);
-        // Có thể thêm âm thanh sấm sét ở đây nếu muốn
+        // Thêm rung màn hình nhẹ khi có chớp
+        document.body.style.animation = "shake 0.1s infinite";
+        setTimeout(() => document.body.style.animation = "", 5000);
     }
+        
 
     if (type === 'sun') {
-        // Tăng độ sáng cho glow chuột hoặc hiệu ứng meteor
-        document.documentElement.style.setProperty('--glass', 'rgba(255, 255, 255, 0.1)');
-        // Thêm các hạt nắng (vàng nhạt)
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'sun-particle';
+            const size = Math.random() * 10 + 5 + 'px';
+            p.style.width = size;
+            p.style.height = size;
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.top = Math.random() * 100 + 'vh';
+            p.style.animationDelay = Math.random() * 4 + 's';
+            container.appendChild(p);
+        }
     }
-}
-
-function createWeatherContainer() {
-    const div = document.createElement('div');
-    div.id = 'weather-container';
-    document.body.appendChild(div);
-    return div;
 }
 </script>
 
