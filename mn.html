@@ -1,184 +1,177 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ASYLUM - FINAL RECKONING</title>
+    <title>TERMINAL_ACCESS_GRANTED</title>
     <style>
-        :root { --r: #ff0000; --b: #000; --g: #1a1a1a; }
-        body { background: var(--b); color: #ccc; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .crt::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)); z-index: 100; background-size: 100% 2px, 3px 100%; pointer-events: none; }
-        .wrapper { width: 95%; max-width: 1100px; display: grid; grid-template-columns: 1fr 320px; gap: 10px; height: 95vh; position: relative; }
-        .view { background: #000; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; position: relative; }
-        #visual { font-size: 120px; flex-grow: 1; display: flex; align-items: center; justify-content: center; text-shadow: 0 0 20px var(--r); }
-        #dialog { font-size: 15px; height: 140px; border-top: 1px solid #222; padding: 15px; overflow-y: auto; color: #999; }
-        .sidebar { background: #050505; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .stat { margin-bottom: 10px; }
-        .label { font-size: 11px; color: var(--r); font-weight: bold; margin-bottom: 5px; }
-        .bar { width: 100%; height: 6px; background: #111; border: 1px solid #222; }
-        .fill { height: 100%; background: var(--r); transition: 0.3s; box-shadow: 0 0 10px var(--r); }
-        .box { font-size: 12px; background: #000; border: 1px solid #1a1a1a; padding: 8px; height: 120px; overflow-y: auto; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { background: #000; border: 1px solid #444; color: #aaa; padding: 12px; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; }
-        button:hover:not(:disabled) { border-color: var(--r); color: #fff; background: #1a0000; }
-        button:disabled { opacity: 0.2; cursor: not-allowed; }
-        .glitch { animation: shake 0.1s infinite; filter: hue-rotate(90deg) contrast(150%); }
-        @keyframes shake { 0%{transform:translate(2px,2px)} 50%{transform:translate(-2px,-1px)} 100%{transform:translate(0,0)} }
-        .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--r); z-index: 50; display: none; }
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        #terminal {
+            width: 80%;
+            height: 70%;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #0f0;
+            padding: 20px;
+            box-shadow: 0 0 20px #0f0;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .input-area {
+            display: flex;
+            width: 80%;
+            margin-top: 10px;
+        }
+
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: inherit;
+            font-size: 1.2em;
+            width: 100%;
+            outline: none;
+        }
+
+        .prompt { color: #0f0; font-weight: bold; margin-right: 10px; }
+
+        .error { color: #f00; text-shadow: 0 0 5px #f00; }
+        .success { color: #0ff; text-shadow: 0 0 5px #0ff; }
+
+        #timer {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 2em;
+            color: #f00;
+        }
     </style>
 </head>
-<body class="crt">
-    <div class="flash" id="flash-effect"></div>
-    <div class="wrapper">
-        <div class="view">
-            <div id="visual">🏚️</div>
-            <div id="dialog">Khởi tạo giao diện thám tử... Mọi hành động đều có hậu quả.</div>
-            <div class="controls" id="choices"></div>
-        </div>
-        <div class="sidebar">
-            <div class="stat"><div class="label">SANITY (TÂM LÝ)</div><div class="bar"><div id="s-bar" class="fill" style="width: 100%"></div></div></div>
-            <div class="stat"><div class="label">DANGER (NGUY HIỂM)</div><div class="bar"><div id="d-bar" class="fill" style="width: 0%; background: #ffaa00"></div></div></div>
-            <div class="label">TÚI ĐỒ</div><div class="box" id="inv"></div>
-            <div class="label">DỮ LIỆU THU THẬP</div><div class="box" id="logs"></div>
-            <button onclick="location.reload()" style="margin-top:auto; font-size: 9px; padding: 5px;">RESET GAME</button>
-        </div>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div id="timer">TRACING: 60s</div>
+
+    <div id="terminal" id="output">
+        <div>[SYSTEM] KHOI DONG GIAO DIEN BE KHOA...</div>
+        <div>[SYSTEM] DANG QUET DIA CHI IP... DONE.</div>
+        <div>[SYSTEM] GO 'help' DE XEM CAC LENH CO BAN.</div>
+        <hr>
+    </div>
+
+    <div class="input-area">
+        <span class="prompt">ROOT@SYSTEM_V13:~#</span>
+        <input type="text" id="cmd-input" autofocus autocomplete="off">
     </div>
 
     <script>
-        let s = { sanity: 100, danger: 0, inv: new Set(), logs: [], code: ["?", "?", "?"], killedBy: "" };
+        // Matrix Effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
 
-        const scenes = {
-            // TẦNG 1: SẢNH
-            start: {
-                txt: "Bạn đang ở sảnh chính. Có một chiếc máy quay CCTV cũ và lối đi xuống Tầng Hầm. Cánh cửa sân thượng ở phía trên yêu cầu mã 3 số.",
-                vis: "🏥",
-                btns: [
-                    { t: "Soi Camera", next: "cctv" },
-                    { t: "Xuống Tầng Hầm", next: "basement_entry" },
-                    { t: "Lên Tầng 2", next: "floor2_hallway" }
-                ]
-            },
-            cctv: {
-                txt: "Màn hình chập chờn hiện lên cảnh một bệnh nhân đang vẽ số '7' lên tường bằng máu. Đó là số đầu tiên của mật mã.",
-                vis: "📺",
-                onEnter: () => { addLog("Số thứ 1: 7"); s.code[0] = "7"; },
-                btns: [{ t: "Quay lại", next: "start" }]
-            },
-            // TẦNG HẦM: NHÀ XÁC
-            basement_entry: {
-                txt: "Không khí ở đây lạnh đến buốt xương. Tiếng cửa sắt va đập đều đặn. Có phòng Lò Hơi và Nhà Xác.",
-                vis: "📉",
-                onEnter: () => { s.danger += 10; },
-                btns: [
-                    { t: "Vào Nhà Xác", next: "morgue" },
-                    { t: "Phòng Lò Hơi", next: "boiler" },
-                    { t: "Lên Sảnh", next: "start" }
-                ]
-            },
-            morgue: {
-                txt: "Một cái xác trên bàn phẫu thuật. Trong tay nó nắm chặt một mẩu giấy ghi số '2'.",
-                vis: "⚰️",
-                onEnter: () => { s.code[1] = "2"; addLog("Số thứ 2: 2"); s.sanity -= 10; },
-                btns: [{ t: "Rời đi", next: "basement_entry" }]
-            },
-            boiler: {
-                txt: "Sức nóng kinh người. Bạn tìm thấy một thanh sắt rỉ sét. Nó có thể dùng làm vũ khí.",
-                vis: "🔥",
-                onEnter: () => { addInv("Thanh Sắt"); },
-                btns: [{ t: "Rời đi", next: "basement_entry" }]
-            },
-            // TẦNG 2: PHÒNG MỔ
-            floor2_hallway: {
-                txt: "Hành lang Tầng 2. Kẻ Sát Nhân đang lảng vảng ở đây! Bạn cần trốn nhanh.",
-                vis: "👣",
-                onEnter: () => { s.danger += 30; },
-                btns: [
-                    { t: "Nấp vào Tủ", next: "hide_closet" },
-                    { t: "Dùng Thanh Sắt chiến đấu", next: "fight", req: "Thanh Sắt" }
-                ]
-            },
-            hide_closet: {
-                txt: "Bạn nín thở. Hắn đi ngang qua, lưỡi rìu quệt xuống sàn tạo tiếng rít ghê người. Hắn bỏ rơi một tấm thẻ có ghi số '5'.",
-                vis: "🚪",
-                onEnter: () => { s.code[2] = "5"; addLog("Số thứ 3: 5"); s.danger = 5; },
-                btns: [{ t: "Ra ngoài", next: "start" }]
-            },
-            fight: {
-                txt: "Bạn lao ra! Một cú đánh trúng đầu hắn. Hắn lảo đảo lùi lại nhưng bạn cũng bị thương nặng. Chạy ngay!",
-                vis: "🩸",
-                onEnter: () => { s.sanity -= 40; s.danger = 0; triggerFlash(); },
-                btns: [{ t: "Chạy xuống sảnh", next: "start" }]
-            },
-            // CÁI KẾT
-            final_door: {
-                txt: "Bạn đứng trước cánh cửa dẫn lên sân thượng. Nhập mã 3 chữ số để thoát thân.",
-                vis: "🔐",
-                btns: [
-                    { t: "Nhập 7-2-5", next: "win" },
-                    { t: "Nhập 1-2-3", next: "death_wrong" },
-                    { t: "Quay lại", next: "start" }
-                ]
-            },
-            win: {
-                txt: "Gió trời lồng lộng! Trực thăng cứu hộ đã đến. Bạn thoát chết trong gang tấc!",
-                vis: "🚁",
-                btns: [{ t: "CHƠI LẠI", next: "start", reset: true }]
-            },
-            death_wrong: {
-                txt: "Mã sai! Còi báo động vang lên. Hắn xuất hiện ngay sau lưng bạn...",
-                vis: "🪓",
-                btns: [{ t: "KẾT THÚC", next: "death" }]
-            },
-            death: {
-                txt: "Trò chơi kết thúc. Bạn đã trở thành một phần của bệnh viện Asylum.",
-                vis: "💀",
-                btns: [{ t: "HỒI SINH", next: "start", reset: true }]
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0f0";
+            ctx.font = fontSize + "px arial";
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
             }
-        };
+        }
+        setInterval(drawMatrix, 33);
 
-        function addInv(it) { s.inv.add(it); renderInv(); }
-        function renderInv() { document.getElementById('inv').innerHTML = Array.from(s.inv).map(i=>`<div style='color:#888'>• ${i}</div>`).join(''); }
-        function addLog(m) { s.logs.push(m); let b = document.getElementById('logs'); b.innerHTML = s.logs.map(l=>`<div style='margin-bottom:5px'>> ${l}</div>`).join(''); b.scrollTop = b.scrollHeight; }
-        function triggerFlash() { let f = document.getElementById('flash-effect'); f.style.display='block'; setTimeout(()=>f.style.display='none',100); }
+        // Logic Terminal
+        const input = document.getElementById('cmd-input');
+        const output = document.getElementById('terminal');
+        let timeLeft = 60;
+        let isHacked = false;
 
-        function updateUI() {
-            document.getElementById('s-bar').style.width = s.sanity + "%";
-            document.getElementById('d-bar').style.width = s.danger + "%";
-            if(s.danger > 60 || s.sanity < 30) document.getElementById('visual').classList.add('glitch');
-            else document.getElementById('visual').classList.remove('glitch');
+        const countdown = setInterval(() => {
+            if(!isHacked) {
+                timeLeft--;
+                document.getElementById('timer').innerText = `TRACING: ${timeLeft}s`;
+                if(timeLeft <= 0) {
+                    clearInterval(countdown);
+                    alert("ACCESS DENIED: BAN DA BI PHAT HIEN!");
+                    location.reload();
+                }
+            }
+        }, 1000);
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = this.value.toLowerCase().trim();
+                handleCommand(cmd);
+                this.value = '';
+            }
+        });
+
+        function print(text, type = '') {
+            const line = document.createElement('div');
+            line.className = type;
+            line.innerHTML = `> ${text}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
         }
 
-        function render(key) {
-            const sc = scenes[key];
-            if(sc.reset) { s={sanity:100,danger:0,inv:new Set(),logs:[],code:["?","?","?"]}; document.getElementById('inv').innerHTML=""; document.getElementById('logs').innerHTML=""; }
-            
-            // Logic đặc biệt: Nếu đủ mã thì thêm nút thoát
-            if(key === 'start' && !s.code.includes("?")) {
-                sc.btns.push({ t: "MỞ CỬA THOÁT HIỂM (MÃ 725)", next: "final_door" });
+        function handleCommand(cmd) {
+            if (cmd === 'help') {
+                print("Lệnh khả dụng: scan, crack, bypass, clear, exit");
+            } else if (cmd === 'scan') {
+                print("Đang quét lỗ hổng bảo mật...");
+                setTimeout(() => print("Tìm thấy cổng 8080 đang hở!", "success"), 1000);
+            } else if (cmd === 'crack') {
+                print("Bắt đầu brute-force mật khẩu...");
+                let progress = 0;
+                const i = setInterval(() => {
+                    progress += 20;
+                    print(`Cracking... ${progress}%`);
+                    if(progress >= 100) {
+                        clearInterval(i);
+                        print("CRACK THANH CONG! MAT KHAU: 123456", "success");
+                    }
+                }, 500);
+            } else if (cmd === 'bypass') {
+                print("Đang vượt tường lửa...", "error");
+                setTimeout(() => {
+                    isHacked = true;
+                    print("PHAY HUY TUONG LUA THANH CONG! HE THONG DA BI CHIEM QUYEN.", "success");
+                    document.body.style.boxShadow = "inset 0 0 100px #0ff";
+                    document.getElementById('timer').innerText = "SYSTEM HIJACKED";
+                }, 2000);
+            } else if (cmd === 'clear') {
+                output.innerHTML = '';
+            } else {
+                print(`Lệnh không hợp lệ: ${cmd}`, 'error');
             }
-
-            document.getElementById('visual').innerText = sc.vis;
-            document.getElementById('dialog').innerText = sc.txt;
-            let c = document.getElementById('choices'); c.innerHTML = "";
-
-            if(sc.onEnter) sc.onEnter();
-
-            sc.btns.forEach(b => {
-                let btn = document.createElement('button');
-                btn.innerText = b.t;
-                if(b.req && !s.inv.has(b.req)) btn.disabled = true;
-                btn.onclick = () => {
-                    s.sanity -= 2; s.danger += 2; updateUI();
-                    if(s.sanity <= 0 || s.danger >= 100) render('death');
-                    else render(b.next);
-                };
-                c.appendChild(btn);
-            });
-            updateUI();
         }
-
-        setInterval(() => { if(s.sanity > 0) { s.sanity -= 0.5; updateUI(); if(s.sanity <= 0) render('death'); } }, 3000);
-        render('start');
     </script>
 </body>
 </html>
