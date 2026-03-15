@@ -1,0 +1,116 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Tài Xỉu Mini</title>
+
+<style>
+body{
+font-family:sans-serif;
+background:#111;
+color:white;
+text-align:center;
+padding-top:60px
+}
+
+h1{
+color:#ffd700
+}
+
+#dice{
+font-size:60px;
+margin:20px
+}
+
+button{
+padding:15px 40px;
+font-size:20px;
+margin:10px;
+border:none;
+border-radius:10px;
+cursor:pointer
+}
+
+#tai{background:#00cc66;color:white}
+#xiu{background:#ff4444;color:white}
+
+#result{
+font-size:24px;
+margin-top:20px
+}
+
+#money{
+font-size:20px;
+margin-top:10px;
+color:#00ffff
+}
+</style>
+</head>
+
+<body>
+
+<h1>TÀI XỈU</h1>
+
+<div id="money">Tiền: 1000</div>
+
+<div id="dice">🎲 🎲 🎲</div>
+
+<button id="tai" onclick="play('tai')">TÀI</button>
+<button id="xiu" onclick="play('xiu')">XỈU</button>
+
+<div id="result"></div>
+
+<script>
+
+let money = 1000
+
+function randomDice(){
+return Math.floor(Math.random()*6)+1
+}
+
+function diceEmoji(n){
+return ["","⚀","⚁","⚂","⚃","⚄","⚅"][n]
+}
+
+function play(choice){
+
+if(money<=0){
+alert("Hết tiền!")
+return
+}
+
+let d1=randomDice()
+let d2=randomDice()
+let d3=randomDice()
+
+let total=d1+d2+d3
+
+document.getElementById("dice").innerHTML=
+diceEmoji(d1)+" "+diceEmoji(d2)+" "+diceEmoji(d3)
+
+let result = total >= 11 ? "tai" : "xiu"
+
+if(choice===result){
+
+money+=100
+document.getElementById("result").innerHTML=
+"Bạn thắng! Tổng: "+total
+
+}else{
+
+money-=100
+document.getElementById("result").innerHTML=
+"Bạn thua! Tổng: "+total
+
+}
+
+document.getElementById("money").innerHTML="Tiền: "+money
+
+}
+
+</script>
+
+</body>
+</html>
+```
