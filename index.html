@@ -1179,14 +1179,13 @@ async function sendMsg() {
     const text = input.value.trim();
     if (!text) return;
 
-    // 1. Hiển thị tin nhắn của sếp
+    // Hiển thị tin nhắn người dùng
     chat.innerHTML += `<div class="msg user-msg"><b>👤 Bạn:</b><br>${text}</div>`;
     input.value = "";
 
-    // 2. Hiệu ứng chờ
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai-msg";
-    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang suy nghĩ...</i>";
+    aiDiv.innerHTML = "🤖 <i>Kaizen AI đang soạn tin...</i>";
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
@@ -1194,40 +1193,24 @@ async function sendMsg() {
         const response = await fetch('/api/chat', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // Gửi message và history (nếu có dùng biến chatHistory toàn cục)
-            body: JSON.stringify({ 
-                message: text,
-                history: typeof chatHistory !== 'undefined' ? chatHistory : [] 
-            })
+            body: JSON.stringify({ message: text, history: typeof chatHistory !== 'undefined' ? chatHistory : [] })
         });
 
         const data = await response.json();
 
-        // 3. FIX LỖI Ở ĐÂY: Nhận trực tiếp data.text
-        if (data.error) {
-            aiDiv.innerHTML = `❌ Lỗi: ${data.error}`;
-        } else if (data.text) {
-            // Đổ nội dung trực tiếp từ data.text vào HTML
-            const botReply = data.text;
-            aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
-            
-            // Cập nhật trí nhớ nếu sếp có dùng biến chatHistory
-            if (typeof chatHistory !== 'undefined') {
-                chatHistory.push({ role: "user", parts: [{ text: text }] });
-                chatHistory.push({ role: "model", parts: [{ text: botReply }] });
-            }
-        } else {
-            // Nếu dùng bản cũ trả về candidates thì dự phòng ở đây
-            if (data.candidates) {
-                const legacyReply = data.candidates[0].content.parts[0].text;
-                aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${legacyReply.replace(/\n/g, "<br>")}`;
-            } else {
-                aiDiv.innerHTML = `❌ Lỗi: Server trả về dữ liệu trống.`;
-            }
+        // Luôn hiển thị data.text vì Backend đã được chuẩn hóa
+        const botReply = data.text || "Tớ chưa nghĩ ra câu trả lời, thử lại nhé!";
+        aiDiv.innerHTML = `<b>🤖 Kaizen AI:</b><br>${botReply.replace(/\n/g, "<br>")}`;
+
+        // Lưu lịch sử
+        if (typeof chatHistory !== 'undefined') {
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            chatHistory.push({ role: "model", parts: [{ text: botReply }] });
+            if (chatHistory.length > 16) chatHistory.splice(0, 2);
         }
+
     } catch (e) {
-        console.error("Lỗi Fetch:", e);
-        aiDiv.innerHTML = `❌ Lỗi kết nối! Kiểm tra internet hoặc Vercel nhé sếp.`;
+        aiDiv.innerHTML = "❌ Lỗi kết nối, sếp kiểm tra lại mạng nhé!";
     }
     chat.scrollTop = chat.scrollHeight;
 }
