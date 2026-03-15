@@ -1,193 +1,232 @@
 <!DOCTYPE html>
 <html lang="vi">
-    
 <head>
     <meta charset="UTF-8">
-    <title>ZEN_UNIVERSE_v1.0</title>
+    <title>MY_CREATIVE_SPACE</title>
     <style>
+        :root {
+            --bg: #f0f2f5;
+            --accent: #ff4757;
+            --card: #ffffff;
+            --shadow: 8px 8px 0px #000;
+        }
+
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            overflow: hidden; background-color: #050505;
-            cursor: none; /* Ẩn chuột thật để dùng chuột ảo */
+            background-color: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
-        #canvas { display: block; }
-
-        #instructions {
+        /* Đồng hồ khổng lồ */
+        #clock-container {
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.2);
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 12px;
-            letter-spacing: 5px;
+            top: 10%; left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
             pointer-events: none;
-            text-transform: uppercase;
-            transition: opacity 2s;
         }
 
-        /* Chuột ảo nghệ thuật */
-        #cursor {
-            position: fixed;
-            width: 40px; height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            pointer-events: none;
-            transition: transform 0.1s ease-out;
-            z-index: 1000;
+        #clock {
+            font-size: 120px;
+            font-weight: 900;
+            color: #000;
+            letter-spacing: -5px;
+            margin: 0;
         }
+
+        /* Ghi chú kéo thả */
+        .note {
+            position: absolute;
+            width: 200px;
+            padding: 20px;
+            background: #fff;
+            border: 3px solid #000;
+            box-shadow: var(--shadow);
+            cursor: move;
+            transition: transform 0.1s;
+        }
+
+        .note:active { transform: scale(1.05) rotate(2deg); }
+
+        .note h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; border-bottom: 2px solid #000; }
+        .note p { font-size: 13px; line-height: 1.4; margin: 0; color: #333; }
+
+        /* Widget âm thanh */
+        #audio-widget {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 15px 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .play-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Thanh menu dưới */
+        #dock {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .dock-item {
+            padding: 10px 20px;
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .dock-item:hover { transform: translateY(-5px); background: var(--accent); }
+
     </style>
 </head>
 <body>
 
-    <div id="cursor"></div>
-    <div id="instructions">CLICK ĐỂ TẠO RA ÂM THANH & ÁNH SÁNG</div>
-    <canvas id="canvas"></canvas>
+    <div id="clock-container">
+        <div id="clock">00:00</div>
+        <div style="font-weight: bold; letter-spacing: 5px;">THỨ HAI, 16 THÁNG 3</div>
+    </div>
+
+    <div class="note" style="top: 300px; left: 100px; background: #fff740;">
+        <h3>Ý tưởng mới</h3>
+        <p>Làm một dự án web không giống ai vào tuần sau. Phải thật cháy!</p>
+    </div>
+
+    <div class="note" style="top: 150px; right: 150px; background: #7afaff;">
+        <h3>Reminder</h3>
+        <p>Uống nước đầy đủ và nghỉ ngơi sau mỗi 45 phút code.</p>
+    </div>
+
+    <div id="audio-widget">
+        <div class="play-btn" id="play-btn">▶</div>
+        <div>
+            <div style="font-weight: bold; font-size: 12px;">LO-FI FOCUS</div>
+            <div style="font-size: 10px; opacity: 0.6;">SÓNG BIỂN RÌ RÀO</div>
+        </div>
+    </div>
+
+    <div id="dock">
+        <button class="dock-item" onclick="createNote()">+ THÊM GHI CHÚ</button>
+        <button class="dock-item" id="bg-toggle">ĐỔI MÀU NỀN</button>
+    </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const cursor = document.getElementById('cursor');
-        const instructions = document.getElementById('instructions');
-
-        let width, height;
-        let particles = [];
-        const mouse = { x: -1000, y: -1000, active: false };
-
-        // 1. Khởi tạo kích thước
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+        // 1. Đồng hồ thời gian thực
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${h}:${m}`;
         }
-        window.addEventListener('resize', resize);
-        resize();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        // 2. Đối tượng Hạt
-        class Particle {
-            constructor() {
-                this.init();
+        // 2. Logic kéo thả ghi chú
+        function makeDraggable(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            el.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                el.style.zIndex = 1000;
             }
 
-            init() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2 + 0.5;
-                this.color = `hsl(${Math.random() * 60 + 180}, 70%, 70%)`; // Tông xanh dương/cyan
-                this.alpha = Math.random() * 0.5 + 0.2;
+            function elementDrag(e) {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
             }
 
-            update() {
-                // Lực hút từ chuột
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 200) {
-                    const force = (200 - distance) / 2000;
-                    this.vx += dx * force;
-                    this.vy += dy * force;
-                }
-
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vx *= 0.98; // Ma sát
-                this.vy *= 0.98;
-
-                // Quay lại màn hình nếu ra ngoài
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.alpha;
-                ctx.fill();
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                el.style.zIndex = 1;
             }
         }
 
-        // Tạo 300 hạt ban đầu
-        for (let i = 0; i < 300; i++) particles.push(new Particle());
+        document.querySelectorAll('.note').forEach(makeDraggable);
 
-        // 3. Audio Engine (Dùng Web Audio API tạo nhạc không cần file)
+        // 3. Tạo ghi chú mới
+        function createNote() {
+            const colors = ['#fff740', '#7afaff', '#ff7eb9', '#ff9ee9'];
+            const newNote = document.createElement('div');
+            newNote.className = 'note';
+            newNote.style.top = '100px';
+            newNote.style.left = '100px';
+            newNote.style.background = colors[Math.floor(Math.random() * colors.length)];
+            newNote.innerHTML = `<h3>Ghi chú mới</h3><p contenteditable="true">Click để viết nội dung vào đây...</p>`;
+            document.body.appendChild(newNote);
+            makeDraggable(newNote);
+        }
+
+        // 4. Giả lập âm thanh (White Noise)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playNote(freq) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
-        }
+        let isPlaying = false;
+        let noiseNode;
 
-        // 4. Sự kiện chuột
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
-            
-            // Xóa hướng dẫn khi người dùng di chuyển chuột
-            if (!mouse.active) {
-                instructions.style.opacity = '0';
-                mouse.active = true;
-            }
-        });
-
-        window.addEventListener('mousedown', () => {
-            // Click tạo âm thanh dựa trên vị trí chuột (tần số thấp bên trái, cao bên phải)
-            const freq = 200 + (mouse.x / width) * 600;
-            playNote(freq);
-            
-            // Đẩy hạt ra xa khi click
-            particles.forEach(p => {
-                const dx = p.x - mouse.x;
-                const dy = p.y - mouse.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 300) {
-                    p.vx = (dx / dist) * 10;
-                    p.vy = (dy / dist) * 10;
+        document.getElementById('play-btn').onclick = function() {
+            if (!isPlaying) {
+                const bufferSize = 2 * audioCtx.sampleRate,
+                buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
+                output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
                 }
-            });
-            cursor.style.transform += ' scale(1.5)';
-            setTimeout(() => cursor.style.transform = cursor.style.transform.replace(' scale(1.5)', ''), 100);
-        });
-
-        // 5. Vòng lặp chính
-        function animate() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)'; // Hiệu ứng đuôi mờ
-            ctx.fillRect(0, 0, width, height);
-
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
-            // Vẽ các đường nối nhẹ nhàng
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 80) {
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                    }
-                }
+                noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 400; // Tiếng trầm giống tiếng sóng/mưa
+                noiseNode.connect(filter);
+                filter.connect(audioCtx.destination);
+                noiseNode.start();
+                this.innerText = '■';
+                isPlaying = true;
+            } else {
+                noiseNode.stop();
+                this.innerText = '▶';
+                isPlaying = false;
             }
-            ctx.stroke();
+        };
 
-            requestAnimationFrame(animate);
-        }
+        // 5. Đổi màu nền ngẫu nhiên
+        document.getElementById('bg-toggle').onclick = () => {
+            const colors = ['#f0f2f5', '#e3f2fd', '#fce4ec', '#f1f8e9', '#fff3e0'];
+            document.body.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+        };
 
-        animate();
     </script>
 </body>
 </html>
