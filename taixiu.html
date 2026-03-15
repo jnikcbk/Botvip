@@ -1,116 +1,282 @@
-```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Tài Xỉu Mini</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Mini Ultimate</title>
+    <style>
+        :root {
+            --primary: #ffd700;
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --win: #00ff88;
+            --lose: #ff4d4d;
+        }
 
-<style>
-body{
-font-family:sans-serif;
-background:#111;
-color:white;
-text-align:center;
-padding-top:60px
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-h1{
-color:#ffd700
-}
+        /* Menu chuyển game */
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-#dice{
-font-size:60px;
-margin:20px
-}
+        .nav button {
+            background: var(--card);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-button{
-padding:15px 40px;
-font-size:20px;
-margin:10px;
-border:none;
-border-radius:10px;
-cursor:pointer
-}
+        .nav button.active {
+            background: var(--primary);
+            color: black;
+        }
 
-#tai{background:#00cc66;color:white}
-#xiu{background:#ff4444;color:white}
+        /* Container chính */
+        .game-container {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
 
-#result{
-font-size:24px;
-margin-top:20px
-}
+        h1 { color: var(--primary); margin-top: 0; }
 
-#money{
-font-size:20px;
-margin-top:10px;
-color:#00ffff
-}
-</style>
+        #money {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--win);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0,255,136,0.3);
+        }
+
+        /* Hiệu ứng rung cho xúc xắc */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(-5deg); }
+            40% { transform: translate(3px, 2px) rotate(5deg); }
+            60% { transform: translate(-1px, -1px) rotate(-1deg); }
+            80% { transform: translate(2px, 1px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .shaking { animation: shake 0.3s infinite; }
+
+        .display-area {
+            font-size: 60px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .controls button {
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: transform 0.1s;
+        }
+
+        .controls button:active { transform: scale(0.95); }
+
+        .btn-tai { background: #00cc66; color: white; }
+        .btn-xiu { background: #ff4444; color: white; }
+        .btn-play { background: var(--primary); color: black; width: 80%; }
+
+        #result-msg {
+            margin-top: 15px;
+            font-weight: bold;
+            height: 25px;
+        }
+
+        .hidden { display: none; }
+    </style>
 </head>
-
 <body>
 
-<h1>TÀI XỈU</h1>
+    <div class="nav">
+        <button onclick="showGame('taixiu')" id="btn-taixiu" class="active">Tài Xỉu</button>
+        <button onclick="showGame('baucua')" id="btn-baucua">Bầu Cua</button>
+        <button onclick="showGame('xoso')" id="btn-xoso">Số Đề</button>
+        <button onclick="showGame('quayso')" id="btn-quayso">Quay Số</button>
+    </div>
 
-<div id="money">Tiền: 1000</div>
+    <div id="money">💰 1,000</div>
 
-<div id="dice">🎲 🎲 🎲</div>
+    <div id="taixiu" class="game-container">
+        <h1>TÀI XỈU</h1>
+        <div class="display-area" id="dice-box">🎲 🎲 🎲</div>
+        <div class="controls">
+            <button class="btn-tai" onclick="playTaiXiu('tai')">TÀI (11-17)</button>
+            <button class="btn-xiu" onclick="playTaiXiu('xiu')">XỈU (4-10)</button>
+        </div>
+        <div id="res-taixiu" class="result-msg"></div>
+    </div>
 
-<button id="tai" onclick="play('tai')">TÀI</button>
-<button id="xiu" onclick="play('xiu')">XỈU</button>
+    <div id="baucua" class="game-container hidden">
+        <h1>BẦU CUA</h1>
+        <div class="display-area" id="baucua-box">🦀 🦌 🍤</div>
+        <div class="controls">
+            <select id="baucua-select" style="padding:10px; border-radius:5px;">
+                <option value="0">🦌 Nai</option>
+                <option value="1">🦀 Cua</option>
+                <option value="2">🐟 Cá</option>
+                <option value="3">🐥 Gà</option>
+                <option value="4">🍤 Tôm</option>
+                <option value="5">🎃 Bầu</option>
+            </select>
+            <button class="btn-play" onclick="playBauCua()">ĐẶT CƯỢC</button>
+        </div>
+        <div id="res-baucua" class="result-msg"></div>
+    </div>
 
-<div id="result"></div>
+    <div id="xoso" class="game-container hidden">
+        <h1>XỔ SỐ (00-99)</h1>
+        <div class="display-area" id="xoso-box">00</div>
+        <div class="controls">
+            <input type="number" id="xoso-input" placeholder="00" min="0" max="99" style="padding:10px; width:50px;">
+            <button class="btn-play" onclick="playXoSo()">DÒ SỐ</button>
+        </div>
+        <div id="res-xoso" class="result-msg"></div>
+    </div>
 
-<script>
+    <div id="quayso" class="game-container hidden">
+        <h1>QUAY SỐ</h1>
+        <div class="display-area" id="quayso-box">777</div>
+        <button class="btn-play" onclick="playQuaySo()">QUAY (Jackpot x10)</button>
+        <div id="res-quayso" class="result-msg"></div>
+    </div>
 
-let money = 1000
+    <script>
+        let money = 1000;
+        const diceEmojis = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        const baucuaEmojis = ["🦌", "🦀", "🐟", "🐥", "🍤", "🎃"];
 
-function randomDice(){
-return Math.floor(Math.random()*6)+1
-}
+        function updateMoney() {
+            document.getElementById('money').innerHTML = `💰 ${money.toLocaleString()}`;
+            if(money <= 0) {
+                alert("Cạn túi rồi! Tặng bạn 500 chơi tiếp.");
+                money = 500;
+                updateMoney();
+            }
+        }
 
-function diceEmoji(n){
-return ["","⚀","⚁","⚂","⚃","⚄","⚅"][n]
-}
+        function showGame(gameId) {
+            document.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(gameId).classList.remove('hidden');
+            document.getElementById('btn-' + gameId).classList.add('active');
+        }
 
-function play(choice){
+        // LOGIC TÀI XỈU
+        function playTaiXiu(choice) {
+            const box = document.getElementById('dice-box');
+            box.classList.add('shaking');
+            
+            setTimeout(() => {
+                box.classList.remove('shaking');
+                let d1 = Math.floor(Math.random()*6);
+                let d2 = Math.floor(Math.random()*6);
+                let d3 = Math.floor(Math.random()*6);
+                let total = d1 + d2 + d3 + 3;
+                
+                box.innerHTML = `${diceEmojis[d1]} ${diceEmojis[d2]} ${diceEmojis[d3]}`;
+                let win = (total >= 11 && choice === 'tai') || (total < 11 && choice === 'xiu');
+                
+                money += win ? 100 : -100;
+                document.getElementById('res-taixiu').innerHTML = win ? `<span style="color:var(--win)">THẮNG! Tổng ${total}</span>` : `<span style="color:var(--lose)">THUA! Tổng ${total}</span>`;
+                updateMoney();
+            }, 500);
+        }
 
-if(money<=0){
-alert("Hết tiền!")
-return
-}
+        // LOGIC BẦU CUA
+        function playBauCua() {
+            const box = document.getElementById('baucua-box');
+            const bet = document.getElementById('baucua-select').value;
+            box.classList.add('shaking');
 
-let d1=randomDice()
-let d2=randomDice()
-let d3=randomDice()
+            setTimeout(() => {
+                box.classList.remove('shaking');
+                let res = [Math.floor(Math.random()*6), Math.floor(Math.random()*6), Math.floor(Math.random()*6)];
+                box.innerHTML = res.map(i => baucuaEmojis[i]).join(" ");
+                
+                let matches = res.filter(x => x == bet).length;
+                if(matches > 0) {
+                    money += matches * 200;
+                    document.getElementById('res-baucua').innerHTML = `<span style="color:var(--win)">TRÚNG ${matches} CON! +${matches*200}</span>`;
+                } else {
+                    money -= 100;
+                    document.getElementById('res-baucua').innerHTML = `<span style="color:var(--lose)">TRẬT RỒI! -100</span>`;
+                }
+                updateMoney();
+            }, 500);
+        }
 
-let total=d1+d2+d3
+        // LOGIC XỔ SỐ
+        function playXoSo() {
+            const input = document.getElementById('xoso-input').value;
+            if(input === "" || input < 0 || input > 99) return alert("Nhập số từ 00-99");
+            
+            let winNum = Math.floor(Math.random()*100);
+            document.getElementById('xoso-box').innerHTML = winNum < 10 ? "0" + winNum : winNum;
+            
+            if(parseInt(input) === winNum) {
+                money += 5000;
+                document.getElementById('res-xoso').innerHTML = `<span style="color:var(--win)">ĐỘC ĐẮC! +5000</span>`;
+            } else {
+                money -= 100;
+                document.getElementById('res-xoso').innerHTML = `<span style="color:var(--lose)">CHÚC MAY MẮN LẦN SAU!</span>`;
+            }
+            updateMoney();
+        }
 
-document.getElementById("dice").innerHTML=
-diceEmoji(d1)+" "+diceEmoji(d2)+" "+diceEmoji(d3)
+        // LOGIC QUAY SỐ (SLOT)
+        function playQuaySo() {
+            const box = document.getElementById('quayso-box');
+            let count = 0;
+            let interval = setInterval(() => {
+                box.innerHTML = Math.floor(Math.random()*10) + "" + Math.floor(Math.random()*10) + "" + Math.floor(Math.random()*10);
+                count++;
+                if(count > 10) {
+                    clearInterval(interval);
+                    let final = box.innerHTML;
+                    if(final[0] === final[1] && final[1] === final[2]) {
+                        money += 1000;
+                        document.getElementById('res-quayso').innerHTML = `<span style="color:var(--win)">JACKPOT! +1000</span>`;
+                    } else {
+                        money -= 50;
+                        document.getElementById('res-quayso').innerHTML = `<span style="color:var(--lose)">KHÔNG TRÚNG -50</span>`;
+                    }
+                    updateMoney();
+                }
+            }, 50);
+        }
 
-let result = total >= 11 ? "tai" : "xiu"
-
-if(choice===result){
-
-money+=100
-document.getElementById("result").innerHTML=
-"Bạn thắng! Tổng: "+total
-
-}else{
-
-money-=100
-document.getElementById("result").innerHTML=
-"Bạn thua! Tổng: "+total
-
-}
-
-document.getElementById("money").innerHTML="Tiền: "+money
-
-}
-
-</script>
-
+    </script>
 </body>
 </html>
-```
