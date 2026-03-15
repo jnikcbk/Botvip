@@ -2,225 +2,183 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL_KALI_OS_v9.2.0_STABLE</title>
+    <title>ULTIMATE_WARFARE_CONSOLE_v10</title>
     <style>
-        :root { --neon: #00ff41; --danger: #ff0000; --bg: #050505; --dim: #004400; }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Consolas', monospace; overflow: hidden; height: 100vh; font-size: 13px; }
-        
-        /* Hiệu ứng nhiễu CRT */
-        .crt::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; }
-        
-        #layout { display: grid; grid-template-columns: 200px 1fr; grid-template-rows: 1fr 180px; height: 100vh; gap: 2px; background: #111; }
-        .module { background: var(--bg); border: 1px solid var(--dim); display: flex; flex-direction: column; overflow: hidden; }
-        .title { background: var(--dim); color: var(--neon); padding: 2px 8px; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+        :root { --neon: #00ff41; --danger: #ff0000; --warn: #ffff00; --bg: #020202; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--neon); font-family: 'Consolas', monospace; overflow: hidden; height: 100vh; }
 
-        /* Terminal chính */
-        #main-terminal { grid-area: 1 / 2 / 2 / 3; }
-        #output { flex-grow: 1; padding: 15px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
-        .input-line { display: flex; padding: 10px; background: #080808; border-top: 1px solid var(--dim); }
-        #cmd { background: transparent; border: none; color: var(--neon); outline: none; flex-grow: 1; font-family: inherit; }
-        .prompt { color: #888; margin-right: 10px; }
+        /* Hiệu ứng rung màn hình khi tấn công */
+        .shake { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(0, 0); } }
 
-        /* Sidebar & Bottom */
-        #sidebar { grid-area: 1 / 1 / 3 / 2; padding: 10px; font-size: 11px; }
-        #bottom-panel { grid-area: 2 / 2 / 3 / 3; padding: 10px; color: #008800; font-size: 11px; }
+        /* Giao diện chính */
+        #war-room { display: grid; grid-template-columns: 300px 1fr; grid-template-rows: 1fr 200px; height: 100vh; gap: 5px; padding: 5px; }
+        .box { border: 1px solid var(--neon); background: rgba(0, 15, 0, 0.9); position: relative; overflow: hidden; }
+        .header { background: var(--neon); color: #000; font-size: 11px; font-weight: bold; padding: 3px 10px; }
 
-        /* Tiện ích */
-        .success { color: var(--neon); font-weight: bold; }
-        .error { color: var(--danger); }
-        .warning { color: #ffaa00; }
-        .cmd-hint { color: #00ffff; }
-        
-        #scanline { width: 100%; height: 100px; background: linear-gradient(0deg, transparent, rgba(0, 255, 65, 0.05), transparent); position: absolute; top: -100px; animation: scan 4s linear infinite; pointer-events: none; }
-        @keyframes scan { from { top: -100px; } to { top: 100vh; } }
+        #console { grid-area: 1 / 2 / 2 / 3; display: flex; flex-direction: column; }
+        #log-stream { flex-grow: 1; padding: 20px; overflow-y: auto; font-size: 14px; scroll-behavior: smooth; }
+        .input-box { display: flex; padding: 15px; background: #000; border-top: 1px solid var(--neon); }
+        #cmd { background: transparent; border: none; color: var(--neon); outline: none; flex-grow: 1; font-family: inherit; font-size: 16px; }
+
+        /* Radar & Stats */
+        #side-panel { grid-area: 1 / 1 / 3 / 2; display: flex; flex-direction: column; gap: 5px; }
+        .stat-row { padding: 10px; border-bottom: 1px solid #003300; font-size: 12px; }
+        .bar-bg { width: 100%; height: 5px; background: #002200; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--neon); width: 0%; transition: 0.3s; }
+
+        /* Overlay khi tấn công cực mạnh */
+        #attack-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.1); z-index: 100; pointer-events: none;
+            display: none; border: 5px solid var(--danger);
+        }
+
+        .danger-text { color: var(--danger); text-shadow: 0 0 10px var(--danger); font-weight: bold; }
+        .loading-bar { color: var(--warn); }
     </style>
 </head>
-<body class="crt">
-    <div id="scanline"></div>
-    <div id="layout">
-        <div class="module" id="sidebar">
-            <div class="title">SYSTEM_FILES</div>
-            <div style="margin-top:10px;">
-                📂 /root<br>
-                &nbsp;📄 .bashrc<br>
-                📂 /exploits<br>
-                &nbsp;📄 ddos_v2.py<br>
-                &nbsp;📄 wifi_crack.sh<br>
-                📂 /logs<br>
-                &nbsp;📄 access.log<br>
-                📂 /secret<br>
-                &nbsp;📄 pass.db (LOCKED)
-            </div>
-            <div class="title" style="margin-top:20px;">NETWORK_NODES</div>
-            <div id="node-list" style="color:#004400; font-size:9px; line-height:1.5;"></div>
-        </div>
+<body>
 
-        <div class="module" id="main-terminal">
-            <div class="title">CORE_KERNEL_TERMINAL_v9.2.0</div>
-            <div id="output"></div>
-            <div class="input-line">
-                <span class="prompt">root@kali:~#</span>
-                <input type="text" id="cmd" autofocus spellcheck="false" autocomplete="off">
+<div id="attack-overlay"></div>
+
+<div id="war-room">
+    <div id="side-panel">
+        <div class="box" style="flex-grow: 1;">
+            <div class="header">NETWORK_RESOURCES</div>
+            <div class="stat-row">BOTNET NODES: <span id="nodes">12,402</span></div>
+            <div class="stat-row">POWER: <div class="bar-bg"><div id="power-bar" class="bar-fill"></div></div></div>
+            <div class="stat-row">THREAT LEVEL: <span style="color:red">CRITICAL</span></div>
+            <div id="target-info" style="padding:10px; font-size:10px;">
+                TARGET: 157.240.22.35<br>LOC: NORTH_AMERICA<br>DEFENSE: FIREEYE_v4
             </div>
         </div>
-
-        <div class="module" id="bottom-panel">
-            <div class="title">LIVE_SYSTEM_LOGS</div>
-            <div id="live-logs"></div>
+        <div class="box" style="height: 200px;">
+            <div class="header">ATTACK_MAP</div>
+            <canvas id="map-canvas" style="width:100%; height:100%;"></canvas>
         </div>
     </div>
 
+    <div class="box" id="console">
+        <div class="header">CENTRAL_WARFARE_COMMAND_v10.4</div>
+        <div id="log-stream">
+            <div>[READY] SYSTEM ONLINE. STANDING BY FOR COMMANDS.</div>
+            <div>[TIP] Gõ 'attack --global' để bắt đầu tấn công hạt nhân mạng.</div>
+        </div>
+        <div class="input-box">
+            <span style="margin-right:10px;">▶</span>
+            <input type="text" id="cmd" autofocus spellcheck="false" autocomplete="off">
+        </div>
+    </div>
+
+    <div class="box" id="live-feed">
+        <div class="header">TARGET_DATA_LEAK</div>
+        <div id="leak-content" style="padding:10px; font-size:10px; color:#008800;"></div>
+    </div>
+</div>
+
 <script>
     const cmdInput = document.getElementById('cmd');
-    const output = document.getElementById('output');
-    const liveLogs = document.getElementById('live-logs');
-    
-    // Khởi tạo thông tin hệ thống
-    const systemInfo = [
-        "Initializing Kali Linux Kernel 9.2.0-amd64...",
-        "Loading Network Drivers... [OK]",
-        "Mounting Filesystems... [OK]",
-        "Starting ProxyChains-NG v4.11... [OK]",
-        "Welcome to the Central Node. Unauthorized access is prohibited.",
-        "Gõ 'help' để xem danh sách lệnh mở rộng."
-    ];
+    const logStream = document.getElementById('log-stream');
+    const overlay = document.getElementById('attack-overlay');
+    const powerBar = document.getElementById('power-bar');
 
-    systemInfo.forEach((text, i) => {
-        setTimeout(() => print(text), i * 200);
-    });
-
-    // Danh sách lệnh chi tiết
-    const commandRepo = {
-        'help': `DANH SÁCH LỆNH HỆ THỐNG:
---------------------------------------------------
-[DI CHUYỂN]
-  ls      : Danh sách file
-  cd      : Chuyển thư mục
-  pwd     : Vị trí hiện tại
-
-[TẤN CÔNG & QUÉT]
-  nmap    : Quét cổng mục tiêu
-  wifi    : Quét mạng WiFi xung quanh
-  brute   : Tấn công Brute Force vào pass.db
-  whois   : Kiểm tra thông tin IP mục tiêu
-
-[HỆ THỐNG]
-  top     : Xem các tiến trình đang chạy
-  neofetch: Xem thông tin hệ điều hành
-  clear   : Xóa màn hình
-  rm      : Xóa file/logs
-  wipe    : Xóa sạch dấu vết hệ thống (Stealth mode)
-
-[HÀNH ĐỘNG]
-  decrypt : Giải mã dữ liệu
-  exit    : Thoát hệ thống`,
-
-        'ls': "drwxr-xr-x  root  root  /root\ndrwxr-xr-x  root  root  /exploits\ndrwxr-xr-x  root  root  /logs\n-rw-r--r--  root  root  pass.db",
-        'pwd': "/home/root",
-        'neofetch': "OS: Kali Linux v9.2.0\nKernel: 5.10.0-kali-amd64\nShell: bash 5.1.4\nCPU: Intel i9-12900K (16) @ 5.2GHz\nMemory: 32GB / 64GB\nUptime: 2 days, 4 hours",
-        'top': "PID  USER  PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n 842 root  20   0  156432  24521  12453 R  12.4   0.1   0:04.22 nmap\n 901 root  20   0   45231   5421   2311 S   4.2   0.0   0:01.05 proxychains\n 124 root  20   0       0      0      0 S   0.0   0.0   0:00.00 kernel_worker",
-        'whois': "Domain: hidden-vault.gov\nIP: 104.26.11.231\nOrg: Federal Data Center\nCountry: US\nStatus: PROTECTED",
-        'wifi': "CH  ESSID             BSSID              SIGNAL\n06  TP-LINK_EXT       00:11:22:33:44:55  -45dB\n11  GOV_INTERNAL_5G   AA:BB:CC:DD:EE:FF  -82dB\n01  HOTEL_WIFI        12:34:56:78:90:AB  -20dB",
-        'wipe': "Deleting access logs...\nZeroing free space...\nSpoofing MAC address...\n[SUCCESS] Hệ thống đã ở chế độ ẩn danh tuyệt đối.",
-    };
+    // Âm thanh giả lập (Beep)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    function beep(f, d, v) {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = f; g.gain.value = v || 0.1;
+        o.start(); setTimeout(() => o.stop(), d);
+    }
 
     cmdInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const fullCmd = cmdInput.value.trim();
-            const [cmd, arg] = fullCmd.toLowerCase().split(' ');
-            
-            print(`root@kali:~# ${fullCmd}`, 'prompt-text');
+            const val = cmdInput.value.trim().toLowerCase();
+            print(`guest@warfare:~$ ${val}`, 'white');
 
-            if (cmd === 'clear') {
-                output.innerHTML = '';
-            } else if (cmd === 'nmap') {
-                runNmap();
-            } else if (cmd === 'brute') {
-                runBrute();
-            } else if (cmd === 'decrypt') {
-                runDecrypt();
-            } else if (commandRepo[cmd]) {
-                print(commandRepo[cmd]);
-            } else if (cmd === '') {
-                // Do nothing
+            if (val === 'attack --global') {
+                executeUltimateAttack();
+            } else if (val === 'inject --sql') {
+                executeSQLInjection();
+            } else if (val === 'overload') {
+                executeOverload();
+            } else if (val === 'help') {
+                print("LỆNH CHIẾN TRANH: attack --global, inject --sql, overload, clear, self-destruct");
+            } else if (val === 'clear') {
+                logStream.innerHTML = '';
             } else {
-                print(`bash: ${cmd}: command not found. Gõ 'help' để xem danh sách.`, 'error');
+                print("LENH KHONG HOP LE. TRUY CAP BI TU CHOI.", "danger-text");
             }
-
             cmdInput.value = '';
-            output.scrollTop = output.scrollHeight;
+            logStream.scrollTop = logStream.scrollHeight;
         }
     });
 
-    function print(text, className = '') {
-        const div = document.createElement('div');
-        div.className = className;
-        div.textContent = text;
-        output.appendChild(div);
-        output.scrollTop = output.scrollHeight;
+    function print(t, cls) {
+        const d = document.createElement('div');
+        if(cls) d.className = cls;
+        d.innerHTML = `[${new Date().toLocaleTimeString()}] ${t}`;
+        logStream.appendChild(d);
     }
 
-    // Lệnh NMAP (Giả lập quét cổng)
-    function runNmap() {
-        print("Starting Nmap 7.91 ( https://nmap.org ) at 2026-03-15...");
-        setTimeout(() => print("Scanning 104.26.11.231..."), 500);
-        setTimeout(() => {
-            print("PORT     STATE  SERVICE\n22/tcp   open   ssh\n80/tcp   open   http\n443/tcp  open   https\n3389/tcp closed ms-wbt-server", "success");
-        }, 1500);
-    }
+    // TẤN CÔNG MẠNH NHẤT
+    function executeUltimateAttack() {
+        print("KÍCH HOẠT GIAO THỨC TẤN CÔNG TOÀN CẦU...", "danger-text");
+        document.body.classList.add('shake');
+        overlay.style.display = 'block';
+        beep(200, 1000, 0.2);
 
-    // Lệnh BRUTE (Giả lập bẻ khóa mật khẩu)
-    function runBrute() {
-        print("Bắt đầu Brute Force pass.db sử dụng wordlist 'rockyou.txt'...");
-        let count = 0;
+        let p = 0;
         const interval = setInterval(() => {
-            print(`Attempt ${count*123}: testing '${Math.random().toString(36).substring(7)}'...`);
-            count++;
-            if(count > 10) {
+            p += 5;
+            powerBar.style.width = p + "%";
+            print(`SENDING UDP_FLOOD PACKETS TO TARGET... [${p}%]`, "loading-bar");
+            if(p >= 100) {
                 clearInterval(interval);
-                print("--------------------------------------------------", "warning");
-                print("[FOUND] PASSWORD: 'admin_password_99'", "success");
+                print("MỤC TIÊU ĐÃ SẬP. KẾT NỐI BỊ NGẮT QUÃNG HOÀN TOÀN.", "danger-text");
+                document.body.classList.remove('shake');
+                overlay.style.display = 'none';
+                beep(800, 200, 0.3);
+            }
+        }, 150);
+    }
+
+    function executeSQLInjection() {
+        print("STARTING SQLMAP BYPASS...");
+        setTimeout(() => {
+            print("FOUND VULNERABILITY: 'id' parameter is injectable!");
+            print("DUMPING DATABASE: USERS, PASSWORDS, CREDIT_CARDS...");
+            const leak = document.getElementById('leak-content');
+            const data = ["root:admin123", "ceo:goldman_sachs", "db_master:999999"];
+            data.forEach(d => {
+                const div = document.createElement('div');
+                div.innerText = `LEAKED: ${d}`;
+                leak.prepend(div);
+            });
+        }, 1000);
+    }
+
+    function executeOverload() {
+        print("WARNING: SYSTEM OVERLOAD INITIATED.", "danger-text");
+        let i = 0;
+        const inv = setInterval(() => {
+            print(`CORE_TEMP: ${80 + i}°C`, "danger-text");
+            i += 5;
+            if(i > 50) {
+                clearInterval(inv);
+                print("CORE MELTDOWN SUCCESSFUL. TARGET HARDWARE DESTROYED.", "danger-text");
             }
         }, 200);
     }
 
-    // Lệnh DECRYPT
-    function runDecrypt() {
-        print("Đang tải module giải mã RSA-4096...");
-        setTimeout(() => {
-            let dots = "";
-            const i = setInterval(() => {
-                dots += ".";
-                print("Decrypting block " + Math.random().toString(16).slice(2, 10).toUpperCase() + dots);
-                if(dots.length > 5) {
-                    clearInterval(i);
-                    print("GIẢI MÃ HOÀN TẤT. TRUY XUẤT NỘI DUNG: 'Dự án X sẽ bắt đầu tại tọa độ 21.0285° N, 105.8542° E'", "success");
-                }
-            }, 300);
-        }, 1000);
-    }
-
-    // LIVE LOGS (Chạy ngẫu nhiên ở bảng dưới)
+    // Hiệu ứng log rác chạy liên tục
     setInterval(() => {
-        const events = [
-            "[INFO] Connection established from 127.0.0.1",
-            "[WARN] Failed login attempt on SSH port",
-            "[DEBUG] Packet received: SEQ=1241 ACK=0",
-            "[SYSTEM] Memory clean-up... Done",
-            "[ALERT] Incoming request on hidden port 8888"
-        ];
-        const log = document.createElement('div');
-        log.textContent = `[${new Date().toLocaleTimeString()}] ${events[Math.floor(Math.random()*events.length)]}`;
-        liveLogs.prepend(log);
-        if(liveLogs.childNodes.length > 10) liveLogs.lastChild.remove();
-    }, 2000);
-
-    // Network Node Generator
-    for(let i=0; i<15; i++) {
-        const node = document.createElement('div');
-        node.textContent = `NODE_${Math.floor(Math.random()*1000)}: [${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.0.1]`;
-        document.getElementById('node-list').appendChild(node);
-    }
+        if(Math.random() > 0.7) {
+            const lines = ["SYN_FLOOD_DETECTED", "REROUTING_VIA_PROXY", "ENCRYPTING_TUNNEL", "HANDSHAKE_FAILED"];
+            print(lines[Math.floor(Math.random()*lines.length)], "dim-text");
+        }
+    }, 3000);
 </script>
 </body>
 </html>
