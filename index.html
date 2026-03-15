@@ -11,178 +11,152 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-        .weather-controls {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+      :root {
+    --neon-blue: #00f2ff;
+    --neon-pink: #ff007f;
+    --bg-card: rgba(15, 15, 15, 0.7);
+    --border-light: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(15px);
+}
+
+/* --- ĐIỀU KHIỂN THỜI TIẾT --- */
+.weather-controls {
+    margin-top: 25px;
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 28px;
+    backdrop-filter: var(--glass-blur);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
 .weather-btns {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Chia 2 cột đều nhau */
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
 .weather-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 10px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-light);
+    border-radius: 18px;
+    padding: 16px 10px;
     color: #fff;
     cursor: pointer;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 8px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Hiệu ứng quét sáng lướt qua khi hover */
+.weather-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -150%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: 0.6s;
+}
+
+.weather-btn:hover::after {
+    left: 100%;
 }
 
 .weather-btn .icon {
-    font-size: 18px;
+    font-size: 24px;
+    transition: transform 0.3s ease;
 }
 
 .weather-btn .label {
-    font-size: 10px;
+    font-size: 9px;
     text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 1px;
-    opacity: 0.6;
+    font-weight: 900;
+    letter-spacing: 2px;
+    opacity: 0.4;
+    transition: 0.3s;
 }
 
-/* Hiệu ứng Hover */
+/* Hover & Active States */
 .weather-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     border-color: var(--neon-blue);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 242, 255, 0.2);
 }
 
-.weather-btn:hover .label {
-    opacity: 1;
-    color: var(--neon-blue);
-}
+.weather-btn:hover .icon { transform: scale(1.2); }
+.weather-btn:hover .label { opacity: 1; color: var(--neon-blue); }
 
-/* Nút Tắt đặc biệt */
-.clear-btn:hover {
-    border-color: #ff4d4d;
-}
-.clear-btn:hover .label {
-    color: #ff4d4d;
-}
-
-/* Trạng thái Active (khi đang chọn thời tiết đó) */
 .weather-btn.active {
     background: var(--neon-blue);
-    color: var(--bg-dark);
+    border-color: var(--neon-blue);
 }
-@keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
+.weather-btn.active .icon, .weather-btn.active .label { color: #000; opacity: 1; }
+
+/* Clear button đỏ rực */
+.clear-btn:hover {
+    border-color: var(--neon-pink);
+    box-shadow: 0 8px 25px rgba(255, 0, 127, 0.2);
 }
-     /* --- CONTAINER THỜI TIẾT --- */
+.clear-btn:hover .label { color: var(--neon-pink); }
+
+/* --- HIỆU ỨNG THỜI TIẾT --- */
 #weather-container {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    inset: 0;
     pointer-events: none;
     z-index: 5;
-    overflow: hidden;
-    /* Làm tối nền nhẹ khi có thời tiết để nổi bật hạt */
-    background: rgba(0, 0, 0, 0); 
-    transition: background 1s ease;
+    background: rgba(0, 0, 0, 0);
+    transition: background 1.5s ease;
 }
 
-/* --- MƯA (Rain - Hiệu ứng Motion Blur) --- */
 .drop {
     position: absolute;
-    /* Dùng gradient mảnh và sáng ở đuôi tạo cảm giác rơi nhanh */
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7));
+    background: linear-gradient(to bottom, transparent, #fff);
     width: 1px;
-    height: 80px; /* Tăng độ dài cho 'phiêu' hơn */
-    top: -100px;
-    filter: blur(0.2px); /* Nhòe nhẹ đúng kiểu điện ảnh */
+    height: 100px;
+    opacity: 0.4;
     animation: fall linear infinite;
 }
 
 @keyframes fall {
-    /* Rơi hơi chéo góc 15 độ nhìn sẽ tự nhiên hơn rơi thẳng */
-    to { transform: translateY(110vh) translateX(30px); }
+    to { transform: translateY(110vh) translateX(20px); }
 }
 
-/* --- BÃO (Storm - Chớp cường độ cao) --- */
 .lightning {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    /* Chớp xanh nhạt hoặc trắng tùy hệ màu */
-    background: radial-gradient(circle at 50% 20%, #fff, var(--neon-blue), transparent);
+    inset: 0;
+    background: radial-gradient(circle, #fff, var(--neon-blue));
     opacity: 0;
-    z-index: 999999; 
-    pointer-events: none;
+    z-index: 100;
 }
 
 .flash-animation {
-    /* Chớp ngẫu nhiên hơn (nhanh - chậm xen kẽ) */
-    animation: flash-pro 6s infinite;
+    animation: flash-pro 4s infinite;
 }
 
 @keyframes flash-pro {
-    0%, 90%, 93%, 96%, 100% { opacity: 0; }
-    91% { opacity: 0.7; filter: brightness(2); }
-    92% { opacity: 0.2; }
-    94% { opacity: 0.8; }
-    95% { opacity: 0.3; }
+    0%, 93%, 95%, 97%, 100% { opacity: 0; }
+    94%, 96% { opacity: 0.8; }
 }
 
-/* --- NẮNG (Sun - Hạt bụi Bokeh) --- */
 .sun-particle {
     position: absolute;
-    /* Dùng biến --c để hạt bụi đổi màu theo hệ màu Pokémon bạn đang bật */
-    background: radial-gradient(circle, #fff 0%, var(--c) 50%, transparent 70%);
+    background: radial-gradient(circle, #fff, var(--neon-blue), transparent);
     border-radius: 50%;
-    opacity: 0;
-    filter: blur(2px); /* Hiệu ứng Bokeh xóa phông */
-    animation: float-sun 5s infinite ease-in-out;
+    filter: blur(5px);
+    animation: float-sun 8s infinite ease-in-out;
 }
 
 @keyframes float-sun {
-    0% { transform: translate(0, 0) scale(0); opacity: 0; }
-    30% { opacity: 0.3; }
-    100% { transform: translate(50px, -150px) scale(2); opacity: 0; }
-}
-
-/* --- NÚT BẤM THỜI TIẾT --- */
-.weather-btns {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.weather-btns button {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: #cbd5e1;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.weather-btns button:hover {
-    background: var(--neon-blue);
-    color: var(--bg-dark);
-    box-shadow: 0 0 20px var(--neon-blue);
-    transform: translateY(-3px) scale(1.02);
-    border-color: transparent;
+    0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+    50% { opacity: 0.5; transform: translate(30px, -100px) scale(1.2); }
+    100% { transform: translate(60px, -200px) scale(0.5); opacity: 0; }
 }
         /* 1. Neon cho Tên Pokémon (Rực rỡ theo hệ) */
 .poke-card h3 {
