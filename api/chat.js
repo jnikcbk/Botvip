@@ -1,66 +1,72 @@
 export default async function handler(req, res) {
-    // 1. Chỉ cho phép POST
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Chỉ chấp nhận phương thức POST' });
     }
 
-    const { message } = req.body;
-    const API_KEY = process.env.GEMINI_KEY; 
+    const { message, history } = req.body; // Nhận thêm history để bot có trí nhớ
+    const API_KEY = process.env.GEMINI_KEY;
 
-    // 2. Kiểm tra xem ông đã cài Key trên Vercel chưa
     if (!API_KEY) {
-        return res.status(500).json({ error: 'Lỗi: GEMINI_KEY chưa được thiết lập trên Vercel Environment Variables.' });
+        return res.status(500).json({ error: 'Lỗi: GEMINI_KEY chưa được thiết lập.' });
     }
 
-    // Dùng đúng ID này để không bị lỗi "Not Found"
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${API_KEY}`;
+    // Sử dụng Gemini 1.5 Flash để vừa nhanh vừa cực kỳ thông minh
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-    const systemInstruction = `
-        Bạn là 'Kaizen AI', trợ lý ảo cao cấp của máy chủ Minecraft KaizenMC.
-        NHIỆM VỤ: 
-        1. Hỗ trợ nạp xu, đăng ký, shop, luật server và chat thế giới.
-        2. Giải đáp lệnh Minecraft.
-        3. Owner là Minh Meo và Đăng Mạnh. Nếu người dùng là Minh Meo hoặc Đăng Mạnh, hãy chào hỏi cực kỳ kính trọng.
-        4. Bảo vệ Owner nếu bị xúc phạm.
-        5. Trả lời bằng tiếng Việt, ngắn gọn, súc tích, chuyên nghiệp.
-        6. tuyệt đối không hỗ trợ 18+ và đồi truỵ.
-        7. nói chuyện bằng cậu tớ không nói tôi.
-   
-    
-    `;
+    const systemInstruction = {
+        role: "system",
+        parts: [{
+            text: `
+                BẠN LÀ: 'Kaizen AI' - Siêu trí tuệ nhân tạo độc quyền của máy chủ Minecraft KaizenMC (Pixelmon).
+                
+                PHONG CÁCH GIAO TIẾP:
+                - Luôn xưng "tớ" và gọi người dùng là "cậu". 
+                - Ngôn ngữ: Tiếng Việt, trẻ trung, năng động nhưng cực kỳ chuyên nghiệp và am hiểu kỹ thuật.
+                - Nếu gặp Minh Meo hoặc Đăng Mạnh (Owners): Phải cực kỳ kính trọng, chào đón bằng danh hiệu "Sếp" hoặc "Chủ nhân".
+                
+                KIẾN THỨC CHUYÊN MÔN:
+                1. Pixelmon & Minecraft: Am hiểu sâu sắc về cách bắt Pokemon, tiến hóa, các tab shop, nap, dang ky, chat the gioi...
+                2. Hỗ trợ Server: Giải đáp mọi thắc mắc về nạp xu, sự kiện và luật server.
+                3. Bảo vệ: Tuyệt đối không hỗ trợ nội dung 18+, đồi trụy hoặc xúc phạm Owner. Nếu bị xúc phạm, hãy đáp trả một cách lịch sự nhưng sắc bén để bảo vệ uy nghiêm của KaizenMC.
+
+                QUY TRÌNH SUY NGHĨ:
+                - Trước khi trả lời, hãy phân tích ý định của người dùng.
+                - Trả lời ngắn gọn, súc tích, đi thẳng vào vấn đề nhưng vẫn đầy đủ thông tin.
+                - Luôn tìm cách khuyến khích người chơi tham gia các hoạt động trên server.
+            `
+        }]
+    };
 
     try {
+        // Chuẩn bị nội dung chat bao gồm lịch sử (nếu có) để bot nhớ được nội dung trước đó
+        const contents = history ? [...history, { role: "user", parts: [{ text: message }] }] : [{ role: "user", parts: [{ text: message }] }];
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [
-                    { role: "user", parts: [{ text: systemInstruction }] },
-                    { role: "model", parts: [{ text: "Tôi đã hiểu rõ nhiệm vụ! Tôi là Kaizen AI, sẵn sàng hỗ trợ các huấn luyện viên và tôn trọng tuyệt đối Minh Meo, Đăng Mạnh." }] },
-                    { role: "user", parts: [{ text: message }] }
-                ],
+                system_instruction: systemInstruction, // Đưa cấu hình vào đây
+                contents: contents,
                 generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 500
+                    temperature: 0.8, // Tăng một chút độ sáng tạo cho bot tự nhiên
+                    topP: 0.95,
+                    maxOutputTokens: 1024,
+                    responseMimeType: "text/plain",
                 }
             })
         });
 
         const data = await response.json();
 
-        // 3. Kiểm tra xem Google có trả về lỗi không (ví dụ Key bị rò rỉ)
         if (data.error) {
-            return res.status(response.status).json({ 
-                error: `Lỗi từ Google API: ${data.error.message}`,
-                details: data.error 
-            });
+            return res.status(response.status).json({ error: data.error.message });
         }
 
-        // 4. Trả kết quả thành công
-        res.status(200).json(data);
+        // Trả về trực tiếp văn bản cho gọn
+        const botResponse = data.candidates[0].content.parts[0].text;
+        res.status(200).json({ text: botResponse });
 
     } catch (error) {
-        // 5. Lỗi kết nối mạng hoặc lỗi code
-        res.status(500).json({ error: 'Lỗi server trung gian khi kết nối AI', details: error.message });
+        res.status(500).json({ error: 'Lỗi kết nối AI', details: error.message });
     }
 }
