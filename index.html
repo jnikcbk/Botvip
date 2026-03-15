@@ -1612,6 +1612,38 @@ function createWeatherContainer() {
     document.body.appendChild(div);
     return div;
 }
+    async function chatWithAI(userContent) {
+    // URL này ông lấy ở phần "Quick Start" trong trang Vercel ông đang mở đấy
+    const GATEWAY_URL = "https://gateway.ai.vercel.com/v1/jnidkbks-projects/kaizen/openai/chat/completions";
+
+    try {
+        const response = await fetch(GATEWAY_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                // Chỗ này cực quan trọng: Dùng API Key ông vừa tạo ở trang API Keys
+                "Authorization": "Bearer vck_3fy9ZZNFTIaCeS4tDmXbqyy09Hbd9GKpcnEzHLyGsqaRqlLB1F3Jxpc9",
+                // Nếu muốn ghi đè cấu hình Gateway ngay trong code
+                "x-vercel-ai-gateway-cache": "enable" 
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo", // Hoặc model nào ông đã config
+                messages: [{ role: "user", content: userContent }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Lỗi Gateway rồi ông giáo ạ!");
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+
+    } catch (error) {
+        console.error("Lỗi rồi:", error);
+        return "AI đang bận đi tắm, thử lại sau nhé!";
+    }
+}
 </script>
 
 </body>
