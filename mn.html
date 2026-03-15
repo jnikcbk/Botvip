@@ -3,242 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ASYLUM: FINAL NIGHTMARE</title>
+    <title>THE ASYLUM - FINAL RECKONING</title>
     <style>
-        :root { --red: #ff0000; --dark: #050505; --gray: #1a1a1a; --blood: #8b0000; }
-        body { background: var(--dark); color: #ccc; font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .crt-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)); background-size: 100% 3px, 3px 100%; pointer-events: none; z-index: 100; opacity: 0.7; }
-        .game-wrapper { width: 95%; max-width: 1000px; display: grid; grid-template-columns: 1fr 300px; gap: 15px; height: 90vh; }
-        .main-view { background: #000; border: 1px solid #333; padding: 25px; position: relative; display: flex; flex-direction: column; }
-        #visual { font-size: 100px; flex-grow: 1; display: flex; align-items: center; justify-content: center; text-shadow: 0 0 30px var(--red); transition: transform 0.1s; }
-        #dialog { font-size: 15px; min-height: 120px; border-top: 1px solid #222; padding-top: 20px; line-height: 1.6; color: #aaa; }
-        .sidebar { background: #0a0a0a; border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .stat-group { margin-bottom: 15px; }
-        .stat-label { font-size: 11px; color: var(--red); font-weight: bold; margin-bottom: 8px; letter-spacing: 1px; }
-        .bar-bg { width: 100%; height: 6px; background: #111; border-radius: 3px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--red); transition: width 0.4s ease; box-shadow: 0 0 10px var(--red); }
-        .inventory-box, .log-box { font-size: 12px; background: #000; border: 1px solid #1a1a1a; padding: 10px; min-height: 100px; }
-        .item { color: #888; margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 3px; display: block; }
-        .log-entry { color: #555; margin-bottom: 8px; border-left: 2px solid #333; padding-left: 8px; font-style: italic; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button { background: #000; border: 1px solid #333; color: #888; padding: 15px; cursor: pointer; font-family: inherit; font-size: 12px; transition: all 0.2s; }
-        button:hover:not(:disabled) { border-color: var(--red); color: #fff; background: rgba(255,0,0,0.05); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .glitch { animation: shake 0.2s infinite; filter: contrast(200%) brightness(150%); }
-        @keyframes shake { 0% { transform: translate(2px, 2px); } 25% { transform: translate(-2px, -2px); } 50% { transform: translate(2px, -2px); } 100% { transform: translate(0, 0); } }
-        .dead-screen { color: var(--red); font-size: 30px; font-weight: bold; text-align: center; }
+        :root { --r: #ff0000; --b: #000; --g: #1a1a1a; }
+        body { background: var(--b); color: #ccc; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .crt::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)); z-index: 100; background-size: 100% 2px, 3px 100%; pointer-events: none; }
+        .wrapper { width: 95%; max-width: 1100px; display: grid; grid-template-columns: 1fr 320px; gap: 10px; height: 95vh; position: relative; }
+        .view { background: #000; border: 1px solid #333; padding: 20px; display: flex; flex-direction: column; position: relative; }
+        #visual { font-size: 120px; flex-grow: 1; display: flex; align-items: center; justify-content: center; text-shadow: 0 0 20px var(--r); }
+        #dialog { font-size: 15px; height: 140px; border-top: 1px solid #222; padding: 15px; overflow-y: auto; color: #999; }
+        .sidebar { background: #050505; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .stat { margin-bottom: 10px; }
+        .label { font-size: 11px; color: var(--r); font-weight: bold; margin-bottom: 5px; }
+        .bar { width: 100%; height: 6px; background: #111; border: 1px solid #222; }
+        .fill { height: 100%; background: var(--r); transition: 0.3s; box-shadow: 0 0 10px var(--r); }
+        .box { font-size: 12px; background: #000; border: 1px solid #1a1a1a; padding: 8px; height: 120px; overflow-y: auto; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { background: #000; border: 1px solid #444; color: #aaa; padding: 12px; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; }
+        button:hover:not(:disabled) { border-color: var(--r); color: #fff; background: #1a0000; }
+        button:disabled { opacity: 0.2; cursor: not-allowed; }
+        .glitch { animation: shake 0.1s infinite; filter: hue-rotate(90deg) contrast(150%); }
+        @keyframes shake { 0%{transform:translate(2px,2px)} 50%{transform:translate(-2px,-1px)} 100%{transform:translate(0,0)} }
+        .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--r); z-index: 50; display: none; }
     </style>
 </head>
-<body>
-    <div class="crt-overlay"></div>
-    <div class="game-wrapper">
-        <div class="main-view">
+<body class="crt">
+    <div class="flash" id="flash-effect"></div>
+    <div class="wrapper">
+        <div class="view">
             <div id="visual">🏚️</div>
-            <div id="dialog">Đang tải dữ liệu bệnh viện...</div>
+            <div id="dialog">Khởi tạo giao diện thám tử... Mọi hành động đều có hậu quả.</div>
             <div class="controls" id="choices"></div>
         </div>
         <div class="sidebar">
-            <div class="stat-group">
-                <div class="stat-label">TÂM LÝ (SANITY)</div>
-                <div class="bar-bg"><div id="sanity-bar" class="bar-fill" style="width: 100%"></div></div>
-            </div>
-            <div class="stat-group">
-                <div class="stat-label">KHOẢNG CÁCH KẺ SÁT NHÂN</div>
-                <div class="bar-bg"><div id="stalker-bar" class="bar-fill" style="width: 0%; background: orange;"></div></div>
-            </div>
-            <div class="stat-label">HÀNH TRANG</div>
-            <div class="inventory-box" id="inventory"></div>
-            <div class="stat-label">NHẬT KÝ THÁM TỬ</div>
-            <div class="log-box" id="logs"></div>
+            <div class="stat"><div class="label">SANITY (TÂM LÝ)</div><div class="bar"><div id="s-bar" class="fill" style="width: 100%"></div></div></div>
+            <div class="stat"><div class="label">DANGER (NGUY HIỂM)</div><div class="bar"><div id="d-bar" class="fill" style="width: 0%; background: #ffaa00"></div></div></div>
+            <div class="label">TÚI ĐỒ</div><div class="box" id="inv"></div>
+            <div class="label">DỮ LIỆU THU THẬP</div><div class="box" id="logs"></div>
+            <button onclick="location.reload()" style="margin-top:auto; font-size: 9px; padding: 5px;">RESET GAME</button>
         </div>
     </div>
 
     <script>
-        // Cấu hình trạng thái Game
-        let state = {
-            sanity: 100, stalkerDist: 0, 
-            inv: new Set(), logs: [], 
-            currentScene: 'start',
-            flags: { hasPower: false, cctvChecked: false, doorLocked: false }
-        };
+        let s = { sanity: 100, danger: 0, inv: new Set(), logs: [], code: ["?", "?", "?"], killedBy: "" };
 
-        // Dữ liệu cảnh quay (Mở rộng quy mô lớn)
         const scenes = {
-            // TẦNG 1: KHỞI ĐẦU
+            // TẦNG 1: SẢNH
             start: {
-                txt: "Bạn tỉnh lại tại sảnh bệnh viện Asylum. Mùi thuốc sát trùng nồng nặc đến nghẹt thở. Một dãy hành lang dẫn vào bóng tối và một phòng trực ban có đèn nhấp nháy.",
+                txt: "Bạn đang ở sảnh chính. Có một chiếc máy quay CCTV cũ và lối đi xuống Tầng Hầm. Cánh cửa sân thượng ở phía trên yêu cầu mã 3 số.",
                 vis: "🏥",
                 btns: [
-                    { t: "Vào Phòng Trực Ban", next: "security" },
-                    { t: "Đi vào Hành Lang", next: "hallway_dark" }
+                    { t: "Soi Camera", next: "cctv" },
+                    { t: "Xuống Tầng Hầm", next: "basement_entry" },
+                    { t: "Lên Tầng 2", next: "floor2_hallway" }
                 ]
             },
-            security: {
-                txt: "Căn phòng ngổn ngang giấy tờ. Hệ thống màn hình CCTV cũ kỹ đang hoạt động. Có một chiếc tủ sắt khóa kín.",
-                vis: "🖥️",
-                btns: [
-                    { t: "Xem Camera", next: "cctv_logic" },
-                    { t: "Phá tủ sắt", next: "locker_break" },
-                    { t: "Quay ra sảnh", next: "start" }
-                ]
-            },
-            cctv_logic: {
-                txt: "Hình ảnh đen trắng nhiễu nặng. Bạn thấy một bóng người cao lớn cầm chiếc rìu rỉ sét đứng ở Khu Phẫu Thuật Tầng 2. Hắn ta vừa viết một con số lên kính: '3'.",
+            cctv: {
+                txt: "Màn hình chập chờn hiện lên cảnh một bệnh nhân đang vẽ số '7' lên tường bằng máu. Đó là số đầu tiên của mật mã.",
                 vis: "📺",
-                onEnter: () => { addLog("Số đầu tiên của mật mã: 3"); state.flags.cctvChecked = true; },
-                btns: [{ t: "Rời màn hình", next: "security" }]
+                onEnter: () => { addLog("Số thứ 1: 7"); s.code[0] = "7"; },
+                btns: [{ t: "Quay lại", next: "start" }]
             },
-            locker_break: {
-                txt: "Bạn dùng hết sức phá tủ. Bên trong là một khẩu súng Flare (Pháo sáng) nhưng không có đạn. Bạn cũng tìm thấy một tờ giấy: 'Mật mã tầng 2 bắt đầu bằng số 3...'",
-                vis: "📦",
-                onEnter: () => { state.sanity -= 5; addInv("Flare Gun (Hết đạn)"); },
-                btns: [{ t: "Tiếp tục", next: "security" }]
+            // TẦNG HẦM: NHÀ XÁC
+            basement_entry: {
+                txt: "Không khí ở đây lạnh đến buốt xương. Tiếng cửa sắt va đập đều đặn. Có phòng Lò Hơi và Nhà Xác.",
+                vis: "📉",
+                onEnter: () => { s.danger += 10; },
+                btns: [
+                    { t: "Vào Nhà Xác", next: "morgue" },
+                    { t: "Phòng Lò Hơi", next: "boiler" },
+                    { t: "Lên Sảnh", next: "start" }
+                ]
             },
-
-            // KHU VỰC HÀNH LANG & TRUY ĐUỔI
-            hallway_dark: {
-                txt: "Hành lang tối om. Đèn trần rơi rụng. Bạn nghe thấy tiếng kéo lê vật nặng bằng kim loại từ phía sau. RẤT GẦN.",
+            morgue: {
+                txt: "Một cái xác trên bàn phẫu thuật. Trong tay nó nắm chặt một mẩu giấy ghi số '2'.",
+                vis: "⚰️",
+                onEnter: () => { s.code[1] = "2"; addLog("Số thứ 2: 2"); s.sanity -= 10; },
+                btns: [{ t: "Rời đi", next: "basement_entry" }]
+            },
+            boiler: {
+                txt: "Sức nóng kinh người. Bạn tìm thấy một thanh sắt rỉ sét. Nó có thể dùng làm vũ khí.",
+                vis: "🔥",
+                onEnter: () => { addInv("Thanh Sắt"); },
+                btns: [{ t: "Rời đi", next: "basement_entry" }]
+            },
+            // TẦNG 2: PHÒNG MỔ
+            floor2_hallway: {
+                txt: "Hành lang Tầng 2. Kẻ Sát Nhân đang lảng vảng ở đây! Bạn cần trốn nhanh.",
                 vis: "👣",
-                onEnter: () => { state.stalkerDist = 40; },
+                onEnter: () => { s.danger += 30; },
                 btns: [
-                    { t: "Chạy vào Nhà Kho", next: "storage" },
-                    { t: "Trốn vào Nhà Vệ Sinh", next: "restroom_hide" }
+                    { t: "Nấp vào Tủ", next: "hide_closet" },
+                    { t: "Dùng Thanh Sắt chiến đấu", next: "fight", req: "Thanh Sắt" }
                 ]
             },
-            restroom_hide: {
-                txt: "Bạn nấp vào buồng vệ sinh cuối cùng. Tiếng bước chân dừng lại ngay trước cửa. Hắn đứng đó im lặng 30 giây rồi bỏ đi. Tim bạn đập loạn nhịp.",
-                vis: "🚽",
-                onEnter: () => { state.stalkerDist = 10; state.sanity -= 15; },
-                btns: [{ t: "Ra ngoài", next: "hallway_mid" }]
+            hide_closet: {
+                txt: "Bạn nín thở. Hắn đi ngang qua, lưỡi rìu quệt xuống sàn tạo tiếng rít ghê người. Hắn bỏ rơi một tấm thẻ có ghi số '5'.",
+                vis: "🚪",
+                onEnter: () => { s.code[2] = "5"; addLog("Số thứ 3: 5"); s.danger = 5; },
+                btns: [{ t: "Ra ngoài", next: "start" }]
             },
-            storage: {
-                txt: "Trong nhà kho, bạn tìm thấy một hũ hóa chất dễ cháy và một hộp diêm.",
-                vis: "🧪",
-                onEnter: () => { addInv("Hóa chất"); addInv("Diêm"); },
-                btns: [{ t: "Đi tiếp hành lang", next: "hallway_mid" }]
+            fight: {
+                txt: "Bạn lao ra! Một cú đánh trúng đầu hắn. Hắn lảo đảo lùi lại nhưng bạn cũng bị thương nặng. Chạy ngay!",
+                vis: "🩸",
+                onEnter: () => { s.sanity -= 40; s.danger = 0; triggerFlash(); },
+                btns: [{ t: "Chạy xuống sảnh", next: "start" }]
             },
-
-            // TẦNG HẦM: KHU THÍ NGHIỆM (HƠN 10 CẢNH LIÊN HOÀN)
-            hallway_mid: {
-                txt: "Hành lang chia làm hai ngả: Lối xuống Cầu thang hầm và lối lên Tầng 2. Tiếng gào thét u uất vang lên từ dưới hầm.",
-                vis: "➿",
+            // CÁI KẾT
+            final_door: {
+                txt: "Bạn đứng trước cánh cửa dẫn lên sân thượng. Nhập mã 3 chữ số để thoát thân.",
+                vis: "🔐",
                 btns: [
-                    { t: "Xuống Tầng Hầm", next: "basement_gate" },
-                    { t: "Lên Tầng 2", next: "stairs_up" }
+                    { t: "Nhập 7-2-5", next: "win" },
+                    { t: "Nhập 1-2-3", next: "death_wrong" },
+                    { t: "Quay lại", next: "start" }
                 ]
             },
-            basement_gate: {
-                txt: "Cửa tầng hầm bị khóa bởi xích sắt. Bạn cần thứ gì đó để cắt nó hoặc chìa khóa bảo vệ.",
-                vis: "⛓️",
-                btns: [
-                    { t: "Dùng chìa khóa vạn năng", next: "basement_inside", req: "Chìa khóa vạn năng" },
-                    { t: "Quay lại tìm đồ", next: "hallway_mid" }
-                ]
-            },
-            basement_inside: {
-                txt: "Phòng thí nghiệm bí mật. Các thùng chứa mẫu vật biến dị. Một cái xác bác sĩ còn giữ một chiếc 'Thẻ Từ Xanh'.",
-                vis: "🧬",
-                onEnter: () => { addInv("Thẻ Từ Xanh"); addLog("Đã có quyền truy cập khu phẫu thuật."); },
-                btns: [
-                    { t: "Kiểm tra lò hơi", next: "boiler_room" },
-                    { t: "Trở lại hành lang", next: "hallway_mid" }
-                ]
-            },
-
-            // KẾT THÚC & TRẠNG THÁI
             win: {
-                txt: "Bạn mở được cửa sân thượng. Chiếc trực thăng cứu hộ đang hạ cánh. Bạn đã thoát khỏi cơn ác mộng này, nhưng những tiếng thét sẽ còn ám ảnh bạn mãi mãi.",
+                txt: "Gió trời lồng lộng! Trực thăng cứu hộ đã đến. Bạn thoát chết trong gang tấc!",
                 vis: "🚁",
                 btns: [{ t: "CHƠI LẠI", next: "start", reset: true }]
             },
-            death: {
-                txt: "Tầm nhìn nhòe đi. Hắn đứng đó, lưỡi rìu vung lên cao. Kết thúc rồi.",
+            death_wrong: {
+                txt: "Mã sai! Còi báo động vang lên. Hắn xuất hiện ngay sau lưng bạn...",
                 vis: "🪓",
-                btns: [{ t: "THỬ LẠI", next: "start", reset: true }]
+                btns: [{ t: "KẾT THÚC", next: "death" }]
+            },
+            death: {
+                txt: "Trò chơi kết thúc. Bạn đã trở thành một phần của bệnh viện Asylum.",
+                vis: "💀",
+                btns: [{ t: "HỒI SINH", next: "start", reset: true }]
             }
         };
 
-        // Hàm bổ trợ hệ thống
-        function addInv(item) {
-            state.inv.add(item);
-            renderInventory();
-        }
-
-        function renderInventory() {
-            const box = document.getElementById('inventory');
-            box.innerHTML = Array.from(state.inv).map(i => `<span class="item">√ ${i}</span>`).join('');
-        }
-
-        function addLog(msg) {
-            state.logs.push(msg);
-            const box = document.getElementById('logs');
-            box.innerHTML = state.logs.map(l => `<div class="log-entry">${l}</div>`).join('');
-            box.scrollTop = box.scrollHeight;
-        }
+        function addInv(it) { s.inv.add(it); renderInv(); }
+        function renderInv() { document.getElementById('inv').innerHTML = Array.from(s.inv).map(i=>`<div style='color:#888'>• ${i}</div>`).join(''); }
+        function addLog(m) { s.logs.push(m); let b = document.getElementById('logs'); b.innerHTML = s.logs.map(l=>`<div style='margin-bottom:5px'>> ${l}</div>`).join(''); b.scrollTop = b.scrollHeight; }
+        function triggerFlash() { let f = document.getElementById('flash-effect'); f.style.display='block'; setTimeout(()=>f.style.display='none',100); }
 
         function updateUI() {
-            document.getElementById('sanity-bar').style.width = state.sanity + "%";
-            const sBar = document.getElementById('stalker-bar');
-            sBar.style.width = state.stalkerDist + "%";
-            
-            if(state.stalkerDist > 70 || state.sanity < 20) {
-                document.getElementById('visual').classList.add('glitch');
-            } else {
-                document.getElementById('visual').classList.remove('glitch');
-            }
+            document.getElementById('s-bar').style.width = s.sanity + "%";
+            document.getElementById('d-bar').style.width = s.danger + "%";
+            if(s.danger > 60 || s.sanity < 30) document.getElementById('visual').classList.add('glitch');
+            else document.getElementById('visual').classList.remove('glitch');
         }
 
         function render(key) {
-            const scene = scenes[key];
-            if(!scene) return;
+            const sc = scenes[key];
+            if(sc.reset) { s={sanity:100,danger:0,inv:new Set(),logs:[],code:["?","?","?"]}; document.getElementById('inv').innerHTML=""; document.getElementById('logs').innerHTML=""; }
             
-            if(scene.reset) {
-                state = { sanity: 100, stalkerDist: 0, inv: new Set(), logs: [], currentScene: 'start', flags: {} };
-                document.getElementById('inventory').innerHTML = "";
-                document.getElementById('logs').innerHTML = "";
+            // Logic đặc biệt: Nếu đủ mã thì thêm nút thoát
+            if(key === 'start' && !s.code.includes("?")) {
+                sc.btns.push({ t: "MỞ CỬA THOÁT HIỂM (MÃ 725)", next: "final_door" });
             }
 
-            const vis = document.getElementById('visual');
-            const dial = document.getElementById('dialog');
-            const ctrl = document.getElementById('choices');
+            document.getElementById('visual').innerText = sc.vis;
+            document.getElementById('dialog').innerText = sc.txt;
+            let c = document.getElementById('choices'); c.innerHTML = "";
 
-            vis.innerText = scene.vis;
-            dial.innerText = scene.txt;
-            ctrl.innerHTML = "";
+            if(sc.onEnter) sc.onEnter();
 
-            if(scene.onEnter) scene.onEnter();
-
-            scene.btns.forEach(b => {
-                const btn = document.createElement('button');
+            sc.btns.forEach(b => {
+                let btn = document.createElement('button');
                 btn.innerText = b.t;
-                if(b.req && !state.inv.has(b.req)) {
-                    btn.disabled = true;
-                    btn.innerText += " (Cần " + b.req + ")";
-                }
+                if(b.req && !s.inv.has(b.req)) btn.disabled = true;
                 btn.onclick = () => {
-                    state.sanity -= 2;
-                    if(state.stalkerDist > 0) state.stalkerDist += 5;
-                    updateUI();
-                    if(state.sanity <= 0 || state.stalkerDist >= 100) render('death');
+                    s.sanity -= 2; s.danger += 2; updateUI();
+                    if(s.sanity <= 0 || s.danger >= 100) render('death');
                     else render(b.next);
                 };
-                ctrl.appendChild(btn);
+                c.appendChild(btn);
             });
             updateUI();
         }
 
-        // Vòng lặp thời gian thực
-        setInterval(() => {
-            if(state.sanity > 0) {
-                state.sanity -= 0.5;
-                if(state.stalkerDist > 0 && state.stalkerDist < 100) state.stalkerDist += 0.2;
-                updateUI();
-            }
-        }, 3000);
-
-        // Khởi động Game
+        setInterval(() => { if(s.sanity > 0) { s.sanity -= 0.5; updateUI(); if(s.sanity <= 0) render('death'); } }, 3000);
         render('start');
-        addLog("Hệ thống thám tử đã sẵn sàng...");
     </script>
 </body>
 </html>
