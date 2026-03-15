@@ -5,6 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Casino Mini Ultimate</title>
     <style>
+        /* Lưới bàn cờ Bầu Cua */
+.baucua-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.bc-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 30px;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bc-item span {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #ccc;
+}
+
+/* Hiệu ứng khi được chọn */
+.bc-item.selected {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+    transform: scale(1.05);
+}
+
+.bc-item.selected span { color: #ffd700; }
+
+/* Xúc xắc bầu cua nhảy */
+.bc-dice {
+    display: inline-block;
+    font-size: 50px;
+    margin: 0 5px;
+}
+
+.shaking .bc-dice {
+    animation: rotateShake 0.3s infinite;
+}
+
+@keyframes rotateShake {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(10deg) scale(1.1); }
+    75% { transform: rotate(-10deg) scale(1.1); }
+    100% { transform: rotate(0deg) scale(1); }
+}
+        /* Container cho 2 nút bấm nằm ngang đều nhau */
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Nâng cấp nút bấm */
+.btn-bet {
+    border: none;
+    border-radius: 15px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn-bet:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.btn-tai { background: linear-gradient(145deg, #00ff88, #008844); color: white; }
+.btn-xiu { background: linear-gradient(145deg, #ff4d4d, #aa0000); color: white; }
+
+.btn-bet .label { font-size: 22px; font-weight: 900; }
+.btn-bet .range { font-size: 12px; opacity: 0.8; }
+
+/* Hiệu ứng xúc xắc nhảy */
+.dice-item {
+    display: inline-block;
+    font-size: 70px;
+    margin: 0 5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.shaking .dice-item {
+    animation: diceJump 0.2s infinite alternate;
+}
+
+/* Mỗi viên nhảy lệch pha nhau cho tự nhiên */
+.shaking .dice-item:nth-child(2) { animation-delay: 0.05s; }
+.shaking .dice-item:nth-child(3) { animation-delay: 0.1s; }
+
+@keyframes diceJump {
+    from { transform: translateY(0) rotate(0deg); }
+    to { transform: translateY(-20px) rotate(15deg); }
+}
+
+/* Hiệu ứng chữ thắng cuộc lấp lánh */
+.win-animate {
+    animation: flash 0.5s silver infinite;
+    color: #ffd700 !important;
+    font-size: 26px;
+}
+
+@keyframes flash {
+    50% { opacity: 0.5; transform: scale(1.1); }
+}
         :root {
             --primary: #ffd700;
             --bg: #1a1a2e;
@@ -126,35 +242,55 @@
         <button onclick="showGame('quayso')" id="btn-quayso">Quay Số</button>
     </div>
 
-    <div id="money">💰 1000000000000000000000000000000000</div>
+    <div id="money">💰 1,000</div>
 
     <div id="taixiu" class="game-container">
-        <h1>TÀI XỈU</h1>
-        <div class="display-area" id="dice-box">🎲 🎲 🎲</div>
-        <div class="controls">
-            <button class="btn-tai" onclick="playTaiXiu('tai')">TÀI (11-17)</button>
-            <button class="btn-xiu" onclick="playTaiXiu('xiu')">XỈU (4-10)</button>
-        </div>
-        <div id="res-taixiu" class="result-msg"></div>
+    <h1>TÀI XỈU</h1>
+    
+    <div id="res-taixiu" class="result-msg">Mời đặt cửa!</div>
+
+    <div class="display-area" id="dice-box">
+        <span class="dice-item">⚀</span>
+        <span class="dice-item">⚂</span>
+        <span class="dice-item">⚅</span>
     </div>
 
-    <div id="baucua" class="game-container hidden">
-        <h1>BẦU CUA</h1>
-        <div class="display-area" id="baucua-box">🦀 🦌 🍤</div>
-        <div class="controls">
-            <select id="baucua-select" style="padding:10px; border-radius:5px;">
-                <option value="0">🦌 Nai</option>
-                <option value="1">🦀 Cua</option>
-                <option value="2">🐟 Cá</option>
-                <option value="3">🐥 Gà</option>
-                <option value="4">🍤 Tôm</option>
-                <option value="5">🎃 Bầu</option>
-            </select>
-            <button class="btn-play" onclick="playBauCua()">ĐẶT CƯỢC</button>
-        </div>
-        <div id="res-baucua" class="result-msg"></div>
+    <div class="controls-grid">
+        <button class="btn-bet btn-tai" onclick="playTaiXiu('tai')">
+            <span class="label">TÀI</span>
+            <span class="range">11 - 17</span>
+        </button>
+        <button class="btn-bet btn-xiu" onclick="playTaiXiu('xiu')">
+            <span class="label">XỈU</span>
+            <span class="range">4 - 10</span>
+        </button>
+    </div>
+</div>
+
+   <div id="baucua" class="game-container hidden">
+    <h1>BẦU CUA</h1>
+    
+    <div class="display-area" id="baucua-box">
+        <span class="bc-dice">🦌</span>
+        <span class="bc-dice">🦀</span>
+        <span class="bc-dice">🎃</span>
     </div>
 
+    <div class="baucua-grid">
+        <div class="bc-item" onclick="selectBC(0)" data-id="0">🦌<span>Nai</span></div>
+        <div class="bc-item" onclick="selectBC(1)" data-id="1">🦀<span>Cua</span></div>
+        <div class="bc-item" onclick="selectBC(2)" data-id="2">🐟<span>Cá</span></div>
+        <div class="bc-item" onclick="selectBC(3)" data-id="3">🐥<span>Gà</span></div>
+        <div class="bc-item" onclick="selectBC(4)" data-id="4">🍤<span>Tôm</span></div>
+        <div class="bc-item" onclick="selectBC(5)" data-id="5">🎃<span>Bầu</span></div>
+    </div>
+
+    <div class="controls" style="margin-top: 20px;">
+        <button class="btn-play" onclick="playBauCua()">XÓC BẦU CUA</button>
+    </div>
+    
+    <div id="res-baucua" class="result-msg">Chọn 1 linh vật để đặt cược!</div>
+</div>
     <div id="xoso" class="game-container hidden">
         <h1>XỔ SỐ (00-99)</h1>
         <div class="display-area" id="xoso-box">00</div>
@@ -193,50 +329,104 @@
             document.getElementById('btn-' + gameId).classList.add('active');
         }
 
-        // LOGIC TÀI XỈU
         function playTaiXiu(choice) {
-            const box = document.getElementById('dice-box');
-            box.classList.add('shaking');
-            
-            setTimeout(() => {
-                box.classList.remove('shaking');
-                let d1 = Math.floor(Math.random()*6);
-                let d2 = Math.floor(Math.random()*6);
-                let d3 = Math.floor(Math.random()*6);
-                let total = d1 + d2 + d3 + 3;
-                
-                box.innerHTML = `${diceEmojis[d1]} ${diceEmojis[d2]} ${diceEmojis[d3]}`;
-                let win = (total >= 11 && choice === 'tai') || (total < 11 && choice === 'xiu');
-                
-                money += win ? 100 : -100;
-                document.getElementById('res-taixiu').innerHTML = win ? `<span style="color:var(--win)">THẮNG! Tổng ${total}</span>` : `<span style="color:var(--lose)">THUA! Tổng ${total}</span>`;
-                updateMoney();
-            }, 500);
+    const box = document.getElementById('dice-box');
+    const resMsg = document.getElementById('res-taixiu');
+    
+    // 1. Hiệu ứng đang xóc
+    box.classList.add('shaking');
+    resMsg.innerHTML = "Đang lắc...";
+    resMsg.classList.remove('win-animate');
+
+    setTimeout(() => {
+        box.classList.remove('shaking');
+        
+        let d1 = Math.floor(Math.random() * 6);
+        let d2 = Math.floor(Math.random() * 6);
+        let d3 = Math.floor(Math.random() * 6);
+        let total = d1 + d2 + d3 + 3;
+        
+        // Cập nhật từng viên xúc xắc
+        const diceElements = box.querySelectorAll('.dice-item');
+        diceElements[0].innerHTML = diceEmojis[d1];
+        diceElements[1].innerHTML = diceEmojis[d2];
+        diceElements[2].innerHTML = diceEmojis[d3];
+
+        let result = total >= 11 ? 'tai' : 'xiu';
+        let isWin = choice === result;
+
+        if (isWin) {
+            money += 100;
+            resMsg.innerHTML = `🎉 THẮNG! (${total} - ${result.toUpperCase()})`;
+            resMsg.classList.add('win-animate');
+        } else {
+            money -= 100;
+            resMsg.innerHTML = `❌ THUA! (${total} - ${result.toUpperCase()})`;
+            resMsg.style.color = "var(--lose)";
         }
 
-        // LOGIC BẦU CUA
-        function playBauCua() {
-            const box = document.getElementById('baucua-box');
-            const bet = document.getElementById('baucua-select').value;
-            box.classList.add('shaking');
+        updateMoney();
+    }, 600); // Đợi 0.6 giây xóc xong mới hiện kết quả
+}}
 
-            setTimeout(() => {
-                box.classList.remove('shaking');
-                let res = [Math.floor(Math.random()*6), Math.floor(Math.random()*6), Math.floor(Math.random()*6)];
-                box.innerHTML = res.map(i => baucuaEmojis[i]).join(" ");
-                
-                let matches = res.filter(x => x == bet).length;
-                if(matches > 0) {
-                    money += matches * 200;
-                    document.getElementById('res-baucua').innerHTML = `<span style="color:var(--win)">TRÚNG ${matches} CON! +${matches*200}</span>`;
-                } else {
-                    money -= 100;
-                    document.getElementById('res-baucua').innerHTML = `<span style="color:var(--lose)">TRẬT RỒI! -100</span>`;
-                }
-                updateMoney();
-            }, 500);
+        let selectedBauCua = null; // Lưu lựa chọn hiện tại
+
+// Hàm để chọn linh vật
+function selectBC(id) {
+    selectedBauCua = id;
+    // Xóa class selected của tất cả các ô
+    document.querySelectorAll('.bc-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    // Thêm class selected vào ô vừa chọn
+    document.querySelector(`.bc-item[data-id="${id}"]`).classList.add('selected');
+    document.getElementById('res-baucua').innerHTML = "Đã chọn! Hãy nhấn XÓC.";
+}
+
+function playBauCua() {
+    if (selectedBauCua === null) {
+        alert("Vui lòng chọn một linh vật trước khi đặt!");
+        return;
+    }
+
+    const box = document.getElementById('baucua-box');
+    const resMsg = document.getElementById('res-baucua');
+    
+    box.classList.add('shaking');
+    resMsg.innerHTML = "Đang xóc...";
+
+    setTimeout(() => {
+        box.classList.remove('shaking');
+        
+        // Tạo kết quả 3 con ngẫu nhiên
+        let r1 = Math.floor(Math.random() * 6);
+        let r2 = Math.floor(Math.random() * 6);
+        let r3 = Math.floor(Math.random() * 6);
+        let results = [r1, r2, r3];
+
+        // Hiển thị kết quả bằng Emoji
+        const diceElements = box.querySelectorAll('.bc-dice');
+        diceElements[0].innerHTML = baucuaEmojis[r1];
+        diceElements[1].innerHTML = baucuaEmojis[r2];
+        diceElements[2].innerHTML = baucuaEmojis[r3];
+
+        // Kiểm tra xem trúng bao nhiêu con
+        let matches = results.filter(x => x == selectedBauCua).length;
+
+        if (matches > 0) {
+            let winAmount = matches * 200; // Thắng gấp đôi/ba nếu ra nhiều con
+            money += winAmount;
+            resMsg.innerHTML = `<span style="color:var(--win)">TRÚNG ${matches} CON! +${winAmount}💰</span>`;
+            resMsg.classList.add('win-animate');
+        } else {
+            money -= 100;
+            resMsg.innerHTML = `<span style="color:var(--lose)">HỤT RỒI! -100💰</span>`;
+            resMsg.classList.remove('win-animate');
         }
 
+        updateMoney();
+    }, 800);
+}
         // LOGIC XỔ SỐ
         function playXoSo() {
             const input = document.getElementById('xoso-input').value;
