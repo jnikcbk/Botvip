@@ -15,58 +15,54 @@
    TRÌNH PHÁT NHẠC KAIZEN - ĐỒNG BỘ 20 HỆ MÀU (BẢN FIX CLICK)
    ============================================================ */
 
+/* --- TRÌNH PHÁT NHẠC (BẢN SỬA LỖI LIỆT NÚT) --- */
 .music-player-container {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    /* Z-index cực cao để vượt qua các hiệu ứng Pokemon/Meteor/Mouse-glow */
-    z-index: 999999 !important; 
+    /* Số này là mức cao nhất để vượt qua tất cả hiệu ứng Pokemon/Sao rơi */
+    z-index: 2147483647 !important; 
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-start;
     gap: 12px;
-    pointer-events: none; /* Vùng bao quanh không cản trở click vào nội dung bên dưới */
+    pointer-events: none; /* Vùng trống xung quanh không cản trở click */
 }
 
-/* Nút bấm tròn để bật/tắt nhạc */
 .music-toggle-btn {
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: var(--glass);
-    border: 2px solid var(--neon-blue);
+    border: 3px solid var(--neon-blue);
     color: var(--neon-blue);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer !important;
-    font-size: 22px;
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 0 15px var(--neon-blue), inset 0 0 10px var(--neon-blue);
-    pointer-events: auto !important; /* ÉP BUỘC NHẬN CLICK */
+    cursor: pointer !important; /* Hiện hình bàn tay khi di chuột vào */
+    font-size: 24px;
+    transition: 0.3s;
+    box-shadow: 0 0 20px var(--neon-blue);
+    pointer-events: auto !important; /* BẮT BUỘC PHẢI NHẬN CLICK */
 }
 
-.music-toggle-btn:hover {
-    transform: scale(1.1) rotate(15deg);
-    background: var(--neon-blue);
-    color: var(--bg-dark);
-    box-shadow: 0 0 25px var(--neon-blue);
-}
-
-/* Bảng điều khiển trình phát */
 .music-panel {
-    display: none; /* JS sẽ bật thành block khi bấm nút */
+    display: none; /* Mặc định ẩn */
     width: 320px;
     background: var(--glass);
-    border: 1px solid var(--neon-blue);
+    border: 2px solid var(--neon-blue);
     border-radius: 16px;
-    padding: 18px;
+    padding: 15px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 15px 50px rgba(0,0,0,0.8), inset 0 0 15px rgba(0, 240, 255, 0.1);
-    animation: musicSlideUp 0.4s ease-out;
-    pointer-events: auto !important; /* ÉP BUỘC NHẬN CLICK */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    pointer-events: auto !important; /* BẮT BUỘC PHẢI NHẬN CLICK */
 }
 
+/* VÔ HIỆU HÓA CÁC LỚP ĐÈ LÊN NÚT */
+#mouse-glow, .meteor, .pokemon-fallback, canvas, .radar-line {
+    pointer-events: none !important; 
+    z-index: -1 !important; /* Đẩy xuống dưới cùng */
+}
 @keyframes musicSlideUp {
     from { opacity: 0; transform: translateY(30px) scale(0.9); }
     to { opacity: 1; transform: translateY(0) scale(1); }
@@ -673,6 +669,7 @@ body {
     </style>
 </head>
 <body>
+ 
     <img src="https://media.rawg.io/media/screenshots/030/03064669f5b6b158869c3a647d95394b.jpg" class="absolute top-20 left-10 w-16 opacity-50 floating" alt="decor">
     
     <div id="scroll-progress-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 10002; background: rgba(255,255,255,0.05);">
