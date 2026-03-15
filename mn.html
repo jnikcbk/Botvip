@@ -2,228 +2,191 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>ASTRA_CORE_SYSTEM</title>
+    <title>ZEN_UNIVERSE_v1.0</title>
     <style>
-        :root { --accent: #00f2ff; --bg: #05070a; --panel: rgba(10, 15, 20, 0.8); --text: #a0adba; --danger: #ff3333; }
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', 'Ubuntu Mono', monospace; overflow: hidden; height: 100vh; }
-
-        /* Background Grid */
-        body {
-            background-image: 
-                linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; background-color: #050505;
+            cursor: none; /* Ẩn chuột thật để dùng chuột ảo */
         }
 
-        #main-frame {
-            display: grid;
-            grid-template-columns: 320px 1fr 300px;
-            grid-template-rows: 50px 1fr 220px;
-            height: 100vh;
-            gap: 15px;
-            padding: 20px;
+        #canvas { display: block; }
+
+        #instructions {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 12px;
+            letter-spacing: 5px;
+            pointer-events: none;
+            text-transform: uppercase;
+            transition: opacity 2s;
         }
 
-        .panel {
-            background: var(--panel);
-            border: 1px solid rgba(0, 242, 255, 0.1);
-            backdrop-filter: blur(10px);
-            position: relative;
-            display: flex;
-            flex-direction: column;
+        /* Chuột ảo nghệ thuật */
+        #cursor {
+            position: fixed;
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+            z-index: 1000;
         }
-
-        .panel-header {
-            padding: 8px 15px;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: var(--accent);
-            border-bottom: 1px solid rgba(0, 242, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Terminal */
-        #console { grid-area: 2 / 2 / 3 / 3; border-top: 2px solid var(--accent); }
-        #log-flow { flex-grow: 1; padding: 20px; overflow-y: auto; font-family: 'Ubuntu Mono', monospace; font-size: 14px; line-height: 1.6; }
-        .input-box { padding: 15px; display: flex; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
-        #input-cmd { background: transparent; border: none; color: #fff; outline: none; flex-grow: 1; font-family: inherit; font-size: 15px; margin-left: 10px; }
-
-        /* Data Visuals */
-        .data-row { padding: 12px 15px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
-        .val { color: var(--accent); }
-
-        /* Attack Animation */
-        #strike-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent, rgba(0,0,0,0.9));
-            z-index: 1000; display: none; pointer-events: none;
-        }
-
-        .progress-container { width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-top: 5px; }
-        .progress-bar { height: 100%; width: 0%; background: var(--accent); transition: 0.4s; box-shadow: 0 0 10px var(--accent); }
-
-        .system-alert { color: var(--danger); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="strike-overlay"></div>
+    <div id="cursor"></div>
+    <div id="instructions">CLICK ĐỂ TẠO RA ÂM THANH & ÁNH SÁNG</div>
+    <canvas id="canvas"></canvas>
 
-<div id="main-frame">
-    <div class="panel" style="grid-area: 1 / 1 / 2 / 4; flex-direction: row; align-items: center; padding: 0 20px; justify-content: space-between;">
-        <div style="font-weight: bold; letter-spacing: 5px; color: var(--accent);">ASTRA CORE <span style="font-weight: 200; opacity: 0.5;">V.4.0.1</span></div>
-        <div style="font-size: 11px; opacity: 0.6;">SATELLITE UPLINK: <span style="color:var(--accent)">ACTIVE</span> | COORDINATES: 21.0285°N, 105.8542°E</div>
-    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
+        const instructions = document.getElementById('instructions');
 
-    <div class="panel">
-        <div class="panel-header">NODE_RESOURCES <span>● LIVE</span></div>
-        <div class="data-row">OS_KERNEL <span>v5.12-X86</span></div>
-        <div class="data-row">ENCRYPTION <span class="val">QUANTUM-RESISTANT</span></div>
-        <div class="data-row">VPN_NODES <span class="val">14 ACTIVE</span></div>
-        <div class="data-row">CPU_USAGE <div style="width: 100px"><div class="progress-container"><div class="progress-bar" style="width: 45%"></div></div></div></div>
-        <div style="padding: 15px; font-size: 10px; opacity: 0.5; line-height: 1.8;">
-            > TÌM KIẾM MỤC TIÊU...<br>
-            > DỮ LIỆU ĐANG ĐƯỢC MÃ HÓA...<br>
-            > TRẠNG THÁI: CHỜ LỆNH
-        </div>
-    </div>
+        let width, height;
+        let particles = [];
+        const mouse = { x: -1000, y: -1000, active: false };
 
-    <div class="panel" id="console">
-        <div class="panel-header">STRATEGIC_COMMAND_INTERFACE</div>
-        <div id="log-flow">
-            <div style="opacity: 0.4;">[SYSTEM_BOOT_COMPLETE]</div>
-            <div style="color: var(--accent);">Chào mừng trở lại, Quản trị viên. Hệ thống đã sẵn sàng cho các chiến dịch tầm xa.</div>
-            <div>Gõ <span style="color: #fff; font-weight: bold;">'help'</span> để truy xuất danh mục lệnh.</div>
-        </div>
-        <div class="input-area input-box">
-            <span style="color: var(--accent); font-weight: bold;">$</span>
-            <input type="text" id="input-cmd" autofocus autocomplete="off" spellcheck="false">
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">TARGET_ANALYSIS</div>
-        <div id="target-stat" style="padding: 15px; text-align: center;">
-            <div style="font-size: 24px; color: #fff; margin-bottom: 5px;">NONE</div>
-            <div style="font-size: 10px; opacity: 0.4;">NO TARGET SELECTED</div>
-        </div>
-        <div class="data-row">THREAT_LEVEL <span class="val">NULL</span></div>
-        <div class="data-row">FIREWALL <span class="val">UNKNOWN</span></div>
-    </div>
-
-    <div class="panel" style="grid-area: 3 / 1 / 4 / 3;">
-        <div class="panel-header">GLOBAL_NETWORK_LOGS</div>
-        <div id="global-logs" style="padding: 10px; font-size: 11px; font-family: monospace; overflow: hidden;"></div>
-    </div>
-
-    <div class="panel" style="grid-area: 3 / 3 / 4 / 4; justify-content: center; align-items: center; padding: 20px;">
-        <div style="text-align: center;">
-            <div id="status-label" style="font-size: 10px; margin-bottom: 10px;">SYSTEM READINESS</div>
-            <div style="font-size: 28px; color: var(--accent); font-weight: 200;">100%</div>
-            <div class="progress-container" style="width: 150px;"><div class="progress-bar" style="width: 100%"></div></div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const input = document.getElementById('input-cmd');
-    const logs = document.getElementById('log-flow');
-    const globalLogs = document.getElementById('global-logs');
-
-    // Âm thanh tinh tế (Soft beep)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function softBeep(freq, dur) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.value = freq; gain.gain.value = 0.05;
-        osc.start(); setTimeout(() => osc.stop(), dur);
-    }
-
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const cmd = input.value.trim().toLowerCase();
-            printLog(`> ${input.value}`, 'white');
-            softBeep(800, 20);
-
-            if (cmd === 'help') {
-                printLog("LỆNH KHẢ DỤNG: scan, target [IP], deep-strike, bypass, clear");
-            } else if (cmd.startsWith('target')) {
-                const ip = cmd.split(' ')[1] || "127.0.0.1";
-                setTarget(ip);
-            } else if (cmd === 'scan') {
-                runScan();
-            } else if (cmd === 'deep-strike') {
-                runDeepStrike();
-            } else if (cmd === 'clear') {
-                logs.innerHTML = '';
-            } else {
-                printLog("COMMAND ERROR: LỆNH KHÔNG ĐƯỢC HỆ THỐNG CÔNG NHẬN.", "danger");
-            }
-            input.value = '';
-            logs.scrollTop = logs.scrollHeight;
+        // 1. Khởi tạo kích thước
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
-    });
+        window.addEventListener('resize', resize);
+        resize();
 
-    function printLog(text, colorClass = '') {
-        const d = document.createElement('div');
-        if (colorClass === 'white') d.style.color = '#fff';
-        if (colorClass === 'danger') d.className = 'system-alert';
-        d.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
-        logs.appendChild(d);
-    }
-
-    function setTarget(ip) {
-        printLog(`ĐÃ KHÓA MỤC TIÊU: ${ip}`);
-        document.getElementById('target-stat').innerHTML = `
-            <div style="font-size: 24px; color: #fff; margin-bottom: 5px;">${ip}</div>
-            <div style="font-size: 10px; color: var(--accent);">TARGET ACQUIRED</div>
-        `;
-    }
-
-    function runScan() {
-        printLog("BẮT ĐẦU QUÉT LỖ HỔNG HỆ THỐNG...");
-        let p = 0;
-        const i = setInterval(() => {
-            p += 20;
-            printLog(`QUÉT PORT ${p * 80}... MỞ`);
-            if (p >= 100) clearInterval(i);
-        }, 300);
-    }
-
-    function runDeepStrike() {
-        document.getElementById('strike-overlay').style.display = 'block';
-        printLog("KÍCH HOẠT GIAO THỨC DEEP-STRIKE (TẤN CÔNG ĐIỂM YẾU)...", "danger");
-        softBeep(200, 500);
-        
-        let p = 0;
-        const i = setInterval(() => {
-            p += 2;
-            printLog(`INFILTRATING KERNEL LAYER ${p}%...`);
-            if (p >= 100) {
-                clearInterval(i);
-                printLog("TẤN CÔNG HOÀN TẤT. HỆ THỐNG MỤC TIÊU ĐÃ BỊ CHIẾM QUYỀN.", "white");
-                document.getElementById('strike-overlay').style.display = 'none';
+        // 2. Đối tượng Hạt
+        class Particle {
+            constructor() {
+                this.init();
             }
-        }, 100);
-    }
 
-    // Live Feed ngẫu nhiên
-    setInterval(() => {
-        const events = ["PACKET_SENT", "ENCRYPTION_BYPASS", "NODE_ROUTING", "SIGNAL_DECRYPT"];
-        const d = document.createElement('div');
-        d.style.opacity = "0.5";
-        d.innerText = `[${new Date().toLocaleTimeString()}] ${events[Math.floor(Math.random()*events.length)]} :: OK`;
-        globalLogs.prepend(d);
-        if(globalLogs.childNodes.length > 8) globalLogs.lastChild.remove();
-    }, 1500);
+            init() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 0.5;
+                this.color = `hsl(${Math.random() * 60 + 180}, 70%, 70%)`; // Tông xanh dương/cyan
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
 
-</script>
+            update() {
+                // Lực hút từ chuột
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 200) {
+                    const force = (200 - distance) / 2000;
+                    this.vx += dx * force;
+                    this.vy += dy * force;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vx *= 0.98; // Ma sát
+                this.vy *= 0.98;
+
+                // Quay lại màn hình nếu ra ngoài
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fill();
+            }
+        }
+
+        // Tạo 300 hạt ban đầu
+        for (let i = 0; i < 300; i++) particles.push(new Particle());
+
+        // 3. Audio Engine (Dùng Web Audio API tạo nhạc không cần file)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playNote(freq) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        // 4. Sự kiện chuột
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+            
+            // Xóa hướng dẫn khi người dùng di chuyển chuột
+            if (!mouse.active) {
+                instructions.style.opacity = '0';
+                mouse.active = true;
+            }
+        });
+
+        window.addEventListener('mousedown', () => {
+            // Click tạo âm thanh dựa trên vị trí chuột (tần số thấp bên trái, cao bên phải)
+            const freq = 200 + (mouse.x / width) * 600;
+            playNote(freq);
+            
+            // Đẩy hạt ra xa khi click
+            particles.forEach(p => {
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 300) {
+                    p.vx = (dx / dist) * 10;
+                    p.vy = (dy / dist) * 10;
+                }
+            });
+            cursor.style.transform += ' scale(1.5)';
+            setTimeout(() => cursor.style.transform = cursor.style.transform.replace(' scale(1.5)', ''), 100);
+        });
+
+        // 5. Vòng lặp chính
+        function animate() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)'; // Hiệu ứng đuôi mờ
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Vẽ các đường nối nhẹ nhàng
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 80) {
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
 </body>
 </html>
