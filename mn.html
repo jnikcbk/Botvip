@@ -3,301 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Arcade Mini</title>
+    <title>My Chill Companion</title>
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
-            --bg: #0a0a0c;
-            --card: #15151e;
+            --bg: #f8edeb;
+            --text: #4a4e69;
+            --accent: #ffb5a7;
         }
 
         body {
-            font-family: 'Orbitron', sans-serif; /* Cần font style game */
-            background: var(--bg);
-            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: 0.5s;
         }
 
-        /* Menu */
-        .nav {
-            margin: 30px 0;
-            display: flex;
-            gap: 15px;
-        }
-
-        .nav button {
-            background: transparent;
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .nav button.active {
-            background: var(--neon-blue);
-            color: black;
-            box-shadow: 0 0 20px var(--neon-blue);
-        }
-
-        /* Game Container */
-        .game-box {
-            background: var(--card);
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 450px;
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            width: 320px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
         }
 
-        .hidden { display: none; }
-
-        /* GAME 1: CLICKER */
-        #click-area {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(var(--neon-pink), transparent);
-            border-radius: 50%;
-            margin: 30px auto;
+        /* Thú ảo */
+        .pet-stage {
+            font-size: 80px;
+            height: 120px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            cursor: pointer;
-            font-size: 40px;
-            user-select: none;
-            transition: 0.1s;
-            border: 4px solid var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
+            align-items: center;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite ease-in-out;
         }
 
-        #click-area:active { transform: scale(0.9); }
-
-        /* GAME 2: MEMORY */
-        .memory-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 20px;
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
 
-        .card {
-            aspect-ratio: 1;
-            background: #252535;
+        /* Thanh trạng thái */
+        .stats {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border-radius: 8px;
-            cursor: pointer;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 80px;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 100%;
             transition: 0.3s;
         }
 
-        .card.flipped { background: var(--neon-blue); color: black; }
-
-        /* GAME 3: SNAKE */
-        canvas {
-            background: #000;
-            border: 2px solid #333;
-            margin-top: 10px;
+        /* Nút điều khiển */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
         }
 
-        .btn-main {
-            background: var(--neon-pink);
+        button {
             border: none;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 15px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 15px;
+            transition: 0.2s;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        button:hover {
+            filter: brightness(0.9);
+            transform: scale(1.05);
+        }
+
+        /* Music Player */
+        .music-player {
+            background: #fdf0ee;
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px dashed var(--accent);
+        }
+
+        .song-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <div class="nav">
-        <button onclick="switchGame('clicker')" id="nav-clicker" class="active">Tốc Độ</button>
-        <button onclick="switchGame('memory')" id="nav-memory">Ghi Nhớ</button>
-        <button onclick="switchGame('snake')" id="nav-snake">Rắn</button>
-    </div>
+    <div class="container">
+        <div id="pet-name" style="font-weight: 800; font-size: 20px;">MÈO BÉO</div>
+        
+        <div class="pet-stage" id="pet-icon">🐱</div>
 
-    <div id="clicker" class="game-box">
-        <h2>CLICK SPEED</h2>
-        <p>Click nhanh nhất trong 10s!</p>
-        <div id="click-timer">Thời gian: 10s</div>
-        <div id="click-score">Điểm: 0</div>
-        <div id="click-area" onclick="handleButtonClick()">TAP!</div>
-        <button class="btn-main" onclick="startClicker()">BẮT ĐẦU</button>
-    </div>
+        <div class="stats">
+            <div class="stat-item">
+                No bụng
+                <div class="progress-bar"><div id="hunger-bar" class="progress-fill"></div></div>
+            </div>
+            <div class="stat-item">
+                Hạnh phúc
+                <div class="progress-bar"><div id="happy-bar" class="progress-fill"></div></div>
+            </div>
+        </div>
 
-    <div id="memory" class="game-box hidden">
-        <h2>MEMORY MATCH</h2>
-        <p>Tìm các cặp hình giống nhau</p>
-        <div class="memory-grid" id="memory-grid"></div>
-        <button class="btn-main" onclick="startMemory()">CHƠI MỚI</button>
-    </div>
+        <div class="actions">
+            <button onclick="feedPet()">🍕 Cho ăn</button>
+            <button onclick="petMe()">🖐 Vuốt ve</button>
+            <button onclick="changeTheme()">🌓 Đổi màu</button>
+            <button onclick="renamePet()">✏️ Đổi tên</button>
+        </div>
 
-    <div id="snake" class="game-box hidden">
-        <h2>MINI SNAKE</h2>
-        <div id="snake-score">Điểm: 0</div>
-        <canvas id="snakeCanvas" width="300" height="300"></canvas>
-        <p style="font-size: 12px; color: #888;">Dùng các phím mũi tên hoặc WASD</p>
-        <button class="btn-main" onclick="startSnake()">CHƠI</button>
+        <div class="music-player">
+            <span class="song-title">🎵 Đang phát: Chill Lofi Beats</span>
+            <button onclick="playMusic()" id="btn-music" style="width: 100%;">Phát nhạc trên YouTube</button>
+        </div>
     </div>
 
     <script>
-        function switchGame(id) {
-            document.querySelectorAll('.game-box').forEach(b => b.classList.add('hidden'));
-            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById('nav-' + id).classList.add('active');
+        let hunger = 100;
+        let happiness = 100;
+        let isDarkMode = false;
+
+        // Giảm chỉ số theo thời gian
+        setInterval(() => {
+            hunger = Math.max(0, hunger - 1);
+            happiness = Math.max(0, happiness - 0.5);
+            updateUI();
+            checkStatus();
+        }, 3000);
+
+        function updateUI() {
+            document.getElementById('hunger-bar').style.width = hunger + "%";
+            document.getElementById('happy-bar').style.width = happiness + "%";
         }
 
-        // --- LOGIC CLICKER ---
-        let clickScore = 0;
-        let clickActive = false;
-        let clickTimeLeft = 10;
-        let clickInterval;
-
-        function startClicker() {
-            clickScore = 0;
-            clickTimeLeft = 10;
-            clickActive = true;
-            document.getElementById('click-score').innerText = "Điểm: 0";
-            document.getElementById('click-timer').innerText = "Thời gian: 10s";
-            
-            clearInterval(clickInterval);
-            clickInterval = setInterval(() => {
-                clickTimeLeft--;
-                document.getElementById('click-timer').innerText = `Thời gian: ${clickTimeLeft}s`;
-                if(clickTimeLeft <= 0) {
-                    clearInterval(clickInterval);
-                    clickActive = false;
-                    alert("Kết thúc! Điểm của bạn: " + clickScore);
-                }
-            }, 1000);
+        function checkStatus() {
+            const pet = document.getElementById('pet-icon');
+            if (hunger < 20) pet.innerText = "😿";
+            else if (happiness < 20) pet.innerText = "😿";
+            else if (hunger > 80 && happiness > 80) pet.innerText = "😸";
+            else pet.innerText = "🐱";
         }
 
-        function handleButtonClick() {
-            if(clickActive) {
-                clickScore++;
-                document.getElementById('click-score').innerText = "Điểm: " + clickScore;
-            }
+        function feedPet() {
+            hunger = Math.min(100, hunger + 20);
+            document.getElementById('pet-icon').innerText = "😋";
+            setTimeout(checkStatus, 1000);
+            updateUI();
         }
 
-        // --- LOGIC MEMORY ---
-        const emojis = ['🚀', '👾', '💎', '🔥', '🌈', '🍀', '🐱', '🍎'];
-        let cards = [...emojis, ...emojis];
-        let flippedCards = [];
-        let matchedCount = 0;
-
-        function startMemory() {
-            const grid = document.getElementById('memory-grid');
-            grid.innerHTML = '';
-            matchedCount = 0;
-            cards.sort(() => Math.random() - 0.5);
-            
-            cards.forEach((emoji, index) => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.dataset.value = emoji;
-                card.onclick = () => flipCard(card);
-                grid.appendChild(card);
-            });
+        function petMe() {
+            happiness = Math.min(100, happiness + 15);
+            document.getElementById('pet-icon').innerText = "🥰";
+            setTimeout(checkStatus, 1000);
+            updateUI();
         }
 
-        function flipCard(card) {
-            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
-                card.classList.add('flipped');
-                card.innerText = card.dataset.value;
-                flippedCards.push(card);
-
-                if (flippedCards.length === 2) {
-                    setTimeout(checkMatch, 500);
-                }
-            }
+        function renamePet() {
+            const newName = prompt("Đặt tên mới cho thú cưng:");
+            if(newName) document.getElementById('pet-name').innerText = newName.toUpperCase();
         }
 
-        function checkMatch() {
-            if (flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
-                matchedCount += 2;
-                if(matchedCount === cards.length) alert("Bạn đã thắng!");
+        function changeTheme() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--bg', '#2d3436');
+                document.documentElement.style.setProperty('--text', '#dfe6e9');
+                document.documentElement.style.setProperty('--accent', '#636e72');
             } else {
-                flippedCards.forEach(c => {
-                    c.classList.remove('flipped');
-                    c.innerText = '';
-                });
+                document.documentElement.style.setProperty('--bg', '#f8edeb');
+                document.documentElement.style.setProperty('--text', '#4a4e69');
+                document.documentElement.style.setProperty('--accent', '#ffb5a7');
             }
-            flippedCards = [];
         }
 
-        // --- LOGIC SNAKE ---
-        const canvas = document.getElementById("snakeCanvas");
-        const ctx = canvas.getContext("2d");
-        let snake, food, dx, dy, snakeScore, snakeInterval;
-
-        function startSnake() {
-            snake = [{x: 150, y: 150}];
-            food = {x: 0, y: 0};
-            dx = 10; dy = 0;
-            snakeScore = 0;
-            createFood();
-            clearInterval(snakeInterval);
-            snakeInterval = setInterval(moveSnake, 100);
+        // Tích hợp YouTube Music Tool
+        function playMusic() {
+            // Đây là nơi bạn có thể gọi API YouTube Music nếu muốn
+            // Ở đây mình sẽ giả lập hành động phát một playlist chill
+            alert("Đang chuẩn bị danh sách nhạc Chill cho bạn...");
         }
-
-        function createFood() {
-            food.x = Math.floor(Math.random() * 29) * 10;
-            food.y = Math.floor(Math.random() * 29) * 10;
-        }
-
-        function moveSnake() {
-            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-            
-            if (head.x < 0 || head.x >= 300 || head.y < 0 || head.y >= 300 || snake.some(s => s.x === head.x && s.y === head.y)) {
-                clearInterval(snakeInterval);
-                alert("Game Over! Điểm: " + snakeScore);
-                return;
-            }
-
-            snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) {
-                snakeScore += 10;
-                document.getElementById('snake-score').innerText = "Điểm: " + snakeScore;
-                createFood();
-            } else {
-                snake.pop();
-            }
-            drawSnake();
-        }
-
-        function drawSnake() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, 300, 300);
-            ctx.fillStyle = "#00f3ff";
-            snake.forEach(s => ctx.fillRect(s.x, s.y, 9, 9));
-            ctx.fillStyle = "#ff00ff";
-            ctx.fillRect(food.x, food.y, 9, 9);
-        }
-
-        window.addEventListener("keydown", e => {
-            if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -10; }
-            if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 10; }
-            if (e.key === "ArrowLeft" && dx === 0) { dx = -10; dy = 0; }
-            if (e.key === "ArrowRight" && dx === 0) { dx = 10; dy = 0; }
-        });
-
-        // Khởi tạo mặc định
-        startMemory();
     </script>
 </body>
 </html>
