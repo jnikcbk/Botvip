@@ -11,7 +11,120 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-     
+     /* --- TRÌNH PHÁT NHẠC ĐỒNG BỘ 20 HỆ MÀU --- */
+.music-player-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 99999; /* Đẩy lên cao nhất để không bị các hiệu ứng Pokémon đè */
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.music-toggle-btn {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 2px solid var(--neon-blue);
+    color: var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+.music-panel {
+    display: none; /* JS sẽ bật block */
+    width: 320px;
+    background: var(--glass);
+    border: 1px solid var(--neon-blue);
+    border-radius: 16px;
+    padding: 15px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 10px var(--neon-blue);
+    animation: slideUp 0.3s ease;
+}
+
+.panel-header {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--neon-blue);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.platform-selector {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.btn-platform {
+    flex: 1;
+    padding: 6px;
+    font-size: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.btn-platform.active {
+    background: var(--neon-blue);
+    color: var(--bg-dark) !important;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+#media-url-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--neon-blue);
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 10px;
+    outline: none;
+    font-size: 13px;
+}
+
+#media-url-input:focus {
+    border-color: var(--neon-pink);
+}
+
+.btn-change {
+    width: 100%;
+    padding: 10px;
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+#media-wrapper {
+    display: none;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--neon-pink); /* Tạo điểm nhấn bằng màu Pink của hệ */
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
     color: #ff4d4d !important; /* Màu đỏ cảnh báo */
@@ -352,111 +465,11 @@
         transform: translateY(110vh) rotate(360deg);
     }
 }
-        .btn-platform {
-    flex: 1;
-    padding: 5px;
-    font-size: 10px;
-    font-weight: bold;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid var(--border);
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-}
-.btn-platform.active {
-    background: var(--neon-pink);
-    border-color: var(--neon-pink);
-    color: white;
-}
-#media-url-input {
-    width: 100%;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: white;
-    margin-bottom: 8px;
-}
-        .music-panel {
-    display: none;
-    position: fixed;
-    bottom: 80px;
-    left: 20px;
-    width: 320px;
-    background: var(--glass);
-    border: 1px solid var(--neon-blue);
-    border-radius: 16px;
-    padding: 15px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    animation: slideUp 0.3s ease;
-    z-index: 1000;
-}
-
-.panel-header {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--neon-blue);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    font-family: 'Orbitron', sans-serif;
-}
-
-#sc-url-input {
-    width: 100%;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: white;
-    font-size: 13px;
-    margin-bottom: 8px;
-    outline: none;
-}
-
-#sc-url-input:focus {
-    border-color: var(--neon-pink);
-}
-
-.btn-change {
-    width: 100%;
-    padding: 8px;
-    background: var(--neon-blue);
-    color: black;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
-.btn-change:hover {
-    background: white;
-}
-
+       
 /* Giữ nguyên các class music-player-container và music-toggle-btn từ câu trả lời trước */
         /* --- FLOATING MUSIC PLAYER --- */
-.music-player-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: flex-start;
-    gap: 10px;
-}
 
-#sc-iframe-wrapper {
-    display: none; /* Mặc định ẩn */
-    width: 300px;
-    height: 120px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    border: 1px solid var(--neon-blue);
-    animation: slideUp 0.3s ease;
-}
+
 
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -493,41 +506,10 @@ body {
 
 /* ĐỒNG BỘ CHO TRÌNH PHÁT NHẠC */
 /* --- ĐỒNG BỘ TRÌNH PHÁT NHẠC --- */
-.music-panel {
-    display: none; /* Mặc định ẩn, JS sẽ điều khiển */
-    position: fixed;
-    bottom: 90px; /* Đẩy lên trên nút 🎵 một chút */
-    left: 20px;
-    width: 320px;
-    background: var(--glass);
-    border: 2px solid var(--neon-blue); /* Viền đồng bộ theo hệ */
-    border-radius: 16px;
-    padding: 15px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 15px var(--neon-blue);
-    z-index: 10001; /* Phải cực cao để không bị các hiệu ứng che khuất */
-    transition: all 0.3s ease;
-}
 
-.panel-header {
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px var(--neon-blue);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 12px;
-}
 
-#media-url-input {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--neon-blue);
-    color: white;
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    outline: none;
-    transition: 0.3s;
-}
+
+
 
 #media-url-input:focus {
     border-color: var(--neon-pink);
@@ -776,19 +758,16 @@ body {
         <div class="panel-header">KAIZEN MEDIA PLAYER</div>
         
         <div class="platform-selector">
-            <button onclick="setPlatform('sc')" class="btn-platform active" id="btn-sc">SoundCloud</button>
+            <button onclick="setPlatform('sc')" class="btn-platform" id="btn-sc">SoundCloud</button>
             <button onclick="setPlatform('yt')" class="btn-platform" id="btn-yt">YouTube</button>
             <button onclick="setPlatform('sp')" class="btn-platform" id="btn-sp">Spotify</button>
         </div>
 
-        <div class="input-group">
-            <input type="text" id="media-url-input" placeholder="Dán link hoặc nhập tên bài hát...">
-            <button onclick="playMedia()" class="btn-play-trigger">▶</button>
-        </div>
-
-        <div class="action-buttons">
-            <button onclick="playMedia()" class="btn-main">PHÁT NGAY</button>
-            <button class="theme-toggle-btn" onclick="nextTheme()" title="Đổi Hệ Màu">🎨</button>
+        <input type="text" id="media-url-input" placeholder="Dán link hoặc tìm tên bài hát...">
+        
+        <div style="display: flex; gap: 5px;">
+            <button onclick="playMedia()" class="btn-change" style="flex: 4;">PHÁT NGAY</button>
+            <button class="btn-change" onclick="nextTheme()" style="flex: 1; background: var(--neon-pink);">🎨</button>
         </div>
 
         <div id="media-wrapper">
