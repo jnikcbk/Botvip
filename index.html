@@ -11,18 +11,24 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
-     /* --- TRÌNH PHÁT NHẠC ĐỒNG BỘ 20 HỆ MÀU --- */
+/* ============================================================
+   TRÌNH PHÁT NHẠC KAIZEN - ĐỒNG BỘ 20 HỆ MÀU (BẢN FIX CLICK)
+   ============================================================ */
+
 .music-player-container {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    z-index: 99999; /* Đẩy lên cao nhất để không bị các hiệu ứng Pokémon đè */
+    /* Z-index cực cao để vượt qua các hiệu ứng Pokemon/Meteor/Mouse-glow */
+    z-index: 999999 !important; 
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-start;
     gap: 12px;
+    pointer-events: none; /* Vùng bao quanh không cản trở click vào nội dung bên dưới */
 }
 
+/* Nút bấm tròn để bật/tắt nhạc */
 .music-toggle-btn {
     width: 55px;
     height: 55px;
@@ -33,48 +39,68 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    cursor: pointer !important;
     font-size: 22px;
-    transition: 0.3s;
-    box-shadow: 0 0 15px var(--neon-blue);
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px var(--neon-blue), inset 0 0 10px var(--neon-blue);
+    pointer-events: auto !important; /* ÉP BUỘC NHẬN CLICK */
 }
 
+.music-toggle-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 25px var(--neon-blue);
+}
+
+/* Bảng điều khiển trình phát */
 .music-panel {
-    display: none; /* JS sẽ bật block */
+    display: none; /* JS sẽ bật thành block khi bấm nút */
     width: 320px;
     background: var(--glass);
     border: 1px solid var(--neon-blue);
     border-radius: 16px;
-    padding: 15px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 10px var(--neon-blue);
-    animation: slideUp 0.3s ease;
+    padding: 18px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.8), inset 0 0 15px rgba(0, 240, 255, 0.1);
+    animation: musicSlideUp 0.4s ease-out;
+    pointer-events: auto !important; /* ÉP BUỘC NHẬN CLICK */
+}
+
+@keyframes musicSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .panel-header {
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 900;
     color: var(--neon-blue);
     text-transform: uppercase;
     margin-bottom: 12px;
     font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
 }
 
+/* Các nút chọn SoundCloud, YouTube, Spotify */
 .platform-selector {
     display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 12px;
 }
 
 .btn-platform {
     flex: 1;
-    padding: 6px;
+    padding: 8px;
     font-size: 10px;
-    background: rgba(255,255,255,0.05);
+    font-weight: 700;
+    background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
-    color: white;
+    color: #94a3b8;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: 0.2s;
 }
 
@@ -82,48 +108,69 @@
     background: var(--neon-blue);
     color: var(--bg-dark) !important;
     border-color: var(--neon-blue);
-    box-shadow: 0 0 10px var(--neon-blue);
+    box-shadow: 0 0 12px var(--neon-blue);
 }
 
+/* Ô nhập link nhạc */
 #media-url-input {
     width: 100%;
-    padding: 10px 12px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--neon-blue);
-    border-radius: 8px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     color: white;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     outline: none;
     font-size: 13px;
+    transition: 0.3s;
 }
 
 #media-url-input:focus {
-    border-color: var(--neon-pink);
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    background: rgba(0,0,0,0.6);
 }
 
+/* Nút Phát ngay */
 .btn-change {
     width: 100%;
-    padding: 10px;
-    background: var(--neon-blue);
-    color: var(--bg-dark);
+    padding: 12px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+    color: white;
     border: none;
-    border-radius: 8px;
-    font-weight: 700;
+    border-radius: 10px;
+    font-weight: 800;
+    font-family: 'Orbitron', sans-serif;
     cursor: pointer;
-    margin-bottom: 10px;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
+.btn-change:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px var(--neon-blue);
+    transform: translateY(-2px);
+}
+
+/* Khung chứa Iframe nhạc sau khi load */
 #media-wrapper {
     display: none;
     width: 100%;
-    border-radius: 10px;
+    margin-top: 15px;
+    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid var(--neon-pink); /* Tạo điểm nhấn bằng màu Pink của hệ */
+    border: 1px solid var(--neon-pink);
+    background: #000;
+    box-shadow: 0 0 15px rgba(255, 0, 170, 0.2);
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+/* FIX QUAN TRỌNG: Vô hiệu hóa vùng chạm của các hiệu ứng nền */
+#mouse-glow, 
+.meteor, 
+.pokemon-fallback, 
+#canvas-stars {
+    pointer-events: none !important;
 }
         /* Style cho bảng thông báo ngừng hoạt động */
 .status-offline {
@@ -466,15 +513,9 @@
     }
 }
        
-/* Giữ nguyên các class music-player-container và music-toggle-btn từ câu trả lời trước */
-        /* --- FLOATING MUSIC PLAYER --- */
 
 
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
 
      :root {
@@ -504,22 +545,6 @@ body {
     min-height: 100vh;
 }
 
-/* ĐỒNG BỘ CHO TRÌNH PHÁT NHẠC */
-/* --- ĐỒNG BỘ TRÌNH PHÁT NHẠC --- */
-
-
-
-
-
-#media-url-input:focus {
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 10px var(--neon-pink);
-}
-
-#media-url-input::placeholder {
-    color: var(--neon-blue);
-    opacity: 0.5;
-}
 
 /* Các nút bấm */
 .btn-main, .btn-platform.active {
@@ -537,35 +562,7 @@ body {
     transform: translateY(-2px);
 }
 
-.music-toggle-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 55px;
-    height: 55px;
-    background: var(--glass);
-    border: 2px solid var(--neon-blue);
-    color: var(--neon-blue);
-    box-shadow: 0 0 20px var(--neon-blue);
-    z-index: 10002; /* Luôn trên cùng */
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 22px;
-    transition: 0.3s;
-}
 
-#media-wrapper {
-    margin-top: 15px;
-    border: 1px solid var(--neon-pink);
-    border-radius: 10px;
-    overflow: hidden;
-    background: black;
-}
-
-/* Quan trọng: Fix lỗi hào quang chuột đè lên nút */
-#mouse-glow {
-    pointer-events: none !important;
-}
         /* --- NAVIGATION --- */
         .main-nav {
             position: fixed; top: 0; left: 0; right: 0; height: 72px;
