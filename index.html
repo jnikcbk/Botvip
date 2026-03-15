@@ -11,6 +11,49 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        /* Container chứa các hạt thời tiết */
+#weather-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; /* Không cản trở click */
+    z-index: 5; /* Nằm dưới Card nhưng trên nền */
+}
+
+/* Hạt mưa */
+.drop {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    width: 2px; height: 15px;
+    top: -20px;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to { transform: translateY(100vh); }
+}
+
+/* Hiệu ứng chớp (Bão) */
+.lightning {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: white;
+    opacity: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.flash-animation {
+    animation: flash 3s infinite;
+}
+
+@keyframes flash {
+    0%, 90%, 100% { opacity: 0; }
+    92% { opacity: 0.3; }
+    94% { opacity: 0.1; }
+    96% { opacity: 0.5; }
+}
         .pokemon-cards-container {
     /* Cho phép phản chiếu hiển thị bên dưới */
     padding-bottom: 150px !important; 
@@ -914,7 +957,15 @@ body {
         SERVER ĐANG NGỪNG HOẠT ĐỘNG ĐẾN THÁNG 6 CẢM ƠN <3
     </div>
 </div>
-   
+<div class="weather-controls">
+    <p class="panel-header">MÔI TRƯỜNG</p>
+    <div class="weather-btns">
+        <button onclick="setWeather('sun')" title="Trời nắng"><i class="fas fa-sun"></i> ☀️</button>
+        <button onclick="setWeather('rain')" title="Mưa rơi"><i class="fas fa-cloud-showers-heavy"></i> 🌧️</button>
+        <button onclick="setWeather('storm')" title="Bão tố"><i class="fas fa-bolt"></i> ⚡</button>
+        <button onclick="setWeather('clear')" title="Tắt hiệu ứng">❌</button>
+    </div>
+</div>   
 </section>
 
 <footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
@@ -1388,7 +1439,43 @@ function toggleMusicPanel() {
         btn.innerHTML = "🎵"; // Đổi lại icon nốt nhạc
     }
 }
-    
+    function setWeather(type) {
+    const container = document.getElementById('weather-container') || createWeatherContainer();
+    container.innerHTML = ''; // Xóa hiệu ứng cũ
+    document.body.classList.remove('storm-mode');
+
+    if (type === 'rain' || type === 'storm') {
+        // Tạo 100 hạt mưa
+        for (let i = 0; i < 100; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+            drop.style.opacity = Math.random();
+            container.appendChild(drop);
+        }
+    }
+
+    if (type === 'storm') {
+        const flash = document.createElement('div');
+        flash.className = 'lightning flash-animation';
+        container.appendChild(flash);
+        // Có thể thêm âm thanh sấm sét ở đây nếu muốn
+    }
+
+    if (type === 'sun') {
+        // Tăng độ sáng cho glow chuột hoặc hiệu ứng meteor
+        document.documentElement.style.setProperty('--glass', 'rgba(255, 255, 255, 0.1)');
+        // Thêm các hạt nắng (vàng nhạt)
+    }
+}
+
+function createWeatherContainer() {
+    const div = document.createElement('div');
+    div.id = 'weather-container';
+    document.body.appendChild(div);
+    return div;
+}
 </script>
 
 </body>
