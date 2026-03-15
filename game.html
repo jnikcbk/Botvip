@@ -1,114 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KaizenMC - 3D Multiworld</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kaizen 3D Mobile</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
-        #ui { position: absolute; top: 20px; left: 20px; color: #00f0ff; pointer-events: none; }
-        #chat-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #555; }
+        body { margin: 0; overflow: hidden; background: #000; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #00f0ff; font-family: sans-serif; pointer-events: none; z-index: 10; }
+        /* Joystick ảo */
+        #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid #00f0ff; }
+        #joystick-stick { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #00f0ff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 15px #00f0ff; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <h1>KAIZEN 3D REAL-TIME</h1>
-        <p>Dùng WASD để di chuyển | Mouse để xoay</p>
-        <p>ONLINE: <span id="peer-count">1</span></p>
+        <b>KAIZEN 3D MOBILE</b><br>
+        Online: <span id="count">1</span>
     </div>
-    <div id="chat-hint">Mọi người đang ở trong cùng một không gian số...</div>
+    
+    <div id="joystick-zone"><div id="joystick-stick"></div></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 
     <script>
-        // 1. THIẾT LẬP KẾT NỐI (CHƠI CHUNG)
+        // --- ĐỒNG BỘ MULTIPLAYER ---
         const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const world = gun.get('kaizen-mc-3d-world');
-        const myId = Math.random().toString(36).substr(2, 9);
+        const world = gun.get('kaizen_v4_3d');
+        const myId = 'P_' + Math.random().toString(36).substr(2, 5);
         const players = {};
 
-        // 2. KHỞI TẠO 3D ENGINE
+        // --- 3D SCENE ---
         const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x000000, 10, 50);
-
+        scene.fog = new THREE.Fog(0x000000, 5, 40);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Tắt antialias cho mượt máy yếu
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Nền lưới Cyber
-        const grid = new THREE.GridHelper(100, 50, 0xff00aa, 0x222222);
+        // Nền Cyber Grid
+        const grid = new THREE.GridHelper(200, 60, 0xff00aa, 0x111111);
         scene.add(grid);
 
-        // Ánh sáng
-        const light = new THREE.PointLight(0x00f0ff, 1, 100);
-        light.position.set(0, 10, 0);
-        scene.add(light);
-
-        // 3. TẠO NHÂN VẬT (CỦA MÌNH)
-        const createPlayerMesh = (color = 0x00f0ff) => {
-            const group = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color, wireframe: true }));
-            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-            head.position.y = 0.8;
-            group.add(body, head);
-            return group;
-        };
-
-        const myMesh = createPlayerMesh(0x00f0ff);
-        scene.add(myMesh);
-        camera.position.set(0, 5, 10);
-        camera.lookAt(myMesh.position);
-
-        // 4. LOGIC DI CHUYỂN
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-
-        function updateMovement() {
-            let moved = false;
-            if (keys['w']) { myMesh.position.z -= 0.1; moved = true; }
-            if (keys['s']) { myMesh.position.z += 0.1; moved = true; }
-            if (keys['a']) { myMesh.position.x -= 0.1; moved = true; }
-            if (keys['d']) { myMesh.position.x += 0.1; moved = true; }
-
-            if (moved) {
-                // Gửi vị trí lên hệ thống để người khác thấy
-                world.get(myId).put({ x: myMesh.position.x, z: myMesh.position.z });
-            }
-            camera.position.lerp(new THREE.Vector3(myMesh.position.x, 5, myMesh.position.z + 10), 0.1);
+        // Tạo nhân vật
+        function createBox(color) {
+            const g = new THREE.Group();
+            const b = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color, wireframe: true }));
+            g.add(b);
+            return g;
         }
 
-        // 5. ĐỒNG BỘ CÁC NGƯỜI CHƠI KHÁC
-        world.map().once((data, id) => {
-            if (id === myId) return;
-            if (!players[id]) {
-                players[id] = createPlayerMesh(0xff00aa);
-                scene.add(players[id]);
-            }
-            players[id].position.x = data.x;
-            players[id].position.z = data.z;
+        const myMesh = createBox(0x00f0ff);
+        scene.add(myMesh);
+        camera.position.set(0, 5, 8);
+
+        // --- ĐIỀU KHIỂN JOYSTICK ---
+        let moveX = 0, moveZ = 0;
+        const stick = document.getElementById('joystick-stick');
+        const zone = document.getElementById('joystick-zone');
+
+        zone.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const rect = zone.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            const dist = Math.min(60, Math.sqrt(dx*dx + dy*dy));
+            const angle = Math.atan2(dy, dx);
+
+            moveX = Math.cos(angle) * (dist / 60) * 0.15;
+            moveZ = Math.sin(angle) * (dist / 60) * 0.15;
+
+            stick.style.left = `calc(50% + ${Math.cos(angle) * dist}px)`;
+            stick.style.top = `calc(50% + ${Math.sin(angle) * dist}px)`;
         });
 
-        // 6. RENDER LOOP
+        zone.addEventListener('touchend', () => {
+            moveX = 0; moveZ = 0;
+            stick.style.left = '50%'; stick.style.top = '50%';
+        });
+
+        // --- ĐỒNG BỘ DATA ---
+        world.map().on((data, id) => {
+            if (id === myId || !data) return;
+            if (!players[id]) {
+                players[id] = createBox(0xff00aa);
+                scene.add(players[id]);
+            }
+            players[id].position.set(data.x, 0, data.z);
+        });
+
+        // --- RENDER ---
         function animate() {
             requestAnimationFrame(animate);
-            updateMovement();
             
-            // Hiệu ứng xoay nhẹ cho các player khác nhìn cho "bay bổng"
-            Object.values(players).forEach(p => p.rotation.y += 0.01);
-            myMesh.rotation.y += 0.01;
+            if (moveX !== 0 || moveZ !== 0) {
+                myMesh.position.x += moveX;
+                myMesh.position.z += moveZ;
+                world.get(myId).put({ x: myMesh.position.x, z: myMesh.position.z });
+            }
+
+            camera.position.x = THREE.MathUtils.lerp(camera.position.x, myMesh.position.x, 0.1);
+            camera.position.z = THREE.MathUtils.lerp(camera.position.z, myMesh.position.z + 8, 0.1);
+            camera.lookAt(myMesh.position);
 
             renderer.render(scene, camera);
         }
-
         animate();
-
-        // Fix co giãn màn hình
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
