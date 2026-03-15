@@ -11,32 +11,77 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <style>
+        .weather-controls {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-        .weather-btns {
+.weather-btns {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-top: 10px;
+    grid-template-columns: repeat(2, 1fr); /* Chia 2 cột đều nhau */
+    gap: 10px;
 }
 
-.weather-btns button {
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: white;
+.weather-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px;
+    color: #fff;
     cursor: pointer;
-    font-size: 14px;
-    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.weather-btns button:hover {
+.weather-btn .icon {
+    font-size: 18px;
+}
+
+.weather-btn .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+/* Hiệu ứng Hover */
+.weather-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--neon-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.weather-btn:hover .label {
+    opacity: 1;
+    color: var(--neon-blue);
+}
+
+/* Nút Tắt đặc biệt */
+.clear-btn:hover {
+    border-color: #ff4d4d;
+}
+.clear-btn:hover .label {
+    color: #ff4d4d;
+}
+
+/* Trạng thái Active (khi đang chọn thời tiết đó) */
+.weather-btn.active {
     background: var(--neon-blue);
     color: var(--bg-dark);
-    box-shadow: 0 0 15px var(--neon-blue);
-    transform: translateY(-2px);
 }
-      /* Container thời tiết */
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+     /* --- CONTAINER THỜI TIẾT --- */
 #weather-container {
     position: fixed;
     top: 0; left: 0;
@@ -44,74 +89,100 @@
     pointer-events: none;
     z-index: 5;
     overflow: hidden;
+    /* Làm tối nền nhẹ khi có thời tiết để nổi bật hạt */
+    background: rgba(0, 0, 0, 0); 
+    transition: background 1s ease;
 }
 
-/* --- HIỆU ỨNG MƯA (Tối ưu độ mảnh và mờ) --- */
+/* --- MƯA (Rain - Hiệu ứng Motion Blur) --- */
 .drop {
     position: absolute;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6));
-    width: 1px; /* Mảnh hơn nhìn sẽ sang hơn */
-    height: 60px; /* Dài hơn tạo cảm giác tốc độ */
+    /* Dùng gradient mảnh và sáng ở đuôi tạo cảm giác rơi nhanh */
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7));
+    width: 1px;
+    height: 80px; /* Tăng độ dài cho 'phiêu' hơn */
     top: -100px;
-    filter: blur(0.5px);
+    filter: blur(0.2px); /* Nhòe nhẹ đúng kiểu điện ảnh */
     animation: fall linear infinite;
 }
 
 @keyframes fall {
-    to { transform: translateY(110vh) translateX(20px); } /* Rơi hơi chéo cho tự nhiên */
+    /* Rơi hơi chéo góc 15 độ nhìn sẽ tự nhiên hơn rơi thẳng */
+    to { transform: translateY(110vh) translateX(30px); }
 }
 
-/* --- HIỆU ỨNG BÃO (Lightning rực rỡ hơn) --- */
+/* --- BÃO (Storm - Chớp cường độ cao) --- */
 .lightning {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    /* Gradient tỏa sáng từ trên xuống */
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.8), transparent);
+    /* Chớp xanh nhạt hoặc trắng tùy hệ màu */
+    background: radial-gradient(circle at 50% 20%, #fff, var(--neon-blue), transparent);
     opacity: 0;
-    z-index: 9999; /* Chớp lên trên cả thẻ bài */
+    z-index: 999999; 
     pointer-events: none;
 }
 
 .flash-animation {
-    animation: flash-pro 5s infinite;
+    /* Chớp ngẫu nhiên hơn (nhanh - chậm xen kẽ) */
+    animation: flash-pro 6s infinite;
 }
 
 @keyframes flash-pro {
-    0%, 92%, 98%, 100% { opacity: 0; }
-    94% { opacity: 0.6; filter: brightness(1.5); }
-    96% { opacity: 0.2; }
+    0%, 90%, 93%, 96%, 100% { opacity: 0; }
+    91% { opacity: 0.7; filter: brightness(2); }
+    92% { opacity: 0.2; }
+    94% { opacity: 0.8; }
+    95% { opacity: 0.3; }
 }
 
-/* --- HIỆU ỨNG NẮNG (Hạt bụi sáng - Sunbeams) --- */
+/* --- NẮNG (Sun - Hạt bụi Bokeh) --- */
 .sun-particle {
     position: absolute;
-    background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+    /* Dùng biến --c để hạt bụi đổi màu theo hệ màu Pokémon bạn đang bật */
+    background: radial-gradient(circle, #fff 0%, var(--c) 50%, transparent 70%);
     border-radius: 50%;
     opacity: 0;
-    animation: float-sun 4s infinite ease-in-out;
+    filter: blur(2px); /* Hiệu ứng Bokeh xóa phông */
+    animation: float-sun 5s infinite ease-in-out;
 }
 
 @keyframes float-sun {
-    0% { transform: translateY(0) scale(0); opacity: 0; }
-    50% { opacity: 0.5; }
-    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-}
-        .pokemon-cards-container {
-    /* Cho phép phản chiếu hiển thị bên dưới */
-    padding-bottom: 150px !important; 
+    0% { transform: translate(0, 0) scale(0); opacity: 0; }
+    30% { opacity: 0.3; }
+    100% { transform: translate(50px, -150px) scale(2); opacity: 0; }
 }
 
-.poke-card {
-    /* Tạo hình ảnh phản chiếu bên dưới thẻ */
-    -webkit-box-reflect: below 10px linear-gradient(transparent, rgba(0,0,0,0.2));
+/* --- NÚT BẤM THỜI TIẾT --- */
+.weather-btns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
 }
-        .poke-card:hover h3 {
-    text-shadow: 
-        0 0 10px #fff,
-        0 0 20px var(--c),
-        0 0 60px var(--c);
-    transition: 0.3s;
+
+.weather-btns button {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.weather-btns button:hover {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 20px var(--neon-blue);
+    transform: translateY(-3px) scale(1.02);
+    border-color: transparent;
 }
         /* 1. Neon cho Tên Pokémon (Rực rỡ theo hệ) */
 .poke-card h3 {
@@ -1001,14 +1072,28 @@ body {
     </div>
 </div>
 <div class="weather-controls">
-    <p class="panel-header">MÔI TRƯỜNG</p>
-    <div class="weather-btns">
-        <button onclick="setWeather('sun')" title="Trời nắng"><i class="fas fa-sun"></i> ☀️</button>
-        <button onclick="setWeather('rain')" title="Mưa rơi"><i class="fas fa-cloud-showers-heavy"></i> 🌧️</button>
-        <button onclick="setWeather('storm')" title="Bão tố"><i class="fas fa-bolt"></i> ⚡</button>
-        <button onclick="setWeather('clear')" title="Tắt hiệu ứng">❌</button>
+    <div class="panel-header" style="font-size: 12px; opacity: 0.7; letter-spacing: 2px; margin-bottom: 10px;">
+        <i class="fas fa-cloud-sun"></i> MÔI TRƯỜNG
     </div>
-</div>   
+    <div class="weather-btns">
+        <button class="weather-btn" onclick="setWeather('sun')" title="Trời nắng">
+            <span class="icon">☀️</span>
+            <span class="label">Nắng</span>
+        </button>
+        <button class="weather-btn" onclick="setWeather('rain')" title="Mưa rơi">
+            <span class="icon">🌧️</span>
+            <span class="label">Mưa</span>
+        </button>
+        <button class="weather-btn" onclick="setWeather('storm')" title="Bão tố">
+            <span class="icon">⚡</span>
+            <span class="label">Bão</span>
+        </button>
+        <button class="weather-btn clear-btn" onclick="setWeather('clear')" title="Tắt hiệu ứng">
+            <span class="icon">❌</span>
+            <span class="label">Tắt</span>
+        </button>
+    </div>
+</div>
 </section>
 
 <footer style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1.8;">
@@ -1482,26 +1567,32 @@ function toggleMusicPanel() {
         btn.innerHTML = "🎵"; // Đổi lại icon nốt nhạc
     }
 }
-    function setWeather(type) {
+  function setWeather(type) {
     const container = document.getElementById('weather-container') || createWeatherContainer();
-    container.innerHTML = ''; 
     
+    // 1. Dọn dẹp hiệu ứng cũ và các class rung lắc
+    container.innerHTML = ''; 
+    document.body.style.animation = ""; 
+    // Làm nền tối lại một chút khi mưa/bão để hạt mưa nổi bật
+    container.style.background = (type === 'rain' || type === 'storm') ? "rgba(0,0,0,0.3)" : "transparent";
+
     if (type === 'rain' || type === 'storm') {
-        // Tạo 120 hạt mưa cho dày hơn
-        for (let i = 0; i < 120; i++) {
+        // Tạo 150 hạt mưa (chia làm 3 lớp để có độ sâu 3D)
+        for (let i = 0; i < 150; i++) {
             const drop = document.createElement('div');
             drop.className = 'drop';
             
-            // Tư duy ngẫu nhiên:
             const left = Math.random() * 100 + 'vw';
             const delay = Math.random() * 2 + 's';
-            const duration = (Math.random() * 0.3 + 0.4) + 's'; // Rơi cực nhanh
-            const opacity = Math.random() * 0.5;
+            // Tư duy logic: Hạt càng mờ thì rơi càng chậm (tạo chiều sâu)
+            const speedBase = Math.random();
+            const duration = (speedBase * 0.2 + 0.3) + 's'; 
             
             drop.style.left = left;
             drop.style.animationDelay = delay;
             drop.style.animationDuration = duration;
-            drop.style.opacity = opacity;
+            drop.style.opacity = speedBase * 0.6; // Hạt nhanh thì rõ, hạt chậm thì mờ
+            
             container.appendChild(drop);
         }
     }
@@ -1510,25 +1601,46 @@ function toggleMusicPanel() {
         const flash = document.createElement('div');
         flash.className = 'lightning flash-animation';
         container.appendChild(flash);
-        // Thêm rung màn hình nhẹ khi có chớp
-        document.body.style.animation = "shake 0.1s infinite";
-        setTimeout(() => document.body.style.animation = "", 5000);
+
+        // Tư duy: Rung màn hình ngẫu nhiên khi có chớp thay vì rung liên tục
+        const shakeScreen = () => {
+            if (container.innerHTML.includes('lightning')) {
+                document.body.style.animation = "shake 0.2s cubic-bezier(.36,.07,.19,.97) both";
+                setTimeout(() => document.body.style.animation = "", 200);
+                // Tạo quãng nghỉ ngẫu nhiên giữa các lần chớp tiếp theo
+                setTimeout(shakeScreen, Math.random() * 4000 + 2000);
+            }
+        };
+        setTimeout(shakeScreen, 1000);
     }
-        
 
     if (type === 'sun') {
-        for (let i = 0; i < 30; i++) {
+        // Tạo các hạt bụi nắng (Bokeh)
+        for (let i = 0; i < 40; i++) {
             const p = document.createElement('div');
             p.className = 'sun-particle';
-            const size = Math.random() * 10 + 5 + 'px';
+            
+            const size = Math.random() * 15 + 5 + 'px';
             p.style.width = size;
             p.style.height = size;
             p.style.left = Math.random() * 100 + 'vw';
             p.style.top = Math.random() * 100 + 'vh';
-            p.style.animationDelay = Math.random() * 4 + 's';
+            
+            // Cho mỗi hạt nắng có màu hơi khác nhau một chút dựa trên hệ màu
+            p.style.filter = `blur(${Math.random() * 3 + 1}px)`;
+            p.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            
             container.appendChild(p);
         }
     }
+}
+
+function createWeatherContainer() {
+    const div = document.createElement('div');
+    div.id = 'weather-container';
+    document.body.appendChild(div);
+    return div;
 }
 </script>
 
