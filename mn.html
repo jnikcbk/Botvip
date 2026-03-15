@@ -3,229 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Secret Room - Escape Game</title>
+    <title>THE SILENT MANIAC</title>
     <style>
         :root {
-            --bg: #0d0d0d;
-            --text: #e0e0e0;
-            --accent: #ff003c;
-            --glass: rgba(255, 255, 255, 0.05);
+            --red: #800000;
+            --dark-red: #330000;
+            --blood: #ff0000;
+            --bg: #050505;
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
             background: var(--bg);
-            color: var(--text);
+            color: #ccc;
+            font-family: 'Courier New', monospace;
             margin: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
         }
 
-        .game-screen {
+        /* Hiệu ứng nhiễu màn hình (CRT Scanlines) */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .container {
             width: 90%;
-            max-width: 500px;
-            background: var(--glass);
-            border: 1px solid #333;
-            padding: 30px;
-            border-radius: 10px;
+            max-width: 600px;
+            z-index: 5;
+            padding: 20px;
+            border: 1px solid #222;
+            background: rgba(10, 0, 0, 0.9);
             box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
-        /* Hình ảnh minh họa căn phòng bằng CSS */
-        .room-view {
+        /* Khu vực hiển thị tâm linh */
+        #visual {
+            font-size: 100px;
             height: 200px;
-            background: #1a1a1a;
-            border-radius: 5px;
-            margin-bottom: 20px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 80px;
-            border: 1px solid #444;
-            transition: 0.5s;
-        }
-
-        .dialog-box {
-            min-height: 80px;
+            justify-content: center;
             margin-bottom: 20px;
-            line-height: 1.5;
-            font-size: 16px;
-            color: #ccc;
+            text-shadow: 0 0 20px var(--blood);
+            transition: all 0.1s;
         }
 
-        /* Nút lựa chọn */
-        .choices {
+        /* Thanh Tâm lý (Sanity) */
+        .sanity-border {
+            width: 100%;
+            height: 4px;
+            background: #111;
+            margin-bottom: 20px;
+        }
+        #sanity-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--red);
+            transition: width 0.5s;
+            box-shadow: 0 0 10px var(--blood);
+        }
+
+        #dialog {
+            font-size: 18px;
+            min-height: 120px;
+            margin-bottom: 30px;
+            color: #999;
+            border-left: 3px solid var(--red);
+            padding-left: 15px;
+        }
+
+        .btn-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
         }
 
         button {
             background: transparent;
-            border: 1px solid #555;
-            color: #fff;
-            padding: 12px;
+            border: 1px solid var(--dark-red);
+            color: #666;
+            padding: 15px;
             cursor: pointer;
+            font-family: 'Courier New', monospace;
             transition: 0.3s;
             text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
         }
 
         button:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
+            color: var(--blood);
+            border-color: var(--blood);
+            background: rgba(50, 0, 0, 0.2);
+            text-shadow: 0 0 5px var(--blood);
         }
 
-        /* Túi đồ */
-        .inventory {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-            font-size: 12px;
-            color: #666;
+        /* Hiệu ứng Glitch */
+        .glitch {
+            animation: glitch 0.2s infinite;
         }
 
-        .inventory span {
-            color: var(--accent);
-            margin-left: 10px;
+        @keyframes glitch {
+            0% { transform: translate(2px, 0); }
+            50% { transform: translate(-2px, -1px); filter: hue-rotate(90deg); }
+            100% { transform: translate(1px, 1px); }
+        }
+
+        .dead {
+            color: var(--blood);
+            font-size: 40px;
             font-weight: bold;
-        }
-
-        /* Hiệu ứng nháy đỏ khi sai */
-        .flash-error {
-            animation: flash 0.3s;
-        }
-        @keyframes flash {
-            50% { background: #500; }
         }
     </style>
 </head>
 <body>
 
-    <div class="game-screen">
-        <div class="room-view" id="visual">🚪</div>
+    <div class="container" id="game-ui">
+        <div id="visual">👁️</div>
         
-        <div class="dialog-box" id="text-display">
-            Bạn tỉnh dậy trong một căn phòng lạnh lẽo. Cửa chính đã khóa chặt. Có một chiếc hộp sáu và một bức thư trên bàn.
+        <div class="sanity-border">
+            <div id="sanity-bar"></div>
         </div>
 
-        <div class="choices" id="choice-container">
+        <div id="dialog">...đang khởi động tiềm thức...</div>
+
+        <div class="btn-grid" id="choices">
             </div>
-
-        <div class="inventory" id="inventory">
-            HÀNH TRANG: <span id="items">Chưa có gì</span>
-        </div>
     </div>
 
     <script>
-        let inventory = [];
-        const textDisplay = document.getElementById('text-display');
-        const choiceContainer = document.getElementById('choice-container');
+        let sanity = 100;
+        let hasKnife = false;
+        let hasKey = false;
+        
         const visual = document.getElementById('visual');
-        const itemsList = document.getElementById('items');
+        const dialog = document.getElementById('dialog');
+        const choices = document.getElementById('choices');
+        const sanityBar = document.getElementById('sanity-bar');
 
-        // Các trạng thái của trò chơi
+        // Giảm tâm lý theo thời gian
+        const sanityClock = setInterval(() => {
+            if(sanity > 0) {
+                sanity -= 2;
+                sanityBar.style.width = sanity + "%";
+                if(sanity < 30) visual.classList.add('glitch');
+            } else {
+                clearInterval(sanityClock);
+                gameOver("BẠN ĐÃ PHÁT ĐIÊN TRONG BÓNG TỐI.");
+            }
+        }, 3000);
+
         const scenes = {
             start: {
-                text: "Bạn đang ở giữa phòng. Cửa ra vào cần chìa khóa vàng. Trên bàn có một 'Bức thư' và một 'Hộp sắt' cũ.",
-                visual: "🪑",
-                choices: [
-                    { text: "Đọc bức thư", next: "readLetter" },
-                    { text: "Mở hộp sắt", next: "checkBox" }
+                txt: "Bạn tỉnh lại trong căn hầm đẫm mùi rỉ sét. Một cái xác treo trên trần nhà. Trên sàn có một mảnh kính vỡ và một cánh cửa sắt.",
+                img: "⛓️",
+                btns: [
+                    { t: "Nhặt mảnh kính", next: "getKnife" },
+                    { t: "Kiểm tra cái xác", next: "checkBody" }
                 ]
             },
-            readLetter: {
-                text: "Bức thư viết: 'Mã số ẩn giấu trong số lượng cạnh của một hình tam giác và một hình vuông'.",
-                visual: "📜",
-                choices: [
-                    { text: "Quay lại", next: "start" }
-                ]
+            getKnife: {
+                txt: "Mảnh kính rất sắc. Tay bạn rỉ máu, nhưng giờ bạn đã có vũ khí.",
+                img: "🔪",
+                onEnter: () => { hasKnife = true; sanity -= 10; },
+                btns: [{ t: "Quay lại", next: "start" }]
             },
-            checkBox: {
-                text: "Hộp sắt yêu cầu mã số gồm 2 chữ số (Cạnh Tam Giác + Cạnh Hình Vuông).",
-                visual: "📦",
-                choices: [
-                    { text: "Nhập mã '34'", next: "openBox" },
-                    { text: "Nhập mã '77'", next: "failBox" },
-                    { text: "Quay lại", next: "start" }
+            checkBody: {
+                txt: "Cái xác đột ngột mở mắt! Nó thì thầm: 'Mật mã là số người đã chết ở đây: 4-0-4'. Bạn thấy một chiếc hộp số trên ngực nó.",
+                img: "💀",
+                btns: [
+                    { t: "Nhập 404", next: "openBox" },
+                    { t: "Bỏ chạy", next: "start" }
                 ]
             },
             openBox: {
-                text: "Cạch! Hộp mở ra, bên trong có một 'Chìa khóa vàng'.",
-                visual: "🗝️",
-                onEnter: () => addInventory("Chìa khóa vàng"),
-                choices: [
-                    { text: "Đến cửa chính", next: "atDoor" }
+                txt: "Hộp mở ra. Bên trong là một chùm chìa khóa dính máu.",
+                img: "🔑",
+                onEnter: () => { hasKey = true; },
+                btns: [{ t: "Đến cửa sắt", next: "ironDoor" }]
+            },
+            ironDoor: {
+                txt: "Cửa sắt lạnh lẽo. Bạn nghe tiếng bước chân nặng nề đang tiến lại gần từ phía sau...",
+                img: "🚪",
+                btns: [
+                    { t: "Dùng chìa khóa", next: "escape" },
+                    { t: "Quay lại chiến đấu", next: "fight" }
                 ]
             },
-            failBox: {
-                text: "Sai mã rồi. Có vẻ bạn chưa đọc kỹ gợi ý.",
-                visual: "❌",
-                choices: [
-                    { text: "Thử lại", next: "checkBox" }
-                ]
-            },
-            atDoor: {
-                text: "Bạn đứng trước cánh cửa gỗ nặng nề.",
-                visual: "🚪",
-                choices: [
-                    { text: "Dùng chìa khóa", next: "escape" },
-                    { text: "Quay lại bàn", next: "start" }
-                ]
+            fight: {
+                txt: "Bạn lao vào bóng tối với mảnh kính. Nhưng thứ đó không phải con người. Nó bẻ gãy tay bạn trong nháy mắt.",
+                img: "🩸",
+                btns: [{ t: "CHẾT", next: "death" }]
             },
             escape: {
-                text: "Chúc mừng! Bạn đã thoát khỏi căn phòng bí ẩn.",
-                visual: "🌤️",
-                choices: [
-                    { text: "Chơi lại", next: "start", onEnter: () => inventory = [] }
-                ]
+                txt: "Cửa mở! Bạn lao ra ngoài cánh đồng ngập ánh trăng. Bạn đã sống sót... hay đây chỉ là một giấc mơ khác?",
+                img: "🌕",
+                btns: [{ t: "KẾT THÚC", next: "start" }]
             }
         };
 
-        function addInventory(item) {
-            if (!inventory.includes(item)) {
-                inventory.push(item);
-                itemsList.innerText = inventory.join(", ");
-            }
+        function render(key) {
+            const s = scenes[key];
+            if(key === 'death') return gameOver("BẠN ĐÃ BỊ XẺ THỊT.");
+
+            // Hiệu ứng chuyển cảnh
+            document.getElementById('game-ui').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('game-ui').style.opacity = 1;
+                visual.innerText = s.img;
+                dialog.innerText = s.txt;
+                choices.innerHTML = "";
+
+                if(s.onEnter) s.onEnter();
+
+                s.btns.forEach(b => {
+                    const btn = document.createElement('button');
+                    btn.innerText = b.t;
+                    btn.onclick = () => {
+                        if(b.next === 'escape' && !hasKey) {
+                            dialog.innerText = "Cửa đã khóa. Tiếng bước chân gần hơn... gần hơn...";
+                            sanity -= 20;
+                        } else {
+                            render(b.next);
+                        }
+                    };
+                    choices.appendChild(btn);
+                });
+            }, 200);
         }
 
-        function renderScene(sceneKey) {
-            const scene = scenes[sceneKey];
-            
-            // Hiệu ứng chữ máy đánh chữ
-            textDisplay.innerText = "";
-            let i = 0;
-            const typeWriter = setInterval(() => {
-                textDisplay.innerText += scene.text.charAt(i);
-                i++;
-                if (i >= scene.text.length) clearInterval(typeWriter);
-            }, 20);
-
-            visual.innerText = scene.visual;
-            choiceContainer.innerHTML = "";
-
-            if (scene.onEnter) scene.onEnter();
-
-            scene.choices.forEach(choice => {
-                const btn = document.createElement('button');
-                btn.innerText = choice.text;
-                btn.onclick = () => {
-                    if (sceneKey === 'atDoor' && choice.text === 'Dùng chìa khóa' && !inventory.includes('Chìa khóa vàng')) {
-                        alert("Bạn cần chìa khóa!");
-                    } else {
-                        renderScene(choice.next);
-                    }
-                };
-                choiceContainer.appendChild(btn);
-            });
+        function gameOver(msg) {
+            visual.innerText = "💀";
+            visual.classList.add('glitch');
+            dialog.innerHTML = `<span class="dead">${msg}</span>`;
+            choices.innerHTML = `<button onclick="location.reload()">HỒI SINH</button>`;
+            clearInterval(sanityClock);
         }
 
-        // Bắt đầu game
-        renderScene('start');
+        render('start');
     </script>
 </body>
 </html>
